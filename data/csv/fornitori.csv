@@ -1,0 +1,19 @@
+id,denominazione,partita_iva,codice_fiscale,indirizzo,pec,sdi,categoria
+FOR-001,Nimbus Software S.r.l.,09128340151,09128340151,"Viale dell'Innovazione 14, 20126 Milano (MI)",nimbussoftware@pec.it,NMB7821,Software & Licenze SaaS
+FOR-002,Altocumulo Cloud Services S.r.l.,08472910153,08472910153,"Via Caldera 21, 20153 Milano (MI)",altocumulo.cloud@pec.it,ALTC890,Infrastruttura Cloud & Hosting
+FOR-003,Locazioni Navigli S.r.l.,07382910158,07382910158,"Ripa di Porta Ticinese 39, 20143 Milano (MI)",locazioni.navigli@pec.it,LOCNAV4,Locazioni Immobiliari
+FOR-004,Studio Legale Ferraris & Associati,06284910152,06284910152,"Via San Damiano 9, 20122 Milano (MI)",studioferraris@pecavvocati.it,FERR712,Consulenza Legale
+FOR-005,Studio Dott. Commercialisti Brambilla & Co.,05192840159,05192840159,"Corso di Porta Romana 48, 20122 Milano (MI)",studiobrambilla@peccommercialisti.it,BRAMB55,Consulenza Fiscale e Contabile
+FOR-006,FastConnect Telecom S.p.A.,04291840150,04291840150,"Via Lorenteggio 257, 20152 Milano (MI)",fastconnect@pec.it,FAST889,Telecomunicazioni e Rete
+FOR-007,EcoLombarda Energia S.p.A.,03829170155,03829170155,"Via Melchiorre Gioia 8, 20124 Milano (MI)",ecolombarda@pecenergia.it,ECOL912,Energia e Utenze
+FOR-008,SicurAssicura S.p.A.,02948210157,02948210157,"Piazza Tre Torri 2, 20145 Milano (MI)",sicurassicura@pec.it,SICU441,Assicurazioni
+FOR-009,FleetLeasing Italia S.p.A.,01847290154,01847290154,"Viale Certosa 130, 20156 Milano (MI)",fleetleasing@pec.it,FLEET66,Leasing Veicoli
+FOR-010,TechHardware Solutions S.r.l.,09382710156,09382710156,"Via Pola 11, 20124 Milano (MI)",techhardware@pec.it,TECHH01,Hardware & Attrezzature IT
+FOR-011,Punto Pulito S.r.l.,08273610155,08273610155,"Via Solari 19, 20144 Milano (MI)",puntopulito@pec.it,PUNT833,Servizi di Pulizia
+FOR-012,MediaBrand Studio S.r.l.,07482910152,07482910152,"Via Savona 97, 20144 Milano (MI)",mediabrand@pec.it,MDBR109,Marketing & Grafica
+FOR-013,Dott. Marco Rinaldi,04829170154,RNLMCR82A15F205W,"Via Marghera 22, 20149 Milano (MI)",marco.rinaldi@pec.it,M5UXCR1,Consulenza Freelance Senior Backend
+FOR-014,Ing. Sara De Luca,05918240158,DLCSR85T52F205H,"Viale Monza 45, 20127 Milano (MI)",sara.deluca@pec.it,M5UXCR1,Consulenza Freelance AI/ML
+FOR-015,Dott. Matteo Riva,06728190151,RVIMTT88H12F205C,"Corso San Gottardo 18, 20136 Milano (MI)",matteo.riva@pec.it,M5UXCR1,Consulenza Freelance UX/UI Designer
+FOR-016,Ferrovie Nazionali S.p.A.,01029380582,01029380582,"Piazza della Croce Rossa 1, 00161 Roma (RM)",ferrovienazionali@pec.it,FERR990,Viaggi & Trasporti Ferroviari
+FOR-017,Milano & Roma Business Hotels S.r.l.,08172940159,08172940159,"Via Fabio Filzi 22, 20124 Milano (MI)",businesshotels@pec.it,HOTL411,Alberghi & Alloggi Trasferte
+FOR-018,Ristoranti & Catering Milano S.r.l.,09283740153,09283740153,"Via Vigevano 14, 20144 Milano (MI)",cateringmilano@pec.it,RIST722,Ristorazione & Pasti Trasferte

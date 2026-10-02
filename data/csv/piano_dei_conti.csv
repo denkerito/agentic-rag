@@ -1,0 +1,35 @@
+codice,descrizione,tipo
+10.01,Cassa contanti,Attivo
+10.02,Banca c/c ordinario,Attivo
+11.01,Crediti verso clienti,Attivo
+11.02,Erario c/IVA a credito,Attivo
+12.01,Attrezzature e macchine per ufficio,Attivo
+20.01,Debiti verso fornitori,Passivo
+20.02,Erario c/IVA a debito,Passivo
+20.03,Erario c/ritenute alla fonte,Passivo
+20.04,Istituti previdenziali e assistenziali c/INPS,Passivo
+20.05,Personale dipendente c/retribuzioni,Passivo
+21.01,Capitale sociale,Passivo
+21.02,Riserva legale e straordinaria,Passivo
+21.03,Utili (perdite) portati a nuovo,Passivo
+60.01,Retribuzioni lorde personale dipendente,Costi
+60.02,Oneri sociali a carico ditta (INPS),Costi
+61.01,Consulenze professionali freelance,Costi
+61.02,"Canoni software, SaaS e licenze sviluppo",Costi
+61.03,Servizi cloud hosting e infrastruttura,Costi
+62.01,Canoni di locazione immobili uffici,Costi
+62.02,Utenze elettriche e riscaldamento,Costi
+62.03,Utenze telefonia fissa e connettività internet,Costi
+63.01,Consulenza legale e contrattuale straordinaria,Costi
+63.02,"Consulenza fiscale, contabile e del lavoro",Costi
+64.01,Spese alberghiere e alloggi trasferte,Costi
+64.02,"Spese trasporti, biglietti ferroviari e aerei",Costi
+64.03,Spese ristorazione e pasti dipendenti/trasferte,Costi
+65.01,Premi assicurativi RC professionale e uffici,Costi
+65.02,Canoni di leasing e noleggio automezzi,Costi
+66.01,Spese di pulizia e manutenzione locali,Costi
+66.02,"Spese marketing, grafica e comunicazione",Costi
+67.01,Materiale di consumo informatico e cancelleria,Costi
+68.01,"Oneri bancari, commissioni e tenuta conto",Costi
+70.01,Ricavi per sviluppo software su commessa,Ricavi
+70.02,Ricavi per contratti di manutenzione evolutiva e SLA,Ricavi

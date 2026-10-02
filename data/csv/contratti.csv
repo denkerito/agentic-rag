@@ -1,0 +1,11 @@
+id,controparte_id,controparte,tipo,oggetto,importo,data_inizio,data_fine,rinnovo,preavviso_giorni
+CTR-001,FOR-001,Nimbus Software S.r.l.,passivo,"Licenze piattaforma DevOps, CI/CD e cloud toolset per il team di sviluppo",48000.0,2024-01-01,2025-12-31,True,60
+CTR-002,FOR-003,Locazioni Navigli S.r.l.,passivo,"Locazione immobile commerciale ad uso ufficio sito in Milano, Via Tortona 32",45600.0,2022-10-01,2028-09-30,True,180
+CTR-003,FOR-002,Altocumulo Cloud Services S.r.l.,passivo,"Fornitura infrastruttura cloud enterprise, istanze container e storage gestito",36000.0,2023-11-15,2026-11-14,True,90
+CTR-004,FOR-005,Studio Dott. Commercialisti Brambilla & Co.,passivo,"Incarico professionale per tenuta contabilità, adempimenti fiscali e buste paga",10800.0,2024-01-01,2025-12-31,True,60
+CTR-005,FOR-008,SicurAssicura S.p.A.,passivo,"Polizza all risks multirischi ufficio, RC professionale e Cyber Security Protection",4800.0,2025-01-01,2025-12-31,True,30
+CTR-006,FOR-009,FleetLeasing Italia S.p.A.,passivo,Locazione finanziaria a lungo termine di due autovetture aziendali full service,9000.0,2024-06-01,2027-05-31,False,60
+CTR-007,FOR-011,Punto Pulito S.r.l.,passivo,"Servizio di pulizia ordinaria, sanificazione e fornitura materiale igienico uffici",6000.0,2024-01-01,2025-12-31,True,30
+CTR-008,CLI-001,Barilli Logistica S.p.A.,attivo,"Contratto quadro per progettazione, sviluppo e manutenzione evolutiva TMS logistico",330000.0,2024-01-01,2025-12-31,False,30
+CTR-009,CLI-002,FinTech Solutions Italia S.r.l.,attivo,Sviluppo moduli di pagamento istantaneo PSD2 e assistenza applicativa SLA 24/7,174000.0,2024-03-01,2026-02-28,True,60
+CTR-010,CLI-003,RetailNext S.p.A.,attivo,Sviluppo piattaforma omnicanale e algoritmi di raccomandazione e-commerce,162000.0,2024-05-01,2026-04-30,True,60

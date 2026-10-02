@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Ambienti virtuali
+.venv/
+venv/
+ENV/
+env/
+
+# Variabili d'ambiente e segreti
+.env
+.env.*
+!.env.example
+
+# Database temporanei locali / vector store
+*.duckdb
+*.duckdb.wal
+*.sqlite
+*.sqlite3
+
+# Test & coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

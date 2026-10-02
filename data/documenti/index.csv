@@ -1,0 +1,63 @@
+doc_id,tipo,data,titolo,fornitore_id,cliente_id,file_path
+CTR-001,contratto,2024-01-01,Contratto di licenza d'uso software e servizi DevOps piattaforma Nimbus,FOR-001,,data/documenti/contratti/CTR-001_nimbus_software.md
+CTR-002,contratto,2022-10-01,Contratto di locazione ad uso commerciale uffici Via Tortona 32 Milano,FOR-003,,data/documenti/contratti/CTR-002_locazioni_navigli.md
+CTR-003,contratto,2023-11-15,Contratto quadro fornitura infrastruttura Cloud Enterprise e Storage gestito,FOR-002,,data/documenti/contratti/CTR-003_altocumulo_cloud.md
+CTR-004,contratto,2024-01-01,"Lettera di incarico professionale per consulenza contabile, fiscale e buste paga",FOR-005,,data/documenti/contratti/CTR-004_studio_brambilla.md
+CTR-005,contratto,2025-01-01,"Polizza assicurativa Multirischi Azienda, RC Professionale IT e Cyber Protection",FOR-008,,data/documenti/contratti/CTR-005_sicurassicura.md
+CTR-006,contratto,2024-06-01,Contratto di noleggio a lungo termine veicoli aziendali full service,FOR-009,,data/documenti/contratti/CTR-006_fleetleasing.md
+CTR-007,contratto,2024-01-01,Contratto di appalto servizi di igiene e sanificazione locali ufficio,FOR-011,,data/documenti/contratti/CTR-007_punto_pulito.md
+CTR-008,contratto,2024-01-01,"Accordo quadro per sviluppo, evoluzione e manutenzione sistemi software TMS logistica integrata",,CLI-001,data/documenti/contratti/CTR-008_barilli_logistica.md
+CTR-009,contratto,2024-03-01,Contratto fornitura ingegneria software gateway pagamenti e manutenzione 24/7 PSD2,,CLI-002,data/documenti/contratti/CTR-009_fintech_solutions.md
+CTR-010,contratto,2024-05-01,Contratto sviluppo piattaforma omnichannel e motore di raccomandazione e-commerce,,CLI-003,data/documenti/contratti/CTR-010_retailnext.md
+DOC-ADD-001,addendum,2025-05-15,Addendum n. 1 all'accordo di fornitura software - Misure rafforzate GDPR dati sanitari,,CLI-004,data/documenti/lettere/DOC-ADD-001_addendum_medihealthcare.md
+DOC-ADD-002,addendum,2025-03-30,Addendum contrattuale integrativo per sviluppo connettori API marketplace terzi,,CLI-003,data/documenti/lettere/DOC-ADD-002_addendum_retailnext.md
+DOC-EML-001,email,2025-06-12,Email interna: notifica variazione canone Nimbus da agosto,FOR-001,,data/documenti/email/DOC-EML-001_comunicazione_interna_canone_nimbus.md
+DOC-EML-002,email,2025-06-15,Richiesta verifica piano licenze ed eventuale downgrade,FOR-001,,data/documenti/email/DOC-EML-002_richiesta_chiarimenti_nimbus.md
+DOC-EML-003,email,2025-06-18,Riscontro Nimbus su listino enterprise e conferme operative,FOR-001,,data/documenti/email/DOC-EML-003_riscontro_nimbus_listino.md
+DOC-EML-004,email,2025-02-20,Conferma incarico professionale due diligence M&A,FOR-004,,data/documenti/email/DOC-EML-004_conferma_incarico_ferraris.md
+DOC-EML-005,email,2025-03-24,Anticipazione esiti critici due diligence societaria,FOR-004,,data/documenti/email/DOC-EML-005_aggiornamento_due_diligence.md
+DOC-EML-006,email,2025-03-26,Invio fattura elettronica consulenza legale straordinaria,FOR-004,,data/documenti/email/DOC-EML-006_trasmissione_fattura_ferraris.md
+DOC-EML-007,email,2025-07-14,Informativa su riorganizzazione strategica IT Barilli,,CLI-001,data/documenti/email/DOC-EML-007_valutazione_internalizzazione_barilli.md
+DOC-EML-008,email,2025-09-15,Comunicazione formale riduzione ordini e internalizzazione team,,CLI-001,data/documenti/email/DOC-EML-008_notifica_riduzione_ordini_barilli.md
+DOC-EML-009,email,2025-09-18,Riscontro OmniDen su handover tecnico e nuovi corrispettivi,,CLI-001,data/documenti/email/DOC-EML-009_riscontro_passaggio_consegne_barilli.md
+DOC-EML-010,email,2025-09-25,Nota interna soci: impatto contrazione fatturato Barilli Q4,,CLI-001,data/documenti/email/DOC-EML-010_comunicazione_soci_impatto_barilli.md
+DOC-EML-011,email,2025-09-12,Conferma ricezione comunicazione ISTAT canone affitto uffici,FOR-003,,data/documenti/email/DOC-EML-011_ricezione_adeguamento_istat_affitto.md
+DOC-EML-012,email,2025-10-31,Segnalazione contabile: doppio accredito bonifico fattura FT-2025-1089,FOR-010,,data/documenti/email/DOC-EML-012_segnalazione_doppio_accredito_techhardware.md
+DOC-EML-013,email,2025-11-03,Riscontro contabile errore duplicazione e accordo conguaglio,FOR-010,,data/documenti/email/DOC-EML-013_riscontro_contabilita_doppio_pagamento.md
+DOC-EML-014,email,2025-04-10,Stato avanzamento lavori rilascio gateway pagamenti,,CLI-002,data/documenti/email/DOC-EML-014_stato_avanzamento_lavori_rilascio_g.md
+DOC-EML-015,email,2025-05-18,Collaudo e performance test RetailNext,,CLI-003,data/documenti/email/DOC-EML-015_collaudo_e_performance_test_retailn.md
+DOC-EML-016,email,2025-06-22,Specifiche interoperabilità cartella clinica,,CLI-004,data/documenti/email/DOC-EML-016_specifiche_interoperabilita_cartell.md
+DOC-EML-017,email,2025-03-14,Integrazione PLC e macchinari di stabilimento,,CLI-005,data/documenti/email/DOC-EML-017_integrazione_plc_e_macchinari_di_st.md
+DOC-EML-018,email,2025-07-09,Tracciabilità lotti agronomici AgroTech,,CLI-006,data/documenti/email/DOC-EML-018_tracciabilita_lotti_agronomici_agro.md
+DOC-EML-019,email,2025-02-12,Risoluzione anomalia sincronizzazione cantieri EdilSmart,,CLI-007,data/documenti/email/DOC-EML-019_risoluzione_anomalia_sincronizzazio.md
+DOC-EML-020,email,2025-10-29,Ringraziamenti per rilascio modulo FinTech,,CLI-002,data/documenti/email/DOC-EML-020_ringraziamenti_per_rilascio_modulo_.md
+DOC-EML-021,email,2025-10-02,Pianificazione scalabilità Black Friday RetailNext,,CLI-003,data/documenti/email/DOC-EML-021_pianificazione_scalabilita_black_fr.md
+DOC-EML-022,email,2025-07-04,Report disponibilità SLA MediHealth Q2,,CLI-004,data/documenti/email/DOC-EML-022_report_disponibilita_sla_medihealth.md
+DOC-EML-023,email,2025-04-30,Consuntivo attività freelance Ing. Rinaldi aprile,FOR-013,,data/documenti/email/DOC-EML-023_consuntivo_attivita_freelance_ing._.md
+DOC-EML-024,email,2025-06-30,Consuntivo attività freelance Ing. De Luca giugno,FOR-014,,data/documenti/email/DOC-EML-024_consuntivo_attivita_freelance_ing._.md
+DOC-EML-025,email,2025-09-30,Consuntivo attività freelance Dott. Riva settembre,FOR-015,,data/documenti/email/DOC-EML-025_consuntivo_attivita_freelance_dott..md
+DOC-EML-026,email,2025-01-12,Allineamento tecnico sprint Q1 collaboratori esterni,,,data/documenti/email/DOC-EML-026_allineamento_tecnico_sprint_q1_coll.md
+DOC-EML-027,email,2025-05-16,Manutenzione programmata Altocumulo Cloud,FOR-002,,data/documenti/email/DOC-EML-027_manutenzione_programmata_altocumulo.md
+DOC-EML-028,email,2025-04-24,Attivazione linea backup 4G FastConnect,FOR-006,,data/documenti/email/DOC-EML-028_attivazione_linea_backup_4g_fastcon.md
+DOC-EML-029,email,2025-03-18,Comunicazione lettura contatore energia EcoLombarda,FOR-007,,data/documenti/email/DOC-EML-029_comunicazione_lettura_contatore_ene.md
+DOC-EML-030,email,2025-11-04,Avviso cambio pneumatici invernali FleetLeasing,FOR-009,,data/documenti/email/DOC-EML-030_avviso_cambio_pneumatici_invernali_.md
+DOC-EML-031,email,2025-02-11,Rinnovo certificati SSL/TLS wildcard,,,data/documenti/email/DOC-EML-031_rinnovo_certificati_ssl_tls_wildcar.md
+DOC-EML-032,email,2025-05-05,Rifornimento forniture ufficio e break area,,,data/documenti/email/DOC-EML-032_rifornimento_forniture_ufficio_e_br.md
+DOC-EML-033,email,2025-03-03,Benvenuto nuovo software developer,,,data/documenti/email/DOC-EML-033_benvenuto_nuovo_software_developer.md
+DOC-EML-034,email,2025-05-19,Formazione sicurezza e primo soccorso,,,data/documenti/email/DOC-EML-034_formazione_sicurezza_e_primo_soccor.md
+DOC-EML-035,email,2025-07-21,Organizzazione cena aziendale estiva,,,data/documenti/email/DOC-EML-035_organizzazione_cena_aziendale_estiv.md
+DOC-EML-036,email,2025-12-18,Chiusura natalizia e auguri di buone feste,,,data/documenti/email/DOC-EML-036_chiusura_natalizia_e_auguri_di_buon.md
+DOC-EML-037,email,2025-05-14,Risoluzione ticket connettività interno,,,data/documenti/email/DOC-EML-037_risoluzione_ticket_connettivita_int.md
+DOC-EML-038,email,2025-10-08,Avviso condominiale lavori impianto stabile,,,data/documenti/email/DOC-EML-038_avviso_condominiale_lavori_impianto.md
+DOC-EML-039,email,2025-11-17,Richiesta estensione ambienti sandbox di sviluppo,,,data/documenti/email/DOC-EML-039_richiesta_estensione_ambienti_sandb.md
+DOC-EML-040,email,2025-12-02,Pianificazione piano formazione tecnica 2026,,,data/documenti/email/DOC-EML-040_pianificazione_piano_formazione_tec.md
+DOC-LET-001,lettera,2025-06-10,Comunicazione di revisione canone piattaforma Nimbus DevOps Enterprise,FOR-001,,data/documenti/lettere/DOC-LET-001_adeguamento_canone_nimbus.md
+DOC-LET-002,lettera,2025-09-10,Comunicazione di adeguamento ISTAT del canone di locazione uffici Via Tortona 32,FOR-003,,data/documenti/lettere/DOC-LET-002_adeguamento_istat_locazioni_navigli.md
+DOC-LET-003,lettera,2025-01-15,Circolare informativa n. 1/2025 - Quadro adempimenti contabili e scadenze fiscali 2025,FOR-005,,data/documenti/lettere/DOC-LET-003_circolare_fiscale_brambilla.md
+DOC-NOT-001,verbale,2025-03-28,Verbale del Consiglio di Amministrazione: esame due diligence ed esito negativo operazione M&A,FOR-004,,data/documenti/verbali/DOC-NOT-001_verbale_direzione_abbandono_acquisizione.md
+DOC-NOT-002,nota_interna,2025-07-15,Circolare interna n. 04/2025: piano ferie estive e chiusura aziendale uffici agosto 2025,,,data/documenti/verbali/DOC-NOT-002_comunicazione_chiusura_estiva.md
+DOC-NOT-003,verbale,2025-06-24,Verbale di riesame della sicurezza informatica e conformità policy ISO 27001,,,data/documenti/verbali/DOC-NOT-003_verbale_audit_sicurezza.md
+DOC-NOT-004,verbale,2025-09-22,Verbale riunione di direzione: consuntivo commerciale Q3 e piano diversificazione clienti,,,data/documenti/verbali/DOC-NOT-004_verbale_strategia_commerciale_q3.md
+DOC-PRV-001,preventivo,2025-02-12,Preventivo n. 2025/14 per assistenza legale e due diligence straordinaria operazione M&A,FOR-004,,data/documenti/lettere/DOC-PRV-001_preventivo_consulenza_legale_ferraris.md
+DOC-PRV-002,preventivo,2025-01-18,"Offerta annuale servizi di comunicazione corporate, SEO e marketing digitale B2B",FOR-012,,data/documenti/lettere/DOC-PRV-002_preventivo_mediabrand.md
+DOC-PRV-003,preventivo,2025-09-08,Offerta economica n. OFF-2025-912 per fornitura workstation Dell XPS 15,FOR-010,,data/documenti/lettere/DOC-PRV-003_preventivo_techhardware.md

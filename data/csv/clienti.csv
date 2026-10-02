@@ -1,0 +1,8 @@
+id,denominazione,partita_iva,codice_fiscale,indirizzo,pec,sdi,settore,peso_fatturato
+CLI-001,Barilli Logistica S.p.A.,02489110372,02489110372,"Via dell'Interporto 18, 40010 Bentivoglio (BO)",barillilogistica@legalmail.it,M5UXCR1,Logistica & Supply Chain,30%
+CLI-002,FinTech Solutions Italia S.r.l.,08192340156,08192340156,"Corso Magenta 64, 20123 Milano (MI)",fintechsolutions@pec.it,KRR2BD9,Servizi Finanziari & Fintech,15%
+CLI-003,RetailNext S.p.A.,03847290014,03847290014,"Via Nizza 230, 10126 Torino (TO)",retailnext@pec.it,W7YVJK9,E-Commerce & Grande Distribuzione,14%
+CLI-004,MediHealth Care S.r.l.,05928131008,05928131008,"Viale del Policlinico 155, 00161 Roma (RM)",medihealthcare@pec.it,SUBM70N,Sanità Digitale & MedTech,12%
+CLI-005,Manifattura Lombarda S.r.l.,01948270178,01948270178,"Via Industriale 42, 25126 Brescia (BS)",manifatturalombarda@legalpec.it,A47X9Z2,Manufacturing & Industria 4.0,10%
+CLI-006,AgroTech Bio S.r.l.,03194850239,03194850239,"Stradone San Fermo 19, 37121 Verona (VR)",agrotechbio@pec.it,P98LK2M,Agritech & Biotecnologie,8%
+CLI-007,EdilSmart Costruzioni S.p.A.,02293840167,02293840167,"Via Camozzi 88, 24121 Bergamo (BG)",edilsmart@pec.it,T33GH5J,Edilizia & PropTech,7%

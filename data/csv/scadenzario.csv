@@ -1,0 +1,58 @@
+id,data,tipo,controparte_id,controparte,descrizione,importo,stato,riferimento_id
+SCD-0001,2025-01-16,fiscale_f24,,Agenzia delle Entrate / INPS,"Versamento F24 unificato tributi, ritenute IRPEF, contributi INPS e liquidazione IVA mese precedente",28500.00,evaso,F24-2025-01
+SCD-0040,2025-01-20,fattura_passiva,FOR-009,FleetLeasing Italia S.p.A.,Scadenza termine di pagamento fattura passiva n. FLT-2025-001,915.00,evaso,FATT-P-2025-0086
+SCD-0027,2025-01-25,fattura_passiva,FOR-001,Nimbus Software S.r.l.,Scadenza termine di pagamento fattura passiva n. NMB-2025-001,4880.00,evaso,FATT-P-2025-0001
+SCD-0002,2025-02-16,fiscale_f24,,Agenzia delle Entrate / INPS,"Versamento F24 unificato tributi, ritenute IRPEF, contributi INPS e liquidazione IVA mese precedente",28500.00,evaso,F24-2025-02
+SCD-0041,2025-02-20,fattura_passiva,FOR-009,FleetLeasing Italia S.p.A.,Scadenza termine di pagamento fattura passiva n. FLT-2025-002,915.00,evaso,FATT-P-2025-0087
+SCD-0028,2025-02-25,fattura_passiva,FOR-001,Nimbus Software S.r.l.,Scadenza termine di pagamento fattura passiva n. NMB-2025-002,4880.00,evaso,FATT-P-2025-0002
+SCD-0003,2025-03-16,fiscale_f24,,Agenzia delle Entrate / INPS,"Versamento F24 unificato tributi, ritenute IRPEF, contributi INPS e liquidazione IVA mese precedente",28500.00,evaso,F24-2025-03
+SCD-0042,2025-03-20,fattura_passiva,FOR-009,FleetLeasing Italia S.p.A.,Scadenza termine di pagamento fattura passiva n. FLT-2025-003,915.00,evaso,FATT-P-2025-0088
+SCD-0029,2025-03-25,fattura_passiva,FOR-001,Nimbus Software S.r.l.,Scadenza termine di pagamento fattura passiva n. NMB-2025-003,4880.00,evaso,FATT-P-2025-0003
+SCD-0004,2025-04-16,fiscale_f24,,Agenzia delle Entrate / INPS,"Versamento F24 unificato tributi, ritenute IRPEF, contributi INPS e liquidazione IVA mese precedente",28500.00,evaso,F24-2025-04
+SCD-0039,2025-04-20,fattura_passiva,FOR-004,Studio Legale Ferraris & Associati,Scadenza termine di pagamento fattura passiva n. FERR-2025-042,14640.00,evaso,FATT-P-2025-0037
+SCD-0043,2025-04-20,fattura_passiva,FOR-009,FleetLeasing Italia S.p.A.,Scadenza termine di pagamento fattura passiva n. FLT-2025-004,915.00,evaso,FATT-P-2025-0089
+SCD-0030,2025-04-25,fattura_passiva,FOR-001,Nimbus Software S.r.l.,Scadenza termine di pagamento fattura passiva n. NMB-2025-004,4880.00,evaso,FATT-P-2025-0004
+SCD-0005,2025-05-16,fiscale_f24,,Agenzia delle Entrate / INPS,"Versamento F24 unificato tributi, ritenute IRPEF, contributi INPS e liquidazione IVA mese precedente",28500.00,evaso,F24-2025-05
+SCD-0044,2025-05-20,fattura_passiva,FOR-009,FleetLeasing Italia S.p.A.,Scadenza termine di pagamento fattura passiva n. FLT-2025-005,915.00,evaso,FATT-P-2025-0090
+SCD-0031,2025-05-25,fattura_passiva,FOR-001,Nimbus Software S.r.l.,Scadenza termine di pagamento fattura passiva n. NMB-2025-005,4880.00,evaso,FATT-P-2025-0005
+SCD-0013,2025-05-31,contratto_preavviso,FOR-001,Nimbus Software S.r.l.,Termine preavviso 60 giorni per revisione condizioni contrattuali o disdetta licenze DevOps (CTR-001),0.00,evaso,CTR-001
+SCD-0006,2025-06-16,fiscale_f24,,Agenzia delle Entrate / INPS,"Versamento F24 unificato tributi, ritenute IRPEF, contributi INPS e liquidazione IVA mese precedente",28500.00,evaso,F24-2025-06
+SCD-0045,2025-06-20,fattura_passiva,FOR-009,FleetLeasing Italia S.p.A.,Scadenza termine di pagamento fattura passiva n. FLT-2025-006,915.00,evaso,FATT-P-2025-0091
+SCD-0032,2025-06-25,fattura_passiva,FOR-001,Nimbus Software S.r.l.,Scadenza termine di pagamento fattura passiva n. NMB-2025-006,4880.00,evaso,FATT-P-2025-0006
+SCD-0007,2025-07-16,fiscale_f24,,Agenzia delle Entrate / INPS,"Versamento F24 unificato tributi, ritenute IRPEF, contributi INPS e liquidazione IVA mese precedente",28500.00,evaso,F24-2025-07
+SCD-0046,2025-07-20,fattura_passiva,FOR-009,FleetLeasing Italia S.p.A.,Scadenza termine di pagamento fattura passiva n. FLT-2025-007,915.00,evaso,FATT-P-2025-0092
+SCD-0033,2025-07-25,fattura_passiva,FOR-001,Nimbus Software S.r.l.,Scadenza termine di pagamento fattura passiva n. NMB-2025-007,4880.00,evaso,FATT-P-2025-0007
+SCD-0008,2025-08-16,fiscale_f24,,Agenzia delle Entrate / INPS,"Versamento F24 unificato tributi, ritenute IRPEF, contributi INPS e liquidazione IVA mese precedente",28500.00,evaso,F24-2025-08
+SCD-0047,2025-08-20,fattura_passiva,FOR-009,FleetLeasing Italia S.p.A.,Scadenza termine di pagamento fattura passiva n. FLT-2025-008,915.00,evaso,FATT-P-2025-0093
+SCD-0034,2025-08-25,fattura_passiva,FOR-001,Nimbus Software S.r.l.,Scadenza termine di pagamento fattura passiva n. NMB-2025-008,6539.20,evaso,FATT-P-2025-0008
+SCD-0014,2025-08-31,contratto_preavviso,CLI-001,Barilli Logistica S.p.A.,Termine finestra revisione accordo quadro volumi minimi sviluppo (CTR-008),0.00,evaso,CTR-008
+SCD-0015,2025-09-01,contratto_adeguamento,FOR-003,Locazioni Navigli S.r.l.,Notifica adeguamento annuale indice ISTAT canone locazione immobile Via Tortona (CTR-002),0.00,evaso,CTR-002
+SCD-0009,2025-09-16,fiscale_f24,,Agenzia delle Entrate / INPS,"Versamento F24 unificato tributi, ritenute IRPEF, contributi INPS e liquidazione IVA mese precedente",28500.00,evaso,F24-2025-09
+SCD-0048,2025-09-20,fattura_passiva,FOR-009,FleetLeasing Italia S.p.A.,Scadenza termine di pagamento fattura passiva n. FLT-2025-009,915.00,evaso,FATT-P-2025-0094
+SCD-0035,2025-09-25,fattura_passiva,FOR-001,Nimbus Software S.r.l.,Scadenza termine di pagamento fattura passiva n. NMB-2025-009,6539.20,evaso,FATT-P-2025-0009
+SCD-0010,2025-10-16,fiscale_f24,,Agenzia delle Entrate / INPS,"Versamento F24 unificato tributi, ritenute IRPEF, contributi INPS e liquidazione IVA mese precedente",28500.00,evaso,F24-2025-10
+SCD-0049,2025-10-20,fattura_passiva,FOR-009,FleetLeasing Italia S.p.A.,Scadenza termine di pagamento fattura passiva n. FLT-2025-010,915.00,evaso,FATT-P-2025-0095
+SCD-0036,2025-10-25,fattura_passiva,FOR-001,Nimbus Software S.r.l.,Scadenza termine di pagamento fattura passiva n. NMB-2025-010,6539.20,evaso,FATT-P-2025-0010
+SCD-0016,2025-10-31,rinnovo_contrattuale,FOR-008,SicurAssicura S.p.A.,Scadenza preavviso 30gg per rinnovo tacito polizza multirischi aziendale (CTR-005),0.00,evaso,CTR-005
+SCD-0017,2025-10-31,rinnovo_contrattuale,FOR-005,Studio Dott. Commercialisti Brambilla & Co.,Termine preavviso 60gg per rinnovo incarico professionale tenuta contabilità (CTR-004),0.00,evaso,CTR-004
+SCD-0011,2025-11-16,fiscale_f24,,Agenzia delle Entrate / INPS,"Versamento F24 unificato tributi, ritenute IRPEF, contributi INPS e liquidazione IVA mese precedente",28500.00,evaso,F24-2025-11
+SCD-0050,2025-11-20,fattura_passiva,FOR-009,FleetLeasing Italia S.p.A.,Scadenza termine di pagamento fattura passiva n. FLT-2025-011,915.00,evaso,FATT-P-2025-0096
+SCD-0057,2025-11-21,fattura_passiva,FOR-017,Milano & Roma Business Hotels S.r.l.,Scadenza termine di pagamento fattura passiva n. HTL-2025-1101,793.00,evaso,FATT-P-2025-0201
+SCD-0056,2025-11-24,fattura_passiva,FOR-016,Ferrovie Nazionali S.p.A.,Scadenza termine di pagamento fattura passiva n. TRN-2025-1104,536.80,evaso,FATT-P-2025-0200
+SCD-0037,2025-11-25,fattura_passiva,FOR-001,Nimbus Software S.r.l.,Scadenza termine di pagamento fattura passiva n. NMB-2025-011,6539.20,evaso,FATT-P-2025-0011
+SCD-0018,2025-11-30,rinnovo_contrattuale,FOR-011,Punto Pulito S.r.l.,Scadenza preavviso 30gg per disdetta contratto servizi pulizie (CTR-007),0.00,evaso,CTR-007
+SCD-0012,2025-12-16,fiscale_f24,,Agenzia delle Entrate / INPS,"Versamento F24 unificato tributi, ritenute IRPEF, contributi INPS e liquidazione IVA mese precedente",28500.00,evaso,F24-2025-12
+SCD-0051,2025-12-20,fattura_passiva,FOR-009,FleetLeasing Italia S.p.A.,Scadenza termine di pagamento fattura passiva n. FLT-2025-012,915.00,evaso,FATT-P-2025-0097
+SCD-0038,2025-12-25,fattura_passiva,FOR-001,Nimbus Software S.r.l.,Scadenza termine di pagamento fattura passiva n. NMB-2025-012,6539.20,evaso,FATT-P-2025-0012
+SCD-0052,2026-01-15,fattura_passiva,FOR-011,Punto Pulito S.r.l.,Scadenza termine di pagamento fattura passiva n. PUNT-2025-012,610.00,in_scadenza,FATT-P-2025-0109
+SCD-0053,2026-01-15,fattura_passiva,FOR-013,Dott. Marco Rinaldi,Scadenza termine di pagamento fattura passiva n. PAR-RNL-2025-12,4270.00,in_scadenza,FATT-P-2025-0155
+SCD-0054,2026-01-15,fattura_passiva,FOR-014,Ing. Sara De Luca,Scadenza termine di pagamento fattura passiva n. PAR-DLC-2025-12,4270.00,in_scadenza,FATT-P-2025-0156
+SCD-0055,2026-01-15,fattura_passiva,FOR-015,Dott. Matteo Riva,Scadenza termine di pagamento fattura passiva n. PAR-RIV-2025-12,3660.00,in_scadenza,FATT-P-2025-0157
+SCD-0020,2026-01-31,fattura_attiva,CLI-001,Barilli Logistica S.p.A.,Scadenza termine di pagamento fattura attiva n. 2025/078,14640.00,in_scadenza,FATT-A-2025-0078
+SCD-0021,2026-01-31,fattura_attiva,CLI-002,FinTech Solutions Italia S.r.l.,Scadenza termine di pagamento fattura attiva n. 2025/079,18056.00,in_scadenza,FATT-A-2025-0079
+SCD-0022,2026-01-31,fattura_attiva,CLI-003,RetailNext S.p.A.,Scadenza termine di pagamento fattura attiva n. 2025/080,16836.00,in_scadenza,FATT-A-2025-0080
+SCD-0023,2026-01-31,fattura_attiva,CLI-004,MediHealth Care S.r.l.,Scadenza termine di pagamento fattura attiva n. 2025/081,14640.00,in_scadenza,FATT-A-2025-0081
+SCD-0024,2026-01-31,fattura_attiva,CLI-005,Manifattura Lombarda S.r.l.,Scadenza termine di pagamento fattura attiva n. 2025/082,11956.00,in_scadenza,FATT-A-2025-0082
+SCD-0025,2026-01-31,fattura_attiva,CLI-006,AgroTech Bio S.r.l.,Scadenza termine di pagamento fattura attiva n. 2025/083,9760.00,in_scadenza,FATT-A-2025-0083
+SCD-0026,2026-01-31,fattura_attiva,CLI-007,EdilSmart Costruzioni S.p.A.,Scadenza termine di pagamento fattura attiva n. 2025/084,8296.00,in_scadenza,FATT-A-2025-0084
+SCD-0019,2026-08-15,contratto_preavviso,FOR-002,Altocumulo Cloud Services S.r.l.,Promemoria preavviso 90 giorni prima della scadenza triennale contratto cloud hosting del 14/11/2026 (CTR-003),0.00,in_scadenza,CTR-003

@@ -1,0 +1,380 @@
+id,fattura_id,riga_numero,descrizione,categoria,quantita,prezzo,imponibile
+RIG-0001,FATT-A-2025-0001,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 01/2025,70.01,1,16800.00,16800.00
+RIG-0002,FATT-A-2025-0001,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 01/2025",70.02,1,11200.00,11200.00
+RIG-0003,FATT-A-2025-0002,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 01/2025,70.01,1,8520.00,8520.00
+RIG-0004,FATT-A-2025-0002,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 01/2025",70.02,1,5680.00,5680.00
+RIG-0005,FATT-A-2025-0003,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 01/2025,70.01,1,7920.00,7920.00
+RIG-0006,FATT-A-2025-0003,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 01/2025",70.02,1,5280.00,5280.00
+RIG-0007,FATT-A-2025-0004,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 01/2025,70.01,1,6720.00,6720.00
+RIG-0008,FATT-A-2025-0004,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 01/2025",70.02,1,4480.00,4480.00
+RIG-0009,FATT-A-2025-0005,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 01/2025,70.01,1,5520.00,5520.00
+RIG-0010,FATT-A-2025-0005,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 01/2025",70.02,1,3680.00,3680.00
+RIG-0011,FATT-A-2025-0006,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 01/2025,70.01,1,4500.00,4500.00
+RIG-0012,FATT-A-2025-0006,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 01/2025",70.02,1,3000.00,3000.00
+RIG-0013,FATT-A-2025-0007,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 01/2025,70.01,1,3720.00,3720.00
+RIG-0014,FATT-A-2025-0007,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 01/2025",70.02,1,2480.00,2480.00
+RIG-0015,FATT-A-2025-0008,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 02/2025,70.01,1,16800.00,16800.00
+RIG-0016,FATT-A-2025-0008,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 02/2025",70.02,1,11200.00,11200.00
+RIG-0017,FATT-A-2025-0009,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 02/2025,70.01,1,8580.00,8580.00
+RIG-0018,FATT-A-2025-0009,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 02/2025",70.02,1,5720.00,5720.00
+RIG-0019,FATT-A-2025-0010,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 02/2025,70.01,1,7980.00,7980.00
+RIG-0020,FATT-A-2025-0010,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 02/2025",70.02,1,5320.00,5320.00
+RIG-0021,FATT-A-2025-0011,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 02/2025,70.01,1,6840.00,6840.00
+RIG-0022,FATT-A-2025-0011,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 02/2025",70.02,1,4560.00,4560.00
+RIG-0023,FATT-A-2025-0012,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 02/2025,70.01,1,5580.00,5580.00
+RIG-0024,FATT-A-2025-0012,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 02/2025",70.02,1,3720.00,3720.00
+RIG-0025,FATT-A-2025-0013,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 02/2025,70.01,1,4500.00,4500.00
+RIG-0026,FATT-A-2025-0013,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 02/2025",70.02,1,3000.00,3000.00
+RIG-0027,FATT-A-2025-0014,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 02/2025,70.01,1,3720.00,3720.00
+RIG-0028,FATT-A-2025-0014,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 02/2025",70.02,1,2480.00,2480.00
+RIG-0029,FATT-A-2025-0015,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 03/2025,70.01,1,17100.00,17100.00
+RIG-0030,FATT-A-2025-0015,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 03/2025",70.02,1,11400.00,11400.00
+RIG-0031,FATT-A-2025-0016,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 03/2025,70.01,1,9000.00,9000.00
+RIG-0032,FATT-A-2025-0016,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 03/2025",70.02,1,6000.00,6000.00
+RIG-0033,FATT-A-2025-0017,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 03/2025,70.01,1,8520.00,8520.00
+RIG-0034,FATT-A-2025-0017,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 03/2025",70.02,1,5680.00,5680.00
+RIG-0035,FATT-A-2025-0018,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 03/2025,70.01,1,7200.00,7200.00
+RIG-0036,FATT-A-2025-0018,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 03/2025",70.02,1,4800.00,4800.00
+RIG-0037,FATT-A-2025-0019,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 03/2025,70.01,1,6000.00,6000.00
+RIG-0038,FATT-A-2025-0019,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 03/2025",70.02,1,4000.00,4000.00
+RIG-0039,FATT-A-2025-0020,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 03/2025,70.01,1,5100.00,5100.00
+RIG-0040,FATT-A-2025-0020,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 03/2025",70.02,1,3400.00,3400.00
+RIG-0041,FATT-A-2025-0021,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 03/2025,70.01,1,4080.00,4080.00
+RIG-0042,FATT-A-2025-0021,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 03/2025",70.02,1,2720.00,2720.00
+RIG-0043,FATT-A-2025-0022,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 04/2025,70.01,1,17100.00,17100.00
+RIG-0044,FATT-A-2025-0022,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 04/2025",70.02,1,11400.00,11400.00
+RIG-0045,FATT-A-2025-0023,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 04/2025,70.01,1,9120.00,9120.00
+RIG-0046,FATT-A-2025-0023,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 04/2025",70.02,1,6080.00,6080.00
+RIG-0047,FATT-A-2025-0024,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 04/2025,70.01,1,8700.00,8700.00
+RIG-0048,FATT-A-2025-0024,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 04/2025",70.02,1,5800.00,5800.00
+RIG-0049,FATT-A-2025-0025,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 04/2025,70.01,1,7320.00,7320.00
+RIG-0050,FATT-A-2025-0025,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 04/2025",70.02,1,4880.00,4880.00
+RIG-0051,FATT-A-2025-0026,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 04/2025,70.01,1,6120.00,6120.00
+RIG-0052,FATT-A-2025-0026,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 04/2025",70.02,1,4080.00,4080.00
+RIG-0053,FATT-A-2025-0027,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 04/2025,70.01,1,5100.00,5100.00
+RIG-0054,FATT-A-2025-0027,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 04/2025",70.02,1,3400.00,3400.00
+RIG-0055,FATT-A-2025-0028,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 04/2025,70.01,1,4200.00,4200.00
+RIG-0056,FATT-A-2025-0028,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 04/2025",70.02,1,2800.00,2800.00
+RIG-0057,FATT-A-2025-0029,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 05/2025,70.01,1,16800.00,16800.00
+RIG-0058,FATT-A-2025-0029,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 05/2025",70.02,1,11200.00,11200.00
+RIG-0059,FATT-A-2025-0030,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 05/2025,70.01,1,9000.00,9000.00
+RIG-0060,FATT-A-2025-0030,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 05/2025",70.02,1,6000.00,6000.00
+RIG-0061,FATT-A-2025-0031,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 05/2025,70.01,1,8580.00,8580.00
+RIG-0062,FATT-A-2025-0031,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 05/2025",70.02,1,5720.00,5720.00
+RIG-0063,FATT-A-2025-0032,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 05/2025,70.01,1,7200.00,7200.00
+RIG-0064,FATT-A-2025-0032,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 05/2025",70.02,1,4800.00,4800.00
+RIG-0065,FATT-A-2025-0033,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 05/2025,70.01,1,6120.00,6120.00
+RIG-0066,FATT-A-2025-0033,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 05/2025",70.02,1,4080.00,4080.00
+RIG-0067,FATT-A-2025-0034,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 05/2025,70.01,1,5100.00,5100.00
+RIG-0068,FATT-A-2025-0034,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 05/2025",70.02,1,3400.00,3400.00
+RIG-0069,FATT-A-2025-0035,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 05/2025,70.01,1,4200.00,4200.00
+RIG-0070,FATT-A-2025-0035,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 05/2025",70.02,1,2800.00,2800.00
+RIG-0071,FATT-A-2025-0036,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 06/2025,70.01,1,17100.00,17100.00
+RIG-0072,FATT-A-2025-0036,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 06/2025",70.02,1,11400.00,11400.00
+RIG-0073,FATT-A-2025-0037,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 06/2025,70.01,1,9180.00,9180.00
+RIG-0074,FATT-A-2025-0037,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 06/2025",70.02,1,6120.00,6120.00
+RIG-0075,FATT-A-2025-0038,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 06/2025,70.01,1,8880.00,8880.00
+RIG-0076,FATT-A-2025-0038,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 06/2025",70.02,1,5920.00,5920.00
+RIG-0077,FATT-A-2025-0039,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 06/2025,70.01,1,7440.00,7440.00
+RIG-0078,FATT-A-2025-0039,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 06/2025",70.02,1,4960.00,4960.00
+RIG-0079,FATT-A-2025-0040,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 06/2025,70.01,1,6120.00,6120.00
+RIG-0080,FATT-A-2025-0040,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 06/2025",70.02,1,4080.00,4080.00
+RIG-0081,FATT-A-2025-0041,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 06/2025,70.01,1,5280.00,5280.00
+RIG-0082,FATT-A-2025-0041,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 06/2025",70.02,1,3520.00,3520.00
+RIG-0083,FATT-A-2025-0042,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 06/2025,70.01,1,4200.00,4200.00
+RIG-0084,FATT-A-2025-0042,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 06/2025",70.02,1,2800.00,2800.00
+RIG-0085,FATT-A-2025-0043,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 07/2025,70.01,1,17100.00,17100.00
+RIG-0086,FATT-A-2025-0043,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 07/2025",70.02,1,11400.00,11400.00
+RIG-0087,FATT-A-2025-0044,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 07/2025,70.01,1,9300.00,9300.00
+RIG-0088,FATT-A-2025-0044,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 07/2025",70.02,1,6200.00,6200.00
+RIG-0089,FATT-A-2025-0045,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 07/2025,70.01,1,9000.00,9000.00
+RIG-0090,FATT-A-2025-0045,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 07/2025",70.02,1,6000.00,6000.00
+RIG-0091,FATT-A-2025-0046,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 07/2025,70.01,1,7500.00,7500.00
+RIG-0092,FATT-A-2025-0046,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 07/2025",70.02,1,5000.00,5000.00
+RIG-0093,FATT-A-2025-0047,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 07/2025,70.01,1,6300.00,6300.00
+RIG-0094,FATT-A-2025-0047,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 07/2025",70.02,1,4200.00,4200.00
+RIG-0095,FATT-A-2025-0048,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 07/2025,70.01,1,5280.00,5280.00
+RIG-0096,FATT-A-2025-0048,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 07/2025",70.02,1,3520.00,3520.00
+RIG-0097,FATT-A-2025-0049,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 07/2025,70.01,1,4200.00,4200.00
+RIG-0098,FATT-A-2025-0049,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 07/2025",70.02,1,2800.00,2800.00
+RIG-0099,FATT-A-2025-0050,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 08/2025,70.01,1,13200.00,13200.00
+RIG-0100,FATT-A-2025-0050,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 08/2025",70.02,1,8800.00,8800.00
+RIG-0101,FATT-A-2025-0051,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 08/2025,70.01,1,7800.00,7800.00
+RIG-0102,FATT-A-2025-0051,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 08/2025",70.02,1,5200.00,5200.00
+RIG-0103,FATT-A-2025-0052,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 08/2025,70.01,1,7500.00,7500.00
+RIG-0104,FATT-A-2025-0052,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 08/2025",70.02,1,5000.00,5000.00
+RIG-0105,FATT-A-2025-0053,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 08/2025,70.01,1,6300.00,6300.00
+RIG-0106,FATT-A-2025-0053,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 08/2025",70.02,1,4200.00,4200.00
+RIG-0107,FATT-A-2025-0054,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 08/2025,70.01,1,5400.00,5400.00
+RIG-0108,FATT-A-2025-0054,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 08/2025",70.02,1,3600.00,3600.00
+RIG-0109,FATT-A-2025-0055,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 08/2025,70.01,1,4320.00,4320.00
+RIG-0110,FATT-A-2025-0055,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 08/2025",70.02,1,2880.00,2880.00
+RIG-0111,FATT-A-2025-0056,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 08/2025,70.01,1,3480.00,3480.00
+RIG-0112,FATT-A-2025-0056,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 08/2025",70.02,1,2320.00,2320.00
+RIG-0113,FATT-A-2025-0057,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 09/2025,70.01,1,16800.00,16800.00
+RIG-0114,FATT-A-2025-0057,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 09/2025",70.02,1,11200.00,11200.00
+RIG-0115,FATT-A-2025-0058,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 09/2025,70.01,1,8700.00,8700.00
+RIG-0116,FATT-A-2025-0058,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 09/2025",70.02,1,5800.00,5800.00
+RIG-0117,FATT-A-2025-0059,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 09/2025,70.01,1,8280.00,8280.00
+RIG-0118,FATT-A-2025-0059,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 09/2025",70.02,1,5520.00,5520.00
+RIG-0119,FATT-A-2025-0060,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 09/2025,70.01,1,7080.00,7080.00
+RIG-0120,FATT-A-2025-0060,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 09/2025",70.02,1,4720.00,4720.00
+RIG-0121,FATT-A-2025-0061,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 09/2025,70.01,1,5880.00,5880.00
+RIG-0122,FATT-A-2025-0061,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 09/2025",70.02,1,3920.00,3920.00
+RIG-0123,FATT-A-2025-0062,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 09/2025,70.01,1,4800.00,4800.00
+RIG-0124,FATT-A-2025-0062,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 09/2025",70.02,1,3200.00,3200.00
+RIG-0125,FATT-A-2025-0063,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 09/2025,70.01,1,3960.00,3960.00
+RIG-0126,FATT-A-2025-0063,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 09/2025",70.02,1,2640.00,2640.00
+RIG-0127,FATT-A-2025-0064,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 10/2025,70.01,1,7200.00,7200.00
+RIG-0128,FATT-A-2025-0064,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 10/2025",70.02,1,4800.00,4800.00
+RIG-0129,FATT-A-2025-0065,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 10/2025,70.01,1,8700.00,8700.00
+RIG-0130,FATT-A-2025-0065,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 10/2025",70.02,1,5800.00,5800.00
+RIG-0131,FATT-A-2025-0066,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 10/2025,70.01,1,8100.00,8100.00
+RIG-0132,FATT-A-2025-0066,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 10/2025",70.02,1,5400.00,5400.00
+RIG-0133,FATT-A-2025-0067,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 10/2025,70.01,1,6900.00,6900.00
+RIG-0134,FATT-A-2025-0067,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 10/2025",70.02,1,4600.00,4600.00
+RIG-0135,FATT-A-2025-0068,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 10/2025,70.01,1,5700.00,5700.00
+RIG-0136,FATT-A-2025-0068,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 10/2025",70.02,1,3800.00,3800.00
+RIG-0137,FATT-A-2025-0069,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 10/2025,70.01,1,4680.00,4680.00
+RIG-0138,FATT-A-2025-0069,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 10/2025",70.02,1,3120.00,3120.00
+RIG-0139,FATT-A-2025-0070,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 10/2025,70.01,1,3900.00,3900.00
+RIG-0140,FATT-A-2025-0070,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 10/2025",70.02,1,2600.00,2600.00
+RIG-0141,FATT-A-2025-0071,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 11/2025,70.01,1,7200.00,7200.00
+RIG-0142,FATT-A-2025-0071,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 11/2025",70.02,1,4800.00,4800.00
+RIG-0143,FATT-A-2025-0072,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 11/2025,70.01,1,8400.00,8400.00
+RIG-0144,FATT-A-2025-0072,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 11/2025",70.02,1,5600.00,5600.00
+RIG-0145,FATT-A-2025-0073,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 11/2025,70.01,1,7920.00,7920.00
+RIG-0146,FATT-A-2025-0073,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 11/2025",70.02,1,5280.00,5280.00
+RIG-0147,FATT-A-2025-0074,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 11/2025,70.01,1,6720.00,6720.00
+RIG-0148,FATT-A-2025-0074,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 11/2025",70.02,1,4480.00,4480.00
+RIG-0149,FATT-A-2025-0075,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 11/2025,70.01,1,5700.00,5700.00
+RIG-0150,FATT-A-2025-0075,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 11/2025",70.02,1,3800.00,3800.00
+RIG-0151,FATT-A-2025-0076,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 11/2025,70.01,1,4560.00,4560.00
+RIG-0152,FATT-A-2025-0076,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 11/2025",70.02,1,3040.00,3040.00
+RIG-0153,FATT-A-2025-0077,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 11/2025,70.01,1,3900.00,3900.00
+RIG-0154,FATT-A-2025-0077,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 11/2025",70.02,1,2600.00,2600.00
+RIG-0155,FATT-A-2025-0078,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 12/2025,70.01,1,7200.00,7200.00
+RIG-0156,FATT-A-2025-0078,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 12/2025",70.02,1,4800.00,4800.00
+RIG-0157,FATT-A-2025-0079,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 12/2025,70.01,1,8880.00,8880.00
+RIG-0158,FATT-A-2025-0079,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 12/2025",70.02,1,5920.00,5920.00
+RIG-0159,FATT-A-2025-0080,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 12/2025,70.01,1,8280.00,8280.00
+RIG-0160,FATT-A-2025-0080,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 12/2025",70.02,1,5520.00,5520.00
+RIG-0161,FATT-A-2025-0081,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 12/2025,70.01,1,7200.00,7200.00
+RIG-0162,FATT-A-2025-0081,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 12/2025",70.02,1,4800.00,4800.00
+RIG-0163,FATT-A-2025-0082,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 12/2025,70.01,1,5880.00,5880.00
+RIG-0164,FATT-A-2025-0082,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 12/2025",70.02,1,3920.00,3920.00
+RIG-0165,FATT-A-2025-0083,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 12/2025,70.01,1,4800.00,4800.00
+RIG-0166,FATT-A-2025-0083,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 12/2025",70.02,1,3200.00,3200.00
+RIG-0167,FATT-A-2025-0084,1,Servizi professionali di sviluppo software e ingegneria applicativa - Rif. mese 12/2025,70.01,1,4080.00,4080.00
+RIG-0168,FATT-A-2025-0084,2,"Canone di assistenza continuativa, manutenzione correttiva e SLA - Rif. mese 12/2025",70.02,1,2720.00,2720.00
+RIG-0169,FATT-P-2025-0001,1,Canone mensile piattaforma Nimbus DevOps & CI/CD Cloud Suite - Periodo 01/2025,61.02,1,4000.00,4000.00
+RIG-0170,FATT-P-2025-0002,1,Canone mensile piattaforma Nimbus DevOps & CI/CD Cloud Suite - Periodo 02/2025,61.02,1,4000.00,4000.00
+RIG-0171,FATT-P-2025-0003,1,Canone mensile piattaforma Nimbus DevOps & CI/CD Cloud Suite - Periodo 03/2025,61.02,1,4000.00,4000.00
+RIG-0172,FATT-P-2025-0004,1,Canone mensile piattaforma Nimbus DevOps & CI/CD Cloud Suite - Periodo 04/2025,61.02,1,4000.00,4000.00
+RIG-0173,FATT-P-2025-0005,1,Canone mensile piattaforma Nimbus DevOps & CI/CD Cloud Suite - Periodo 05/2025,61.02,1,4000.00,4000.00
+RIG-0174,FATT-P-2025-0006,1,Canone mensile piattaforma Nimbus DevOps & CI/CD Cloud Suite - Periodo 06/2025,61.02,1,4000.00,4000.00
+RIG-0175,FATT-P-2025-0007,1,Canone mensile piattaforma Nimbus DevOps & CI/CD Cloud Suite - Periodo 07/2025,61.02,1,4000.00,4000.00
+RIG-0176,FATT-P-2025-0008,1,Canone mensile piattaforma Nimbus DevOps & CI/CD Cloud Suite - Periodo 08/2025,61.02,1,5360.00,5360.00
+RIG-0177,FATT-P-2025-0009,1,Canone mensile piattaforma Nimbus DevOps & CI/CD Cloud Suite - Periodo 09/2025,61.02,1,5360.00,5360.00
+RIG-0178,FATT-P-2025-0010,1,Canone mensile piattaforma Nimbus DevOps & CI/CD Cloud Suite - Periodo 10/2025,61.02,1,5360.00,5360.00
+RIG-0179,FATT-P-2025-0011,1,Canone mensile piattaforma Nimbus DevOps & CI/CD Cloud Suite - Periodo 11/2025,61.02,1,5360.00,5360.00
+RIG-0180,FATT-P-2025-0012,1,Canone mensile piattaforma Nimbus DevOps & CI/CD Cloud Suite - Periodo 12/2025,61.02,1,5360.00,5360.00
+RIG-0181,FATT-P-2025-0013,1,Servizi cloud hosting computing clusters e object storage - Mese 01/2025,61.03,1,2120.00,2120.00
+RIG-0182,FATT-P-2025-0014,1,Servizi cloud hosting computing clusters e object storage - Mese 02/2025,61.03,1,2080.00,2080.00
+RIG-0183,FATT-P-2025-0015,1,Servizi cloud hosting computing clusters e object storage - Mese 03/2025,61.03,1,2190.00,2190.00
+RIG-0184,FATT-P-2025-0016,1,Servizi cloud hosting computing clusters e object storage - Mese 04/2025,61.03,1,2140.00,2140.00
+RIG-0185,FATT-P-2025-0017,1,Servizi cloud hosting computing clusters e object storage - Mese 05/2025,61.03,1,2210.00,2210.00
+RIG-0186,FATT-P-2025-0018,1,Servizi cloud hosting computing clusters e object storage - Mese 06/2025,61.03,1,2250.00,2250.00
+RIG-0187,FATT-P-2025-0019,1,Servizi cloud hosting computing clusters e object storage - Mese 07/2025,61.03,1,2180.00,2180.00
+RIG-0188,FATT-P-2025-0020,1,Servizi cloud hosting computing clusters e object storage - Mese 08/2025,61.03,1,2050.00,2050.00
+RIG-0189,FATT-P-2025-0021,1,Servizi cloud hosting computing clusters e object storage - Mese 09/2025,61.03,1,2160.00,2160.00
+RIG-0190,FATT-P-2025-0022,1,Servizi cloud hosting computing clusters e object storage - Mese 10/2025,61.03,1,2200.00,2200.00
+RIG-0191,FATT-P-2025-0023,1,Servizi cloud hosting computing clusters e object storage - Mese 11/2025,61.03,1,2240.00,2240.00
+RIG-0192,FATT-P-2025-0024,1,Servizi cloud hosting computing clusters e object storage - Mese 12/2025,61.03,1,2150.00,2150.00
+RIG-0193,FATT-P-2025-0025,1,"Canone di locazione immobile uso ufficio Via Tortona 32, Milano - Mese 01/2025",62.01,1,3800.00,3800.00
+RIG-0194,FATT-P-2025-0026,1,"Canone di locazione immobile uso ufficio Via Tortona 32, Milano - Mese 02/2025",62.01,1,3800.00,3800.00
+RIG-0195,FATT-P-2025-0027,1,"Canone di locazione immobile uso ufficio Via Tortona 32, Milano - Mese 03/2025",62.01,1,3800.00,3800.00
+RIG-0196,FATT-P-2025-0028,1,"Canone di locazione immobile uso ufficio Via Tortona 32, Milano - Mese 04/2025",62.01,1,3800.00,3800.00
+RIG-0197,FATT-P-2025-0029,1,"Canone di locazione immobile uso ufficio Via Tortona 32, Milano - Mese 05/2025",62.01,1,3800.00,3800.00
+RIG-0198,FATT-P-2025-0030,1,"Canone di locazione immobile uso ufficio Via Tortona 32, Milano - Mese 06/2025",62.01,1,3800.00,3800.00
+RIG-0199,FATT-P-2025-0031,1,"Canone di locazione immobile uso ufficio Via Tortona 32, Milano - Mese 07/2025",62.01,1,3800.00,3800.00
+RIG-0200,FATT-P-2025-0032,1,"Canone di locazione immobile uso ufficio Via Tortona 32, Milano - Mese 08/2025",62.01,1,3800.00,3800.00
+RIG-0201,FATT-P-2025-0033,1,"Canone di locazione immobile uso ufficio Via Tortona 32, Milano - Mese 09/2025",62.01,1,3800.00,3800.00
+RIG-0202,FATT-P-2025-0034,1,"Canone di locazione immobile uso ufficio Via Tortona 32, Milano - Mese 10/2025",62.01,1,3950.00,3950.00
+RIG-0203,FATT-P-2025-0035,1,"Canone di locazione immobile uso ufficio Via Tortona 32, Milano - Mese 11/2025",62.01,1,3950.00,3950.00
+RIG-0204,FATT-P-2025-0036,1,"Canone di locazione immobile uso ufficio Via Tortona 32, Milano - Mese 12/2025",62.01,1,3950.00,3950.00
+RIG-0205,FATT-P-2025-0037,1,Attività di assistenza legale e due diligence straordinaria per operazione M&A (non perfezionata) come da preventivo n. 2025/14,63.01,1,12000.00,12000.00
+RIG-0206,FATT-P-2025-0038,1,"Assistenza contabile, adempimenti fiscali periodici ed elaborazione buste paga dipendenti - Mese 01/2025",63.02,1,900.00,900.00
+RIG-0207,FATT-P-2025-0039,1,"Assistenza contabile, adempimenti fiscali periodici ed elaborazione buste paga dipendenti - Mese 02/2025",63.02,1,900.00,900.00
+RIG-0208,FATT-P-2025-0040,1,"Assistenza contabile, adempimenti fiscali periodici ed elaborazione buste paga dipendenti - Mese 03/2025",63.02,1,900.00,900.00
+RIG-0209,FATT-P-2025-0041,1,"Assistenza contabile, adempimenti fiscali periodici ed elaborazione buste paga dipendenti - Mese 04/2025",63.02,1,900.00,900.00
+RIG-0210,FATT-P-2025-0042,1,"Assistenza contabile, adempimenti fiscali periodici ed elaborazione buste paga dipendenti - Mese 05/2025",63.02,1,900.00,900.00
+RIG-0211,FATT-P-2025-0043,1,"Assistenza contabile, adempimenti fiscali periodici ed elaborazione buste paga dipendenti - Mese 06/2025",63.02,1,900.00,900.00
+RIG-0212,FATT-P-2025-0044,1,"Assistenza contabile, adempimenti fiscali periodici ed elaborazione buste paga dipendenti - Mese 07/2025",63.02,1,900.00,900.00
+RIG-0213,FATT-P-2025-0045,1,"Assistenza contabile, adempimenti fiscali periodici ed elaborazione buste paga dipendenti - Mese 08/2025",63.02,1,900.00,900.00
+RIG-0214,FATT-P-2025-0046,1,"Assistenza contabile, adempimenti fiscali periodici ed elaborazione buste paga dipendenti - Mese 09/2025",63.02,1,900.00,900.00
+RIG-0215,FATT-P-2025-0047,1,"Assistenza contabile, adempimenti fiscali periodici ed elaborazione buste paga dipendenti - Mese 10/2025",63.02,1,900.00,900.00
+RIG-0216,FATT-P-2025-0048,1,"Assistenza contabile, adempimenti fiscali periodici ed elaborazione buste paga dipendenti - Mese 11/2025",63.02,1,900.00,900.00
+RIG-0217,FATT-P-2025-0049,1,"Assistenza contabile, adempimenti fiscali periodici ed elaborazione buste paga dipendenti - Mese 12/2025",63.02,1,900.00,900.00
+RIG-0218,FATT-P-2025-0050,1,Canone connettività fibra ottica dedicata 1Gbps simmetrica e numerazioni voip - Periodo 01/2025,62.03,1,350.00,350.00
+RIG-0219,FATT-P-2025-0051,1,Canone connettività fibra ottica dedicata 1Gbps simmetrica e numerazioni voip - Periodo 02/2025,62.03,1,350.00,350.00
+RIG-0220,FATT-P-2025-0052,1,Canone connettività fibra ottica dedicata 1Gbps simmetrica e numerazioni voip - Periodo 03/2025,62.03,1,350.00,350.00
+RIG-0221,FATT-P-2025-0053,1,Canone connettività fibra ottica dedicata 1Gbps simmetrica e numerazioni voip - Periodo 04/2025,62.03,1,350.00,350.00
+RIG-0222,FATT-P-2025-0054,1,Canone connettività fibra ottica dedicata 1Gbps simmetrica e numerazioni voip - Periodo 05/2025,62.03,1,350.00,350.00
+RIG-0223,FATT-P-2025-0055,1,Canone connettività fibra ottica dedicata 1Gbps simmetrica e numerazioni voip - Periodo 06/2025,62.03,1,350.00,350.00
+RIG-0224,FATT-P-2025-0056,1,Canone connettività fibra ottica dedicata 1Gbps simmetrica e numerazioni voip - Periodo 07/2025,62.03,1,350.00,350.00
+RIG-0225,FATT-P-2025-0057,1,Canone connettività fibra ottica dedicata 1Gbps simmetrica e numerazioni voip - Periodo 08/2025,62.03,1,350.00,350.00
+RIG-0226,FATT-P-2025-0058,1,Canone connettività fibra ottica dedicata 1Gbps simmetrica e numerazioni voip - Periodo 09/2025,62.03,1,350.00,350.00
+RIG-0227,FATT-P-2025-0059,1,Canone connettività fibra ottica dedicata 1Gbps simmetrica e numerazioni voip - Periodo 10/2025,62.03,1,350.00,350.00
+RIG-0228,FATT-P-2025-0060,1,Canone connettività fibra ottica dedicata 1Gbps simmetrica e numerazioni voip - Periodo 11/2025,62.03,1,350.00,350.00
+RIG-0229,FATT-P-2025-0061,1,Canone connettività fibra ottica dedicata 1Gbps simmetrica e numerazioni voip - Periodo 12/2025,62.03,1,350.00,350.00
+RIG-0230,FATT-P-2025-0062,1,Fornitura energia elettrica uffici operativi Via Tortona 32 - Consumi periodo 01/2025,62.02,1,620.00,620.00
+RIG-0231,FATT-P-2025-0063,1,Fornitura energia elettrica uffici operativi Via Tortona 32 - Consumi periodo 02/2025,62.02,1,640.00,640.00
+RIG-0232,FATT-P-2025-0064,1,Fornitura energia elettrica uffici operativi Via Tortona 32 - Consumi periodo 03/2025,62.02,1,590.00,590.00
+RIG-0233,FATT-P-2025-0065,1,Fornitura energia elettrica uffici operativi Via Tortona 32 - Consumi periodo 04/2025,62.02,1,530.00,530.00
+RIG-0234,FATT-P-2025-0066,1,Fornitura energia elettrica uffici operativi Via Tortona 32 - Consumi periodo 05/2025,62.02,1,510.00,510.00
+RIG-0235,FATT-P-2025-0067,1,Fornitura energia elettrica uffici operativi Via Tortona 32 - Consumi periodo 06/2025,62.02,1,570.00,570.00
+RIG-0236,FATT-P-2025-0068,1,Fornitura energia elettrica uffici operativi Via Tortona 32 - Consumi periodo 07/2025,62.02,1,680.00,680.00
+RIG-0237,FATT-P-2025-0069,1,Fornitura energia elettrica uffici operativi Via Tortona 32 - Consumi periodo 08/2025,62.02,1,610.00,610.00
+RIG-0238,FATT-P-2025-0070,1,Fornitura energia elettrica uffici operativi Via Tortona 32 - Consumi periodo 09/2025,62.02,1,540.00,540.00
+RIG-0239,FATT-P-2025-0071,1,Fornitura energia elettrica uffici operativi Via Tortona 32 - Consumi periodo 10/2025,62.02,1,520.00,520.00
+RIG-0240,FATT-P-2025-0072,1,Fornitura energia elettrica uffici operativi Via Tortona 32 - Consumi periodo 11/2025,62.02,1,580.00,580.00
+RIG-0241,FATT-P-2025-0073,1,Fornitura energia elettrica uffici operativi Via Tortona 32 - Consumi periodo 12/2025,62.02,1,630.00,630.00
+RIG-0242,FATT-P-2025-0074,1,"Quota mensile polizza multirischi ufficio, RC professionale e Cyber risk CTR-005 - Mese 01/2025",65.01,1,400.00,400.00
+RIG-0243,FATT-P-2025-0075,1,"Quota mensile polizza multirischi ufficio, RC professionale e Cyber risk CTR-005 - Mese 02/2025",65.01,1,400.00,400.00
+RIG-0244,FATT-P-2025-0076,1,"Quota mensile polizza multirischi ufficio, RC professionale e Cyber risk CTR-005 - Mese 03/2025",65.01,1,400.00,400.00
+RIG-0245,FATT-P-2025-0077,1,"Quota mensile polizza multirischi ufficio, RC professionale e Cyber risk CTR-005 - Mese 04/2025",65.01,1,400.00,400.00
+RIG-0246,FATT-P-2025-0078,1,"Quota mensile polizza multirischi ufficio, RC professionale e Cyber risk CTR-005 - Mese 05/2025",65.01,1,400.00,400.00
+RIG-0247,FATT-P-2025-0079,1,"Quota mensile polizza multirischi ufficio, RC professionale e Cyber risk CTR-005 - Mese 06/2025",65.01,1,400.00,400.00
+RIG-0248,FATT-P-2025-0080,1,"Quota mensile polizza multirischi ufficio, RC professionale e Cyber risk CTR-005 - Mese 07/2025",65.01,1,400.00,400.00
+RIG-0249,FATT-P-2025-0081,1,"Quota mensile polizza multirischi ufficio, RC professionale e Cyber risk CTR-005 - Mese 08/2025",65.01,1,400.00,400.00
+RIG-0250,FATT-P-2025-0082,1,"Quota mensile polizza multirischi ufficio, RC professionale e Cyber risk CTR-005 - Mese 09/2025",65.01,1,400.00,400.00
+RIG-0251,FATT-P-2025-0083,1,"Quota mensile polizza multirischi ufficio, RC professionale e Cyber risk CTR-005 - Mese 10/2025",65.01,1,400.00,400.00
+RIG-0252,FATT-P-2025-0084,1,"Quota mensile polizza multirischi ufficio, RC professionale e Cyber risk CTR-005 - Mese 11/2025",65.01,1,400.00,400.00
+RIG-0253,FATT-P-2025-0085,1,"Quota mensile polizza multirischi ufficio, RC professionale e Cyber risk CTR-005 - Mese 12/2025",65.01,1,400.00,400.00
+RIG-0254,FATT-P-2025-0086,1,"Canone di locazione a lungo termine veicoli aziendali (targa FX912LK, GY441MN) - Mese 01/2025",65.02,1,750.00,750.00
+RIG-0255,FATT-P-2025-0087,1,"Canone di locazione a lungo termine veicoli aziendali (targa FX912LK, GY441MN) - Mese 02/2025",65.02,1,750.00,750.00
+RIG-0256,FATT-P-2025-0088,1,"Canone di locazione a lungo termine veicoli aziendali (targa FX912LK, GY441MN) - Mese 03/2025",65.02,1,750.00,750.00
+RIG-0257,FATT-P-2025-0089,1,"Canone di locazione a lungo termine veicoli aziendali (targa FX912LK, GY441MN) - Mese 04/2025",65.02,1,750.00,750.00
+RIG-0258,FATT-P-2025-0090,1,"Canone di locazione a lungo termine veicoli aziendali (targa FX912LK, GY441MN) - Mese 05/2025",65.02,1,750.00,750.00
+RIG-0259,FATT-P-2025-0091,1,"Canone di locazione a lungo termine veicoli aziendali (targa FX912LK, GY441MN) - Mese 06/2025",65.02,1,750.00,750.00
+RIG-0260,FATT-P-2025-0092,1,"Canone di locazione a lungo termine veicoli aziendali (targa FX912LK, GY441MN) - Mese 07/2025",65.02,1,750.00,750.00
+RIG-0261,FATT-P-2025-0093,1,"Canone di locazione a lungo termine veicoli aziendali (targa FX912LK, GY441MN) - Mese 08/2025",65.02,1,750.00,750.00
+RIG-0262,FATT-P-2025-0094,1,"Canone di locazione a lungo termine veicoli aziendali (targa FX912LK, GY441MN) - Mese 09/2025",65.02,1,750.00,750.00
+RIG-0263,FATT-P-2025-0095,1,"Canone di locazione a lungo termine veicoli aziendali (targa FX912LK, GY441MN) - Mese 10/2025",65.02,1,750.00,750.00
+RIG-0264,FATT-P-2025-0096,1,"Canone di locazione a lungo termine veicoli aziendali (targa FX912LK, GY441MN) - Mese 11/2025",65.02,1,750.00,750.00
+RIG-0265,FATT-P-2025-0097,1,"Canone di locazione a lungo termine veicoli aziendali (targa FX912LK, GY441MN) - Mese 12/2025",65.02,1,750.00,750.00
+RIG-0266,FATT-P-2025-0098,1,Servizio pulizia e igienizzazione ambienti ufficio e fornitura materiale consumo - Mese 01/2025,66.01,1,500.00,500.00
+RIG-0267,FATT-P-2025-0099,1,Servizio pulizia e igienizzazione ambienti ufficio e fornitura materiale consumo - Mese 02/2025,66.01,1,500.00,500.00
+RIG-0268,FATT-P-2025-0100,1,Servizio pulizia e igienizzazione ambienti ufficio e fornitura materiale consumo - Mese 03/2025,66.01,1,500.00,500.00
+RIG-0269,FATT-P-2025-0101,1,Servizio pulizia e igienizzazione ambienti ufficio e fornitura materiale consumo - Mese 04/2025,66.01,1,500.00,500.00
+RIG-0270,FATT-P-2025-0102,1,Servizio pulizia e igienizzazione ambienti ufficio e fornitura materiale consumo - Mese 05/2025,66.01,1,500.00,500.00
+RIG-0271,FATT-P-2025-0103,1,Servizio pulizia e igienizzazione ambienti ufficio e fornitura materiale consumo - Mese 06/2025,66.01,1,500.00,500.00
+RIG-0272,FATT-P-2025-0104,1,Servizio pulizia e igienizzazione ambienti ufficio e fornitura materiale consumo - Mese 07/2025,66.01,1,500.00,500.00
+RIG-0273,FATT-P-2025-0105,1,Servizio pulizia e igienizzazione ambienti ufficio e fornitura materiale consumo - Mese 08/2025,66.01,1,500.00,500.00
+RIG-0274,FATT-P-2025-0106,1,Servizio pulizia e igienizzazione ambienti ufficio e fornitura materiale consumo - Mese 09/2025,66.01,1,500.00,500.00
+RIG-0275,FATT-P-2025-0107,1,Servizio pulizia e igienizzazione ambienti ufficio e fornitura materiale consumo - Mese 10/2025,66.01,1,500.00,500.00
+RIG-0276,FATT-P-2025-0108,1,Servizio pulizia e igienizzazione ambienti ufficio e fornitura materiale consumo - Mese 11/2025,66.01,1,500.00,500.00
+RIG-0277,FATT-P-2025-0109,1,Servizio pulizia e igienizzazione ambienti ufficio e fornitura materiale consumo - Mese 12/2025,66.01,1,500.00,500.00
+RIG-0278,FATT-P-2025-0110,1,"Attività di digital marketing, posizionamento SEO, gestione canali social e lead generation - Mese 01/2025",66.02,1,1000.00,1000.00
+RIG-0279,FATT-P-2025-0111,1,"Attività di digital marketing, posizionamento SEO, gestione canali social e lead generation - Mese 02/2025",66.02,1,1000.00,1000.00
+RIG-0280,FATT-P-2025-0112,1,"Attività di digital marketing, posizionamento SEO, gestione canali social e lead generation - Mese 03/2025",66.02,1,1000.00,1000.00
+RIG-0281,FATT-P-2025-0113,1,"Attività di digital marketing, posizionamento SEO, gestione canali social e lead generation - Mese 04/2025",66.02,1,1000.00,1000.00
+RIG-0282,FATT-P-2025-0114,1,"Attività di digital marketing, posizionamento SEO, gestione canali social e lead generation - Mese 05/2025",66.02,1,1000.00,1000.00
+RIG-0283,FATT-P-2025-0115,1,"Attività di digital marketing, posizionamento SEO, gestione canali social e lead generation - Mese 06/2025",66.02,1,1000.00,1000.00
+RIG-0284,FATT-P-2025-0116,1,"Attività di digital marketing, posizionamento SEO, gestione canali social e lead generation - Mese 07/2025",66.02,1,1000.00,1000.00
+RIG-0285,FATT-P-2025-0117,1,"Attività di digital marketing, posizionamento SEO, gestione canali social e lead generation - Mese 08/2025",66.02,1,1000.00,1000.00
+RIG-0286,FATT-P-2025-0118,1,"Attività di digital marketing, posizionamento SEO, gestione canali social e lead generation - Mese 09/2025",66.02,1,1000.00,1000.00
+RIG-0287,FATT-P-2025-0119,1,"Attività di digital marketing, posizionamento SEO, gestione canali social e lead generation - Mese 10/2025",66.02,1,1000.00,1000.00
+RIG-0288,FATT-P-2025-0120,1,"Attività di digital marketing, posizionamento SEO, gestione canali social e lead generation - Mese 11/2025",66.02,1,1000.00,1000.00
+RIG-0289,FATT-P-2025-0121,1,"Attività di digital marketing, posizionamento SEO, gestione canali social e lead generation - Mese 12/2025",66.02,1,1000.00,1000.00
+RIG-0290,FATT-P-2025-0122,1,Consulenza architettura software backend e microservizi cloud-native - Consuntivo mese 01/2025,61.01,1,3500.00,3500.00
+RIG-0291,FATT-P-2025-0123,1,"Consulenza specialistica intelligenza artificiale, modelli predittivi e pipeline dati - Consuntivo mese 01/2025",61.01,1,3500.00,3500.00
+RIG-0292,FATT-P-2025-0124,1,"Consulenza progettazione UX/UI, wireframing e design system applicativo - Consuntivo mese 01/2025",61.01,1,3000.00,3000.00
+RIG-0293,FATT-P-2025-0125,1,Consulenza architettura software backend e microservizi cloud-native - Consuntivo mese 02/2025,61.01,1,3500.00,3500.00
+RIG-0294,FATT-P-2025-0126,1,"Consulenza specialistica intelligenza artificiale, modelli predittivi e pipeline dati - Consuntivo mese 02/2025",61.01,1,3500.00,3500.00
+RIG-0295,FATT-P-2025-0127,1,"Consulenza progettazione UX/UI, wireframing e design system applicativo - Consuntivo mese 02/2025",61.01,1,3000.00,3000.00
+RIG-0296,FATT-P-2025-0128,1,Consulenza architettura software backend e microservizi cloud-native - Consuntivo mese 03/2025,61.01,1,3500.00,3500.00
+RIG-0297,FATT-P-2025-0129,1,"Consulenza specialistica intelligenza artificiale, modelli predittivi e pipeline dati - Consuntivo mese 03/2025",61.01,1,3500.00,3500.00
+RIG-0298,FATT-P-2025-0130,1,"Consulenza progettazione UX/UI, wireframing e design system applicativo - Consuntivo mese 03/2025",61.01,1,3000.00,3000.00
+RIG-0299,FATT-P-2025-0131,1,Consulenza architettura software backend e microservizi cloud-native - Consuntivo mese 04/2025,61.01,1,3500.00,3500.00
+RIG-0300,FATT-P-2025-0132,1,"Consulenza specialistica intelligenza artificiale, modelli predittivi e pipeline dati - Consuntivo mese 04/2025",61.01,1,3500.00,3500.00
+RIG-0301,FATT-P-2025-0133,1,"Consulenza progettazione UX/UI, wireframing e design system applicativo - Consuntivo mese 04/2025",61.01,1,3000.00,3000.00
+RIG-0302,FATT-P-2025-0134,1,Consulenza architettura software backend e microservizi cloud-native - Consuntivo mese 05/2025,61.01,1,3500.00,3500.00
+RIG-0303,FATT-P-2025-0135,1,"Consulenza specialistica intelligenza artificiale, modelli predittivi e pipeline dati - Consuntivo mese 05/2025",61.01,1,3500.00,3500.00
+RIG-0304,FATT-P-2025-0136,1,"Consulenza progettazione UX/UI, wireframing e design system applicativo - Consuntivo mese 05/2025",61.01,1,3000.00,3000.00
+RIG-0305,FATT-P-2025-0137,1,Consulenza architettura software backend e microservizi cloud-native - Consuntivo mese 06/2025,61.01,1,3500.00,3500.00
+RIG-0306,FATT-P-2025-0138,1,"Consulenza specialistica intelligenza artificiale, modelli predittivi e pipeline dati - Consuntivo mese 06/2025",61.01,1,3500.00,3500.00
+RIG-0307,FATT-P-2025-0139,1,"Consulenza progettazione UX/UI, wireframing e design system applicativo - Consuntivo mese 06/2025",61.01,1,3000.00,3000.00
+RIG-0308,FATT-P-2025-0140,1,Consulenza architettura software backend e microservizi cloud-native - Consuntivo mese 07/2025,61.01,1,3500.00,3500.00
+RIG-0309,FATT-P-2025-0141,1,"Consulenza specialistica intelligenza artificiale, modelli predittivi e pipeline dati - Consuntivo mese 07/2025",61.01,1,3500.00,3500.00
+RIG-0310,FATT-P-2025-0142,1,"Consulenza progettazione UX/UI, wireframing e design system applicativo - Consuntivo mese 07/2025",61.01,1,3000.00,3000.00
+RIG-0311,FATT-P-2025-0143,1,Consulenza architettura software backend e microservizi cloud-native - Consuntivo mese 08/2025,61.01,1,3500.00,3500.00
+RIG-0312,FATT-P-2025-0144,1,"Consulenza specialistica intelligenza artificiale, modelli predittivi e pipeline dati - Consuntivo mese 08/2025",61.01,1,3500.00,3500.00
+RIG-0313,FATT-P-2025-0145,1,"Consulenza progettazione UX/UI, wireframing e design system applicativo - Consuntivo mese 08/2025",61.01,1,3000.00,3000.00
+RIG-0314,FATT-P-2025-0146,1,Consulenza architettura software backend e microservizi cloud-native - Consuntivo mese 09/2025,61.01,1,3500.00,3500.00
+RIG-0315,FATT-P-2025-0147,1,"Consulenza specialistica intelligenza artificiale, modelli predittivi e pipeline dati - Consuntivo mese 09/2025",61.01,1,3500.00,3500.00
+RIG-0316,FATT-P-2025-0148,1,"Consulenza progettazione UX/UI, wireframing e design system applicativo - Consuntivo mese 09/2025",61.01,1,3000.00,3000.00
+RIG-0317,FATT-P-2025-0149,1,Consulenza architettura software backend e microservizi cloud-native - Consuntivo mese 10/2025,61.01,1,3500.00,3500.00
+RIG-0318,FATT-P-2025-0150,1,"Consulenza specialistica intelligenza artificiale, modelli predittivi e pipeline dati - Consuntivo mese 10/2025",61.01,1,3500.00,3500.00
+RIG-0319,FATT-P-2025-0151,1,"Consulenza progettazione UX/UI, wireframing e design system applicativo - Consuntivo mese 10/2025",61.01,1,3000.00,3000.00
+RIG-0320,FATT-P-2025-0152,1,Consulenza architettura software backend e microservizi cloud-native - Consuntivo mese 11/2025,61.01,1,3500.00,3500.00
+RIG-0321,FATT-P-2025-0153,1,"Consulenza specialistica intelligenza artificiale, modelli predittivi e pipeline dati - Consuntivo mese 11/2025",61.01,1,3500.00,3500.00
+RIG-0322,FATT-P-2025-0154,1,"Consulenza progettazione UX/UI, wireframing e design system applicativo - Consuntivo mese 11/2025",61.01,1,3000.00,3000.00
+RIG-0323,FATT-P-2025-0155,1,Consulenza architettura software backend e microservizi cloud-native - Consuntivo mese 12/2025,61.01,1,3500.00,3500.00
+RIG-0324,FATT-P-2025-0156,1,"Consulenza specialistica intelligenza artificiale, modelli predittivi e pipeline dati - Consuntivo mese 12/2025",61.01,1,3500.00,3500.00
+RIG-0325,FATT-P-2025-0157,1,"Consulenza progettazione UX/UI, wireframing e design system applicativo - Consuntivo mese 12/2025",61.01,1,3000.00,3000.00
+RIG-0326,FATT-P-2025-0158,1,"Cavi, adattatori, accessori docking e multiprese rack",67.01,1,650.00,650.00
+RIG-0327,FATT-P-2025-0159,1,N. 2 Monitor Dell UltraSharp 27 4K per postazioni dev,67.01,1,820.00,820.00
+RIG-0328,FATT-P-2025-0160,1,"Tastiere meccaniche, cuffie ANC e hub USB-C per sviluppatori",67.01,1,1100.00,1100.00
+RIG-0329,FATT-P-2025-0161,1,Switch di rete Gigabit 24 porte e patch panel,67.01,1,450.00,450.00
+RIG-0330,FATT-P-2025-0162,1,"Hard disk esterni di backup, SSD NVMe per test interni",67.01,1,780.00,780.00
+RIG-0331,FATT-P-2025-0163,1,Stampante laser multifunzione uffici e toner ad alta capacità,67.01,1,950.00,950.00
+RIG-0332,FATT-P-2025-0164,1,"Materiale consumo, cavetteria e gruppi di continuità UPS",67.01,1,520.00,520.00
+RIG-0333,FATT-P-2025-0165,1,Workstation portatile Dell XPS 15 per reparto sviluppo backend,67.01,1,1850.00,1850.00
+RIG-0334,FATT-P-2025-0166,1,Workstation portatile Dell XPS 15 per reparto sviluppo backend (duplicato contabile),67.01,1,1850.00,1850.00
+RIG-0335,FATT-P-2025-0167,1,Biglietti ferroviari trasferte tecniche per incontri clienti - Mese 01/2025,64.02,1,550.00,550.00
+RIG-0336,FATT-P-2025-0168,1,Pernottamenti hotel trasferte clienti e workshop - Mese 01/2025,64.01,1,850.00,850.00
+RIG-0337,FATT-P-2025-0169,1,Spese pasti e rimborsi trasferte dipendenti - Mese 01/2025,64.03,1,450.00,450.00
+RIG-0338,FATT-P-2025-0170,1,Biglietti ferroviari trasferte tecniche per incontri clienti - Mese 02/2025,64.02,1,550.00,550.00
+RIG-0339,FATT-P-2025-0171,1,Pernottamenti hotel trasferte clienti e workshop - Mese 02/2025,64.01,1,850.00,850.00
+RIG-0340,FATT-P-2025-0172,1,Spese pasti e rimborsi trasferte dipendenti - Mese 02/2025,64.03,1,450.00,450.00
+RIG-0341,FATT-P-2025-0173,1,Biglietti ferroviari trasferte tecniche per incontri clienti - Mese 03/2025,64.02,1,550.00,550.00
+RIG-0342,FATT-P-2025-0174,1,Pernottamenti hotel trasferte clienti e workshop - Mese 03/2025,64.01,1,850.00,850.00
+RIG-0343,FATT-P-2025-0175,1,Spese pasti e rimborsi trasferte dipendenti - Mese 03/2025,64.03,1,450.00,450.00
+RIG-0344,FATT-P-2025-0176,1,Biglietti ferroviari trasferte tecniche per incontri clienti - Mese 04/2025,64.02,1,550.00,550.00
+RIG-0345,FATT-P-2025-0177,1,Pernottamenti hotel trasferte clienti e workshop - Mese 04/2025,64.01,1,850.00,850.00
+RIG-0346,FATT-P-2025-0178,1,Spese pasti e rimborsi trasferte dipendenti - Mese 04/2025,64.03,1,450.00,450.00
+RIG-0347,FATT-P-2025-0179,1,Biglietti ferroviari trasferte tecniche per incontri clienti - Mese 05/2025,64.02,1,550.00,550.00
+RIG-0348,FATT-P-2025-0180,1,Pernottamenti hotel trasferte clienti e workshop - Mese 05/2025,64.01,1,850.00,850.00
+RIG-0349,FATT-P-2025-0181,1,Spese pasti e rimborsi trasferte dipendenti - Mese 05/2025,64.03,1,450.00,450.00
+RIG-0350,FATT-P-2025-0182,1,Biglietti ferroviari trasferte tecniche per incontri clienti - Mese 06/2025,64.02,1,550.00,550.00
+RIG-0351,FATT-P-2025-0183,1,Pernottamenti hotel trasferte clienti e workshop - Mese 06/2025,64.01,1,850.00,850.00
+RIG-0352,FATT-P-2025-0184,1,Spese pasti e rimborsi trasferte dipendenti - Mese 06/2025,64.03,1,450.00,450.00
+RIG-0353,FATT-P-2025-0185,1,Biglietti ferroviari trasferte tecniche per incontri clienti - Mese 07/2025,64.02,1,550.00,550.00
+RIG-0354,FATT-P-2025-0186,1,Pernottamenti hotel trasferte clienti e workshop - Mese 07/2025,64.01,1,850.00,850.00
+RIG-0355,FATT-P-2025-0187,1,Spese pasti e rimborsi trasferte dipendenti - Mese 07/2025,64.03,1,450.00,450.00
+RIG-0356,FATT-P-2025-0188,1,Biglietti ferroviari trasferte tecniche per incontri clienti - Mese 08/2025,64.02,1,550.00,550.00
+RIG-0357,FATT-P-2025-0189,1,Pernottamenti hotel trasferte clienti e workshop - Mese 08/2025,64.01,1,850.00,850.00
+RIG-0358,FATT-P-2025-0190,1,Spese pasti e rimborsi trasferte dipendenti - Mese 08/2025,64.03,1,450.00,450.00
+RIG-0359,FATT-P-2025-0191,1,Biglietti ferroviari trasferte tecniche per incontri clienti - Mese 09/2025,64.02,1,550.00,550.00
+RIG-0360,FATT-P-2025-0192,1,Pernottamenti hotel trasferte clienti e workshop - Mese 09/2025,64.01,1,850.00,850.00
+RIG-0361,FATT-P-2025-0193,1,Spese pasti e rimborsi trasferte dipendenti - Mese 09/2025,64.03,1,450.00,450.00
+RIG-0362,FATT-P-2025-0194,1,Biglietti ferroviari trasferte tecniche per incontri clienti - Mese 10/2025,64.02,1,550.00,550.00
+RIG-0363,FATT-P-2025-0195,1,Pernottamenti hotel trasferte clienti e workshop - Mese 10/2025,64.01,1,850.00,850.00
+RIG-0364,FATT-P-2025-0196,1,Spese pasti e rimborsi trasferte dipendenti - Mese 10/2025,64.03,1,450.00,450.00
+RIG-0365,FATT-P-2025-0197,1,Biglietti ferroviari alta velocità tratta Milano Centrale - Roma Termini A/R team tecnico,64.02,1,420.00,420.00
+RIG-0366,FATT-P-2025-0198,1,Biglietti ferroviari alta velocità tratta Milano Centrale - Roma Termini A/R team tecnico,64.02,1,460.00,460.00
+RIG-0367,FATT-P-2025-0199,1,Biglietti ferroviari alta velocità tratta Milano Centrale - Roma Termini A/R team tecnico,64.02,1,430.00,430.00
+RIG-0368,FATT-P-2025-0200,1,Biglietti ferroviari alta velocità tratta Milano Centrale - Roma Termini A/R team tecnico,64.02,1,440.00,440.00
+RIG-0369,FATT-P-2025-0201,1,Soggiorno e pernottamento camere doppie uso singola per trasferta personale tecnico,64.01,1,650.00,650.00
+RIG-0370,FATT-P-2025-0202,1,Soggiorno e pernottamento camere doppie uso singola per trasferta personale tecnico,64.01,1,620.00,620.00
+RIG-0371,FATT-P-2025-0203,1,Soggiorno e pernottamento camere doppie uso singola per trasferta personale tecnico,64.01,1,680.00,680.00
+RIG-0372,FATT-P-2025-0204,1,Soggiorno e pernottamento camere doppie uso singola per trasferta personale tecnico,64.01,1,580.00,580.00
+RIG-0373,FATT-P-2025-0205,1,Soggiorno e pernottamento camere doppie uso singola per trasferta personale tecnico,64.01,1,570.00,570.00
+RIG-0374,FATT-P-2025-0206,1,Ristorazione e pasti aziendali per trasferte di servizio dipendenti,64.03,1,540.00,540.00
+RIG-0375,FATT-P-2025-0207,1,Ristorazione e pasti aziendali per trasferte di servizio dipendenti,64.03,1,560.00,560.00
+RIG-0376,FATT-P-2025-0208,1,Ristorazione e pasti aziendali per trasferte di servizio dipendenti,64.03,1,550.00,550.00
+RIG-0377,FATT-P-2025-0209,1,Biglietti ferroviari trasferte tecniche per incontri clienti - Mese 12/2025,64.02,1,550.00,550.00
+RIG-0378,FATT-P-2025-0210,1,Pernottamenti hotel trasferte clienti e workshop - Mese 12/2025,64.01,1,850.00,850.00
+RIG-0379,FATT-P-2025-0211,1,Spese pasti e rimborsi trasferte dipendenti - Mese 12/2025,64.03,1,450.00,450.00

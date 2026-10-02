@@ -1,0 +1,261 @@
+# GROUND TRUTH - 12 DOMANDE DI TEST CON RISPOSTA ATTESA E FONTI
+# Progetto: OmniDen Dynamics S.r.l. - Valutazione capacità di analisi agente
+
+domande:
+  - id: 1
+    domanda: "Perché il margine è diminuito ad agosto rispetto a luglio?"
+    storia_id: "ST-01 + Ferie estive"
+    tipo: "multi-passo, causa mista"
+    risposta_attesa: >
+      Il margine operativo è crollato ad agosto (passando dal 18.95% di luglio allo 0.44% di agosto) a causa di una duplice combinazione:
+      1. Causa principale: un forte calo dei ricavi (-17.800 €, scesi da 97.800 € a 80.000 €) dovuto alla chiusura estiva degli uffici
+         e ferie collettive di 2 settimane dall'11 al 22 agosto 2025 (provata dalla circolare interna DOC-NOT-002 e dalla contrazione delle ore
+         fatturate su tutti i clienti);
+      2. Causa secondaria concomitante: un aumento dei costi fissi software (+1.360 €/mese), dovuto all'entrata in vigore dal 1° agosto
+         del nuovo canone Nimbus DevOps Enterprise passato da 4.000 € a 5.360 € + IVA (supportato dal contratto CTR-001, lettera DOC-LET-001
+         ed email DOC-EML-001). L'agente non deve attribuire l'intero calo al solo canone software.
+    fonti_attese:
+      - "DOC-NOT-002"
+      - "DOC-LET-001"
+      - "DOC-EML-001"
+      - "CTR-001"
+      - "FATT-P-2025-0007"
+      - "FATT-P-2025-0008"
+    query_sql: >
+      SELECT 
+        strftime('%m', data) AS mese,
+        SUM(CASE WHEN tipo = 'attiva' THEN CAST(imponibile AS REAL) ELSE 0 END) AS ricavi,
+        SUM(CASE WHEN tipo = 'passiva' THEN CAST(imponibile AS REAL) ELSE 0 END) + 52075.0 AS costi_operativi,
+        ROUND((SUM(CASE WHEN tipo = 'attiva' THEN CAST(imponibile AS REAL) ELSE 0 END) - (SUM(CASE WHEN tipo = 'passiva' THEN CAST(imponibile AS REAL) ELSE 0 END) + 52075.0)) / SUM(CASE WHEN tipo = 'attiva' THEN CAST(imponibile AS REAL) ELSE 0 END) * 100, 2) AS margine_pct
+      FROM fatture
+      WHERE strftime('%m', data) IN ('07', '08')
+      GROUP BY mese
+      ORDER BY mese;
+
+  - id: 2
+    domanda: "Quanto costa in più il canone Nimbus e da quando?"
+    storia_id: "ST-01"
+    tipo: "recupero + numero"
+    risposta_attesa: >
+      Il canone della piattaforma Nimbus Software S.r.l. costa 1.360,00 € in più al mese (+34%), passando da 4.000,00 € a 5.360,00 € + IVA
+      (da 4.880,00 € a 6.539,20 € IVA inclusa). L'aumento ha decorrenza dal 1° agosto 2025, come formalizzato nella comunicazione del 10 giugno 2025
+      (DOC-LET-001) e confermato a partire dalla fattura passiva FATT-P-2025-0008 di agosto.
+    fonti_attese:
+      - "DOC-LET-001"
+      - "CTR-001"
+      - "FATT-P-2025-0007"
+      - "FATT-P-2025-0008"
+    query_sql: >
+      SELECT id, numero, data, imponibile, iva, totale
+      FROM fatture
+      WHERE controparte_id = 'FOR-001' AND data >= '2025-07-01' AND data <= '2025-09-01'
+      ORDER BY data;
+
+  - id: 3
+    domanda: "Perché i costi di marzo sono così alti?"
+    storia_id: "ST-02"
+    tipo: "causa una tantum"
+    risposta_attesa: >
+      I costi operativi di marzo 2025 sono particolarmente elevati (pari a circa 90.400 € rispetto alla media di ~79.000 € degli altri mesi)
+      a causa della fattura passiva FATT-P-2025-0037 dello Studio Legale Ferraris & Associati, emessa il 25/03/2025 per un importo imponibile
+      straordinario di 12.000,00 € + IVA (14.640,00 € totali), relativa all'attività di due diligence legale per un'operazione di acquisizione societaria.
+    fonti_attese:
+      - "FATT-P-2025-0037"
+      - "DOC-PRV-001"
+      - "DOC-NOT-001"
+      - "DOC-EML-006"
+    query_sql: >
+      SELECT f.id, f.data, f.controparte, f.imponibile, r.descrizione
+      FROM fatture f
+      JOIN fatture_righe r ON f.id = r.fattura_id
+      WHERE strftime('%m', f.data) = '03' AND f.tipo = 'passiva' AND CAST(f.imponibile AS REAL) > 5000;
+
+  - id: 4
+    domanda: "Il costo della consulenza legale di marzo si ripeterà?"
+    storia_id: "ST-02"
+    tipo: "giudizio sui documenti"
+    risposta_attesa: >
+      No, il costo non si ripeterà. Dai documenti aziendali (in particolare il verbale del Consiglio di Amministrazione DOC-NOT-001 del 28 marzo 2025
+      e le comunicazioni DOC-EML-005) emerge che la due diligence ha evidenziato criticità gravi e non sanabili sul target, inducendo il CdA a deliberare
+      l'interruzione definitiva delle trattative e l'abbandono dell'operazione societaria. Si tratta pertanto di una spesa straordinaria una tantum
+      a fondo perduto interamente liquidata ad aprile 2025.
+    fonti_attese:
+      - "DOC-NOT-001"
+      - "DOC-EML-005"
+      - "DOC-PRV-001"
+    query_sql: >
+      SELECT id, data, controparte, imponibile
+      FROM fatture
+      WHERE controparte_id = 'FOR-004';
+
+  - id: 5
+    domanda: "Perché i ricavi sono calati nell'ultimo trimestre?"
+    storia_id: "ST-03"
+    tipo: "multi-passo"
+    risposta_attesa: >
+      I ricavi dell'ultimo trimestre (ottobre-dicembre 2025) sono scesi sensibilmente (attorno a 74.000 - 77.000 €/mese rispetto ai 95.000 - 97.000 €
+      della prima metà dell'anno) a causa della drastica riduzione delle commesse da parte di Barilli Logistica S.p.A. (CLI-001).
+      Barilli ha comunicato a settembre (DOC-EML-008) l'internalizzazione del proprio team di sviluppo a decorrere dal 1° ottobre 2025 ai sensi dell'art. 4
+      del contratto CTR-008, riducendo le fatture mensili verso OmniDen da circa 28.000,00 € a 12.000,00 € (-16.000 €/mese).
+    fonti_attese:
+      - "DOC-EML-008"
+      - "CTR-008"
+      - "DOC-EML-010"
+      - "FATT-A-2025-0057"
+      - "FATT-A-2025-0064"
+    query_sql: >
+      SELECT 
+        strftime('%m', data) AS mese,
+        controparte,
+        SUM(CAST(imponibile AS REAL)) AS ricavo_cliente
+      FROM fatture
+      WHERE tipo = 'attiva' AND strftime('%m', data) >= '09'
+      GROUP BY mese, controparte
+      ORDER BY mese, ricavo_cliente DESC;
+
+  - id: 6
+    domanda: "Quanto pesa Barilli sui ricavi, e come è cambiato?"
+    storia_id: "ST-03"
+    tipo: "quota e trend"
+    risposta_attesa: >
+      Su base annua 2025, Barilli Logistica ha generato 291.500,00 € su un fatturato complessivo aziendale di 1.059.400,00 €, pesando per il 27,51%
+      dei ricavi totali. Tuttavia, la sua quota è mutata radicalmente nel corso dell'anno:
+      - Da gennaio a settembre rappresentava circa il 30-31% dei ricavi mensili (fatturando mediamente 28.000 €/mese);
+      - Da ottobre a dicembre, a seguito dell'internalizzazione, il fatturato è sceso a 12.000 €/mese, facendo crollare il peso di Barilli a circa il 15-16% dei ricavi mensili.
+    fonti_attese:
+      - "clienti.csv"
+      - "CTR-008"
+      - "DOC-EML-010"
+      - "fatture.csv"
+    query_sql: >
+      SELECT 
+        ROUND(SUM(CASE WHEN controparte_id = 'CLI-001' THEN CAST(imponibile AS REAL) ELSE 0 END), 2) AS ricavi_barilli,
+        ROUND(SUM(CAST(imponibile AS REAL)), 2) AS ricavi_totali,
+        ROUND(SUM(CASE WHEN controparte_id = 'CLI-001' THEN CAST(imponibile AS REAL) ELSE 0 END) / SUM(CAST(imponibile AS REAL)) * 100, 2) AS peso_percentuale_annuo
+      FROM fatture
+      WHERE tipo = 'attiva';
+
+  - id: 7
+    domanda: "Perché i costi di trasferta di novembre sono aumentati?"
+    storia_id: "ST-04"
+    tipo: "risposta onesta: causa non documentata"
+    risposta_attesa: >
+      I dati contabili mostrano un forte incremento delle spese per trasferte e viaggi nel mese di novembre 2025, pari a 6.500,00 € complessivi
+      (distribuiti tra 1.750 € di treni FOR-016, 3.100 € di alberghi FOR-017 e 1.650 € di pasti FOR-018), evidenziando un aumento del +210% rispetto
+      alla media degli altri mesi (~2.100 €). Tuttavia, dall'analisi della documentazione aziendale disponibile non è presente alcun documento,
+      email o verbale che spieghi la motivazione specifica o la finalità di tali trasferte. La causa non è documentata nelle fonti fornite.
+    fonti_attese:
+      - "FATT-P-2025-0182"
+      - "FATT-P-2025-0186"
+      - "FATT-P-2025-0191"
+      - "piano_dei_conti.csv"
+    query_sql: >
+      SELECT 
+        strftime('%m', f.data) AS mese,
+        ROUND(SUM(CAST(f.imponibile AS REAL)), 2) AS totale_spese_trasferte
+      FROM fatture f
+      JOIN fatture_righe r ON f.id = r.fattura_id
+      WHERE r.categoria IN ('64.01', '64.02', '64.03')
+      GROUP BY mese
+      ORDER BY mese;
+
+  - id: 8
+    domanda: "L'aumento dell'affitto da ottobre è regolare?"
+    storia_id: "ST-05"
+    tipo: "esito: regolare"
+    risposta_attesa: >
+      Sì, l'aumento dell'affitto da 3.800,00 € a 3.950,00 € + IVA (+150,00 €/mese) applicato dal 1° ottobre 2025 da Locazioni Navigli S.r.l. (FOR-003)
+      è perfettamente regolare e legittimo. Risponde alla puntuale applicazione dell'art. 5 del contratto di locazione commerciale CTR-002, che prevede
+      l'adeguamento annuale automatico al 100% dell'indice ISTAT FOI a partire da ottobre. L'adeguamento (+3,94%) è stato formalmente notificato
+      dal locatore a mezzo PEC con congruo anticipo in data 10 settembre 2025 (DOC-LET-002).
+    fonti_attese:
+      - "CTR-002"
+      - "DOC-LET-002"
+      - "DOC-EML-011"
+      - "FATT-P-2025-0033"
+      - "FATT-P-2025-0034"
+    query_sql: >
+      SELECT id, numero, data, imponibile, totale
+      FROM fatture
+      WHERE controparte_id = 'FOR-003' AND strftime('%m', data) IN ('09', '10')
+      ORDER BY data;
+
+  - id: 9
+    domanda: "Ci sono fatture pagate due volte?"
+    storia_id: "ST-06"
+    tipo: "anomalia contabile"
+    risposta_attesa: >
+      Sì, è presente un doppio pagamento relativo alla fattura fornitore n. FT-2025-1089 emessa da TechHardware Solutions S.r.l. (FOR-010)
+      per l'importo di 1.850,00 € + IVA (totale 2.257,00 €). La fattura è stata registrata due volte nei registri acquisti (FATT-P-2025-0165 e FATT-P-2025-0166)
+      e conseguentemente liquidata tramite due distinti bonifici bancari: il movimento MOV-000240 del 24/10/2025 e il movimento MOV-000248 del 29/10/2025.
+      L'anomalia è stata rilevata dal fornitore via email il 31/10/2025 (DOC-EML-012) e gestita come credito da compensare (DOC-EML-013).
+    fonti_attese:
+      - "FATT-P-2025-0165"
+      - "FATT-P-2025-0166"
+      - "MOV-000240"
+      - "MOV-000248"
+      - "DOC-EML-012"
+      - "DOC-EML-013"
+    query_sql: >
+      SELECT f.numero, f.controparte, COUNT(*) AS numero_registrazioni, SUM(CAST(f.totale AS REAL)) AS totale_addebitato
+      FROM fatture f
+      WHERE f.tipo = 'passiva'
+      GROUP BY f.numero, f.controparte_id, f.totale
+      HAVING COUNT(*) > 1;
+
+  - id: 10
+    domanda: "Quale categoria di costo è cresciuta di più da giugno a novembre?"
+    storia_id: "multipla"
+    tipo: "ragionamento SQL"
+    risposta_attesa: >
+      La categoria di costo che ha registrato la maggiore crescita sia in percentuale che in termini monetari assoluti da giugno a novembre 2025
+      è quella delle Spese per trasferte e viaggi (conti 64.01, 64.02 e 64.03 aggregati: alberghi, treni e pasti), passata da 1.850,00 € a giugno
+      a 6.500,00 € a novembre, con un aumento di +4.650,00 € (+251.35%).
+      In seconda posizione si colloca la categoria Software e SaaS (conto 61.02), cresciuta di +1.360,00 € (+34%, passando da 4.000 € a 5.360 € per il canone Nimbus).
+    fonti_attese:
+      - "piano_dei_conti.csv"
+      - "fatture.csv"
+      - "fatture_righe.csv"
+    query_sql: >
+      SELECT 
+        r.categoria,
+        p.descrizione,
+        SUM(CASE WHEN strftime('%m', f.data) = '06' THEN CAST(r.imponibile AS REAL) ELSE 0 END) AS costo_giugno,
+        SUM(CASE WHEN strftime('%m', f.data) = '11' THEN CAST(r.imponibile AS REAL) ELSE 0 END) AS costo_novembre,
+        ROUND(SUM(CASE WHEN strftime('%m', f.data) = '11' THEN CAST(r.imponibile AS REAL) ELSE 0 END) - 
+              SUM(CASE WHEN strftime('%m', f.data) = '06' THEN CAST(r.imponibile AS REAL) ELSE 0 END), 2) AS incremento_assoluto
+      FROM fatture f
+      JOIN fatture_righe r ON f.id = r.fattura_id
+      JOIN piano_dei_conti p ON r.categoria = p.codice
+      WHERE f.tipo = 'passiva' AND strftime('%m', f.data) IN ('06', '11')
+      GROUP BY r.categoria, p.descrizione
+      ORDER BY incremento_assoluto DESC;
+
+  - id: 11
+    domanda: "Qual è il tasso di turnover del personale?"
+    storia_id: "nessuna"
+    tipo: "non rispondibile"
+    risposta_attesa: >
+      Non è possibile rispondere a questa domanda sulla base delle fonti informative a disposizione. Il dataset aziendale e la documentazione contabile
+      non contengono dati storici sul turnover del personale, né registri delle assunzioni e cessazioni del rapporto di lavoro oltre alla presenza generica
+      di un team di 8 dipendenti. L'agente deve dichiarare l'assenza di dati per rispondere al quesito.
+    fonti_attese: []
+    query_sql: ""
+
+  - id: 12
+    domanda: "Quando scade il rinnovo del contratto con Altocumulo Cloud?"
+    storia_id: "rumore"
+    tipo: "recupero semplice"
+    risposta_attesa: >
+      Il contratto quadro di fornitura infrastruttura cloud con Altocumulo Cloud Services S.r.l. (CTR-003), sottoscritto in data 15 novembre 2023
+      per una durata di 36 mesi, giunge a naturale scadenza il **14 novembre 2026**.
+      Il contratto prevede il rinnovo tacito biennale salvo invio di formale disdetta a mezzo PEC con un preavviso minimo di 90 giorni prima della scadenza
+      (ovvero entro il termine del 15 agosto 2026, come registrato anche nello scadenzario aziendale con ID SCD-0015).
+    fonti_attese:
+      - "CTR-003"
+      - "scadenzario.csv"
+      - "fornitori.csv"
+    query_sql: >
+      SELECT id, controparte, data_inizio, data_fine, rinnovo, preavviso_giorni
+      FROM contratti
+      WHERE id = 'CTR-003';
