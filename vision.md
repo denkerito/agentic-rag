@@ -106,7 +106,7 @@ Ogni storia ha una domanda associata e una risposta attesa: sono il test di valu
 ```
 ┌────────────┐     ┌──────────────────────────────────────┐
 │     UI     │◄───►│               Agente                 │
-│ (Streamlit)│     │  loop: pianifica → usa tool → valuta │
+│ (React)│     │  loop: pianifica → usa tool → valuta │
 └────────────┘     └───────┬───────────┬───────────┬──────┘
                            │           │           │
                   query_sql   cerca_documenti   confronta_periodi

@@ -11,14 +11,9 @@
 - L'agente e i moduli di reasoning applicativo **NON devono MAI accedere o consultare** i file in `eval/ground_truth/` (`storie.yaml`, `domande_test.yaml`) durante l'analisi, lo sviluppo dell'agente o l'elaborazione delle risposte.
 - I file in `eval/ground_truth/` sono **esclusivamente riservati alla pipeline di benchmarking e test automatizzato** per confrontare le risposte fornite dall'agente con quelle attese.
 
-## Principi Guida dell'Agente (da vision.md)
+## Principi Guida dell'Agente
 1. **I numeri non si inventano:** calcoli, aggregazioni e confronti periodici passano **sempre ed esclusivamente** da query SQL in sola lettura (DuckDB/database relazionale). L'agente non calcola a mente né stima cifre nei prompt.
 2. **Fonti obbligatorie e verificabili:** ogni conclusione o affermazione economica deve essere corredata dagli ID univoci delle fonti a supporto (`FATT-*`, `CTR-*`, `DOC-*`, `MOV-*`, ecc.), per permettere al commercialista di aprire e controllare il dato.
 3. **Onestà sulle cause non documentate:** se un'anomalia o variazione numerica non trova riscontro nei documenti (es. il picco di spese trasferte di novembre), l'agente deve dichiarare esplicitamente che la causa non è documentata nelle fonti, astenendosi da congetture o invenzioni.
 4. **Trasparenza del ragionamento:** l'agente deve rendere visibili i passaggi intermedi dell'indagine (query eseguite, documenti estratti tramite RAG) per consentire all'utente di validare il percorso logico.
 
-## Stack Tecnologico e Convenzioni di Codice
-- **Linguaggio:** Python 3.13+, codice modulare, tipizzato con `typing` e standard PEP 8.
-- **Database analitico:** DuckDB per eseguire query veloci e native direttamente sui file CSV in `data/csv/`.
-- **Orchestrazione agente:** LangChain + LangGraph per strutturare il loop investigativo (pianifica → esegui tool SQL/RAG → valuta).
-- **Dominio e lingua:** terminologia contabile e societaria italiana (partita doppia, imponibile, IVA 22%, ritenute, F24, piano dei conti, SDI). Documentazione e spiegazioni per l'utente in italiano chiaro e formale.

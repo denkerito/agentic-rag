@@ -1,0 +1,13 @@
+langchain
+langgraph
+langchain-google-genai
+psycopg[binary]
+pgvector
+fastapi
+uvicorn
+python-dotenv
+langsmith
+
+[dev]
+pytest
+ruff
