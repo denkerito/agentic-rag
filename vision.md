@@ -76,7 +76,7 @@ L'ultimo punto è centrale: in un contesto contabile una risposta sbagliata ma c
 ### Incluso
 
 - Un'azienda fittizia con 12 mesi di dati sintetici (circa 300 movimenti, fatture, contratti).
-- Dati strutturati: movimenti bancari, fatture (anche in formato XML FatturaPA), fornitori, categorie di costo, scadenze.
+- Dati strutturati: movimenti bancari, fatture, fornitori, categorie di costo, scadenze.
 - Documenti non strutturati: contratti e comunicazioni, indicizzati per la ricerca semantica.
 - Un agente con strumenti per interrogare il database, cercare nei documenti, confrontare periodi e aprire un documento specifico.
 - Interfaccia con domanda, passi di ragionamento in tempo reale, risposta e fonti.
@@ -124,12 +124,16 @@ Ogni storia ha una domanda associata e una risposta attesa: sono il test di valu
 |---|---|---|
 | Linguaggio | Python | Standard per il lavoro con LLM |
 | Orchestrazione agente | **Pydantic AI** | Il percorso di analisi è deciso dal modello (loop con tool); output tipizzato e validato (fonti obbligatorie, confidenza, causa documentata), dipendenze iniettate nei tool, test senza chiamate LLM (`TestModel`). Se in futuro servirà un flusso fisso, human-in-the-loop o modalità proattiva, si può passare a `pydantic-graph` o rivalutare LangGraph |
-| LLM | Gemini (API gratuita) con function calling | Costo zero per l'MVP; i limiti del piano gratuito vanno verificati prima di iniziare |
+| LLM | Gemini (API gratuita), default `gemini-3.5-flash-lite`, configurabile con `AGENT_MODEL` | Costo zero per l'MVP; i limiti del piano gratuito vanno verificati in AI Studio |
 | Dati strutturati | PostgreSQL |  |
 | Vector store | pgvector |  |
 | Backend | FastAPI | Espone l'agente e fa lo streaming dei passi |
 | Frontend | React | Il più rapido per un'interfaccia con stream dei passi; il frontend non è il punto del progetto |
 | Osservabilità | Logfire (piano gratuito, integrazione nativa con Pydantic AI) o log strutturati | Rende visibile il ragionamento, utile anche nel portfolio |
+
+### Definizione di margine
+
+Il margine è **ricavi − costi per competenza**, calcolato dalle `scritture_contabili` sui conti Costi/Ricavi del piano dei conti (viste `v_economico*`, `v_margine_mensile`): le righe fattura non bastano perché stipendi, oneri INPS e commissioni bancarie compaiono solo nelle scritture.
 
 ## Come si misura il successo
 

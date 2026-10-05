@@ -5,7 +5,8 @@ from collections import deque
 from collections.abc import Callable
 from functools import cache
 
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from google import genai
+from google.genai import types
 
 from agentic_rag import config
 
@@ -51,14 +52,21 @@ class RateLimiter:
 
 
 @cache
-def get_embeddings() -> GoogleGenerativeAIEmbeddings:
+def get_client() -> genai.Client:
     if not config.GOOGLE_API_KEY:
         raise SystemExit("GOOGLE_API_KEY non impostata (vedi .env.example)")
-    return GoogleGenerativeAIEmbeddings(
+    return genai.Client(api_key=config.GOOGLE_API_KEY)
+
+
+def _embed(texts: list[str], task_type: str) -> list[list[float]]:
+    response = get_client().models.embed_content(
         model=config.EMBEDDING_MODEL,
-        output_dimensionality=config.EMBEDDING_DIM,
-        google_api_key=config.GOOGLE_API_KEY,
+        contents=texts,
+        config=types.EmbedContentConfig(
+            task_type=task_type, output_dimensionality=config.EMBEDDING_DIM
+        ),
     )
+    return [list(e.values or []) for e in response.embeddings or []]
 
 
 _limiter = RateLimiter(config.EMBEDDING_MAX_RPM, config.EMBEDDING_MAX_TPM)
@@ -87,9 +95,7 @@ def embed_documents(texts: list[str]) -> list[list[float]]:
         batch = texts[i : i + BATCH_SIZE]
         _limiter.acquire(len(batch), sum(estimate_tokens(t) for t in batch))
         vectors += _check(
-            _with_retry(
-                lambda b=batch: get_embeddings().embed_documents(b, task_type="RETRIEVAL_DOCUMENT")
-            ),
+            _with_retry(lambda b=batch: _embed(b, "RETRIEVAL_DOCUMENT")),
             len(batch),
         )
     return vectors
@@ -97,6 +103,4 @@ def embed_documents(texts: list[str]) -> list[list[float]]:
 
 def embed_query(text: str) -> list[float]:
     _limiter.acquire(1, estimate_tokens(text))
-    return _check(
-        [_with_retry(lambda: get_embeddings().embed_query(text, task_type="RETRIEVAL_QUERY"))], 1
-    )[0]
+    return _check(_with_retry(lambda: _embed([text], "RETRIEVAL_QUERY")), 1)[0]
