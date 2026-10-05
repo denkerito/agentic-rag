@@ -112,7 +112,7 @@ Ogni storia ha una domanda associata e una risposta attesa: sono il test di valu
                   query_sql   cerca_documenti   confronta_periodi
                            │           │
                     ┌──────▼───┐  ┌────▼─────────┐
-                    │  DuckDB  │  │ Vector store │
+                    │          │  │ Vector store │
                     │ (dati    │  │ (contratti,  │
                     │ struttur)│  │ comunicaz.)  │
                     └──────────┘  └──────────────┘
