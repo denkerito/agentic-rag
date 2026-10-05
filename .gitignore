@@ -31,3 +31,6 @@ htmlcov/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Packaging
+*.egg-info/
