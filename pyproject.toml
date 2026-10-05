@@ -29,6 +29,9 @@ dev = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"agentic_rag.db" = ["*.sql"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py313"
@@ -36,3 +39,5 @@ target-version = "py313"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = ["integration: richiede il database Postgres in esecuzione"]
+addopts = "-m 'not integration'"
