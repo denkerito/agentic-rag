@@ -123,13 +123,13 @@ Ogni storia ha una domanda associata e una risposta attesa: sono il test di valu
 | Livello | Scelta | Motivo |
 |---|---|---|
 | Linguaggio | Python | Standard per il lavoro con LLM |
-| Orchestrazione agente | LangChain + **LangGraph** | Il loop dell'agente è un grafo con stato; LangGraph lo rende esplicito e tracciabile, ed è una competenza riconoscibile |
+| Orchestrazione agente | **Pydantic AI** | Il percorso di analisi è deciso dal modello (loop con tool); output tipizzato e validato (fonti obbligatorie, confidenza, causa documentata), dipendenze iniettate nei tool, test senza chiamate LLM (`TestModel`). Se in futuro servirà un flusso fisso, human-in-the-loop o modalità proattiva, si può passare a `pydantic-graph` o rivalutare LangGraph |
 | LLM | Gemini (API gratuita) con function calling | Costo zero per l'MVP; i limiti del piano gratuito vanno verificati prima di iniziare |
 | Dati strutturati | PostgreSQL |  |
 | Vector store | pgvector |  |
 | Backend | FastAPI | Espone l'agente e fa lo streaming dei passi |
 | Frontend | React | Il più rapido per un'interfaccia con stream dei passi; il frontend non è il punto del progetto |
-| Osservabilità | LangSmith (piano gratuito) o log strutturati | Rende visibile il ragionamento, utile anche nel portfolio |
+| Osservabilità | Logfire (piano gratuito, integrazione nativa con Pydantic AI) o log strutturati | Rende visibile il ragionamento, utile anche nel portfolio |
 
 ## Come si misura il successo
 

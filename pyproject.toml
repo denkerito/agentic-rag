@@ -9,15 +9,13 @@ description = "Agente AI che investiga dati economici aziendali (SQL + RAG) con 
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "langchain",
-    "langgraph",
-    "langchain-google-genai",
+    "pydantic-ai-slim[google]",
     "psycopg[binary]",
     "pgvector",
     "fastapi",
     "uvicorn",
     "python-dotenv",
-    "langsmith",
+    "logfire",
 ]
 
 [project.optional-dependencies]
