@@ -84,6 +84,6 @@ Senza container, a mano: `uvicorn agentic_rag.api.app:app` e `cd frontend && npm
 Vite inoltra `/api/*` all'API (stesso origin, niente CORS); `VITE_API_BASE` cambia la base.
 La UI mostra la nuova indagine, i passi in tempo reale (SQL, ricerche, risposte scartate dal controllo
 sulle fonti), la risposta con confidenza, limiti e fonti cliccabili (pannello con la fattura, il
-movimento, il documento, ... e i collegamenti tra fonti), lo storico e il pulsante **Ferma**.
+movimento, il documento, ... e i collegamenti tra fonti), lo storico e il pulsante **Ferma**. Il tema (sistema / chiaro / scuro) si cambia dall'interruttore in basso a sinistra e viene ricordato.
 Lo stream usa `EventSource` nativo: riconnette da solo riprendendo da `Last-Event-ID`.
 Test: `npm test`; build con type-check: `npm run build`.

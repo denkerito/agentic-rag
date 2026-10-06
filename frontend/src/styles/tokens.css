@@ -1,0 +1,102 @@
+/* Token di design. Tema: `data-theme="light|dark"` su <html> lo forza; senza attributo
+   (scelta "sistema") si segue prefers-color-scheme. */
+:root {
+  color-scheme: light;
+  --bg: #f7f6f3;
+  --surface: #ffffff;
+  --surface-2: #f1efea;
+  --border: #e4e1da;
+  --border-strong: #cfcbc1;
+  --control-border: #8a867c; /* bordo di campi e pulsanti: >= 3:1 (WCAG 1.4.11) */
+  --text: #1f2328;
+  --muted: #5f6672;
+  --accent: #2b4c9b;
+  --accent-fg: #ffffff;
+  --accent-soft: #e8edf8;
+  --accent-2: #0e7490;
+  --glow-a: rgb(43 76 155 / 0.34);
+  --glow-b: rgb(14 116 144 / 0.3);
+  --glow-c: rgb(217 119 6 / 0.18);
+  --ok: #1d6f42;
+  --ok-soft: #e4f2ea;
+  --warn: #8a5a00;
+  --warn-soft: #fbf0d9;
+  --danger: #a4281c;
+  --danger-soft: #fbe6e3;
+  --code-bg: #f3f1ec;
+  --shadow: 0 1px 2px rgb(20 20 30 / 0.06), 0 12px 32px rgb(20 20 30 / 0.12);
+  --veil: rgb(18 19 22 / 0.42);
+
+  --r-s: 6px;
+  --r-m: 10px;
+  --r-l: 14px;
+
+  --t-xs: 0.78rem;
+  --t-s: 0.875rem;
+  --t-m: 1rem;
+  --t-l: 1.25rem;
+  --t-xl: 1.75rem;
+
+  --font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --mono: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, monospace;
+  --topbar-h: 0px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #121316;
+    --surface: #1a1c21;
+    --surface-2: #22252b;
+    --border: #2c3038;
+    --border-strong: #3d424d;
+    --control-border: #6f7683;
+    --text: #e8e9ec;
+    --muted: #9aa1ad;
+    --accent: #8fa8ee;
+    --accent-fg: #101626;
+    --accent-soft: #1f2a47;
+    --accent-2: #5eead4;
+    --glow-a: rgb(143 168 238 / 0.36);
+    --glow-b: rgb(94 234 212 / 0.26);
+    --glow-c: rgb(240 192 90 / 0.16);
+    --ok: #6cd29a;
+    --ok-soft: #15301f;
+    --warn: #f0c05a;
+    --warn-soft: #35290f;
+    --danger: #f28b82;
+    --danger-soft: #3a1a17;
+    --code-bg: #14161a;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.5);
+    --veil: rgb(0 0 0 / 0.6);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #121316;
+  --surface: #1a1c21;
+  --surface-2: #22252b;
+  --border: #2c3038;
+  --border-strong: #3d424d;
+  --control-border: #6f7683;
+  --text: #e8e9ec;
+  --muted: #9aa1ad;
+  --accent: #8fa8ee;
+  --accent-fg: #101626;
+  --accent-soft: #1f2a47;
+  --accent-2: #5eead4;
+  --glow-a: rgb(143 168 238 / 0.36);
+  --glow-b: rgb(94 234 212 / 0.26);
+  --glow-c: rgb(240 192 90 / 0.16);
+  --ok: #6cd29a;
+  --ok-soft: #15301f;
+  --warn: #f0c05a;
+  --warn-soft: #35290f;
+  --danger: #f28b82;
+  --danger-soft: #3a1a17;
+  --code-bg: #14161a;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.5);
+  --veil: rgb(0 0 0 / 0.6);
+}

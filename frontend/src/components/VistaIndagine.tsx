@@ -3,14 +3,13 @@ import { useOutletContext, useParams } from 'react-router-dom'
 import { fermaIndagine } from '../api/client'
 import { STATI_ATTIVI } from '../api/types'
 import { useIndagine } from '../hooks/useIndagine'
+import { durata } from '../lib/data'
 import { formatoData } from '../lib/formato'
+import type { LayoutContext } from '../lib/layoutContext'
+import { Icona } from './Icone'
 import { Passi } from './Passi'
 import { RispostaCard } from './RispostaCard'
 import { StatoBadge } from './StatoBadge'
-
-export interface LayoutContext {
-  ricaricaElenco: () => void
-}
 
 export default function VistaIndagine() {
   const { id } = useParams()
@@ -39,25 +38,35 @@ function Indagine({ id }: { id: string }) {
     }
   }
 
-  if (errore && !dettaglio) return <p className="errore-testo">{errore}</p>
+  if (errore && !dettaglio) {
+    return (
+      <div className="pagina">
+        <p className="errore-testo">{errore}</p>
+      </div>
+    )
+  }
 
   const attiva = dettaglio !== null && STATI_ATTIVI.includes(dettaglio.stato) && !terminata
   const u = dettaglio?.utilizzo
+  const inizio = dettaglio ? (dettaglio.iniziata_il ?? dettaglio.creata_il) : null
 
   return (
-    <article className="indagine">
-      <header className="indagine-testa">
+    <article className="pagina" aria-busy={attiva}>
+      <header className={`testata ${attiva ? 'attiva' : ''}`}>
         <div>
           <h1>{dettaglio?.domanda ?? 'Caricamento…'}</h1>
-          {dettaglio && (
+          {dettaglio && inizio && (
             <p className="meta">
               <StatoBadge stato={dettaglio.stato} />
-              <span className="muted">Avviata {formatoData(dettaglio.creata_il)}</span>
+              <span>Avviata {formatoData(dettaglio.creata_il)}</span>
+              <span>Durata {durata(inizio, dettaglio.conclusa_il)}</span>
+              <span className="mono">{dettaglio.modello}</span>
             </p>
           )}
         </div>
         {attiva && (
-          <button type="button" className="pericolo" onClick={ferma} disabled={stopRichiesto}>
+          <button type="button" className="btn pericolo" onClick={ferma} disabled={stopRichiesto}>
+            <Icona nome="stop" size={14} />
             {stopRichiesto ? 'Interruzione richiesta…' : 'Ferma'}
           </button>
         )}
@@ -75,17 +84,22 @@ function Indagine({ id }: { id: string }) {
         <p className="muted">In coda: l'indagine parte appena c'è una sessione libera.</p>
       )}
       {dettaglio?.stato === 'in_corso' && vista.passi.length === 0 && !terminata && (
-        <p className="muted">L'agente sta pianificando il primo passo…</p>
+        <div className="scheletro" role="status">
+          <span className="sr-only">L'agente sta pianificando il primo passo…</span>
+          <span className="barra-sk" />
+          <span className="barra-sk" />
+          <span className="barra-sk" />
+        </div>
       )}
-
-      <Passi passi={vista.passi} />
 
       {vista.risposta && <RispostaCard risposta={vista.risposta} />}
       {vista.errore && (
         <section className="card errore" role="alert">
           <h2>Indagine non completata</h2>
           <p>{vista.errore.messaggio}</p>
-          <p className="muted">Nessuna risposta è stata prodotta: i passi sopra restano consultabili.</p>
+          <p className="muted">
+            Nessuna risposta è stata prodotta: i passi qui sotto restano consultabili.
+          </p>
         </section>
       )}
       {vista.interrotta && (
@@ -95,8 +109,10 @@ function Indagine({ id }: { id: string }) {
         </section>
       )}
 
+      <Passi passi={vista.passi} inCorso={attiva && vista.passi.length > 0} />
+
       {u && (
-        <footer className="utilizzo muted">
+        <footer className="utilizzo">
           {u.requests} richieste al modello · {u.tool_calls} chiamate a tool ·{' '}
           {u.input_tokens?.toLocaleString('it-IT')} token in ingresso ·{' '}
           {u.output_tokens?.toLocaleString('it-IT')} in uscita

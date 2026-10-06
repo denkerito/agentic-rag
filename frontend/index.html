@@ -4,7 +4,16 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <title>Indagini economiche</title>
+    <script>
+      // applica il tema salvato prima del primo render (evita il lampo del tema sbagliato)
+      try {
+        var t = localStorage.getItem('tema')
+        if (t === 'chiaro') document.documentElement.setAttribute('data-theme', 'light')
+        else if (t === 'scuro') document.documentElement.setAttribute('data-theme', 'dark')
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,0 +1,86 @@
+/* Shell: barra laterale fissa da 900px, cassetto sotto. */
+.shell {
+  display: grid;
+  grid-template-columns: 288px minmax(0, 1fr);
+  min-height: 100dvh;
+}
+.barra {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 12px 12px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+}
+.barra-elenco {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+.barra-pie {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.topbar {
+  display: none;
+}
+.velo-menu {
+  display: none;
+}
+.contenuto {
+  min-width: 0;
+}
+.pagina {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 40px) 72px;
+}
+
+@media (max-width: 899px) {
+  :root {
+    --topbar-h: 52px;
+  }
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: var(--topbar-h);
+    padding: 0 12px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .barra {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    width: min(320px, 86vw);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform 0.2s ease,
+      visibility 0.2s;
+    box-shadow: var(--shadow);
+  }
+  .barra.aperta {
+    transform: none;
+    visibility: visible;
+  }
+  .velo-menu.aperto {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: var(--veil);
+  }
+}
