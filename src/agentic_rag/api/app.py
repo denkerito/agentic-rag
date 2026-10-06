@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from agentic_rag import config
 from agentic_rag.api import repository
+from agentic_rag.api.fonti import router as fonti_router
 from agentic_rag.api.routes import router
 from agentic_rag.api.runner import MOTIVO_SHUTDOWN, IndagineRunner
 
@@ -34,6 +35,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(router)
+    app.include_router(fonti_router)
     return app
 
 

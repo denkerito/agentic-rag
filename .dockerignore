@@ -1,0 +1,10 @@
+# L'immagine dell'API contiene solo pyproject, README e src.
+.git
+.venv
+.env
+.env.*
+data
+eval
+tests
+frontend
+**/__pycache__

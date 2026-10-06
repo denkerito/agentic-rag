@@ -1,3 +1,5 @@
+# `docker compose up` avvia tutto in sviluppo: DB, API (uvicorn --reload) e UI (Vite) con il codice
+# montato dal disco. Porte configurabili con API_PORT / UI_PORT. Prima volta: vedi README.
 services:
   db:
     image: pgvector/pgvector:pg17
@@ -15,6 +17,38 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # nel container il database è il servizio `db`, non localhost
+      DATABASE_URL_APP: ${DATABASE_URL_APP_DOCKER:-postgresql://app_rw:app_password@db:5432/agentic_rag}
+      DATABASE_URL_AGENT: ${DATABASE_URL_AGENT_DOCKER:-postgresql://agent_ro:agent_password@db:5432/agentic_rag}
+    volumes:
+      - ./src:/app/src
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    environment:
+      API_TARGET: http://api:8000
+      VITE_POLLING: "1"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "${UI_PORT:-5173}:5173"
+    depends_on:
+      - api
 
 volumes:
   pgdata:
