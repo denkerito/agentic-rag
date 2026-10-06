@@ -11,6 +11,11 @@ GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
 DATABASE_URL: str = os.getenv("DATABASE_URL", "")
 DATABASE_URL_ADMIN: str = os.getenv("DATABASE_URL_ADMIN", "")
 DATABASE_URL_AGENT: str = os.getenv("DATABASE_URL_AGENT", "")
+DATABASE_URL_APP: str = os.getenv("DATABASE_URL_APP", "")
+CORS_ORIGINS: list[str] = [
+    o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",") if o.strip()
+]
+MAX_INDAGINI_CONCORRENTI: int = int(os.getenv("MAX_INDAGINI_CONCORRENTI", "3"))
 DATA_DIR: Path = ROOT_DIR / "data"
 EMBEDDING_DIM: int = 768
 EMBEDDING_MODEL: str = "models/gemini-embedding-001"
