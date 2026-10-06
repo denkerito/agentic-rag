@@ -8,7 +8,10 @@
 
 
 ### Divieto Tassativo di Data Leakage (Anti-Cheating)
-- L'agente e i moduli di reasoning applicativo **NON devono MAI accedere o consultare** i file in `eval/ground_truth/` (`storie.yaml`, `domande_test.yaml`) durante l'analisi, lo sviluppo dell'agente o l'elaborazione delle risposte.
+- L'agente e i moduli di reasoning applicativo **NON devono MAI accedere o consultare** i file in `eval/ground_truth/` (`storie.yaml`, `domande_test.yaml`) durante l'analisi o l'elaborazione delle risposte.
+- L'assistente di sviluppo può conoscere la **struttura** di quei file (nomi dei campi, tipi, formato), ma **NON i valori**: risposte attese, cause e storie restano riservati. Serve per scrivere e correggere l'eval harness senza adattare l'agente alle soluzioni: non si ritoccano prompt, soglie o tool in base al contenuto del ground truth.
+  - La struttura va fornita dall'utente (schema o esempio sintetico con valori inventati); l'assistente non apre i file veri.
+  - Il codice dell'harness può leggere i file a runtime, ma l'assistente non ne stampa né ne riporta il contenuto.
 - I file in `eval/ground_truth/` sono **esclusivamente riservati alla pipeline di benchmarking e test automatizzato** per confrontare le risposte fornite dall'agente con quelle attese.
 
 ## Principi Guida dell'Agente
