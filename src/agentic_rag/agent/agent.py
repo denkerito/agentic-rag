@@ -1,7 +1,8 @@
-from pydantic_ai import Agent, ModelRetry, RunContext
+from pydantic_ai import Agent, ModelRetry, RunContext, Tool
+from pydantic_ai.models import Model
 
-from agentic_rag.agent import config
 from agentic_rag.agent.deps import AgentDeps
+from agentic_rag.agent.model import build_model
 from agentic_rag.agent.output import Risposta
 from agentic_rag.agent.prompt import SYSTEM_PROMPT
 from agentic_rag.agent.tools import apri_documento, cerca_documenti, query_sql
@@ -27,13 +28,14 @@ def check_risposta(risposta: Risposta, seen_ids: set[str]) -> None:
         )
 
 
-def build_agent(model: str | None = None, schema: str = "") -> Agent[AgentDeps, Risposta]:
+def build_agent(model: Model | str | None = None, schema: str = "") -> Agent[AgentDeps, Risposta]:
     agent = Agent(
-        model or config.AGENT_MODEL,
+        model or build_model(),
         deps_type=AgentDeps,
         output_type=Risposta,
         instructions=SYSTEM_PROMPT.format(schema=schema),
-        tools=[query_sql, cerca_documenti, apri_documento],
+        # sequential: i tool condividono una connessione psycopg e non devono sovrapporsi
+        tools=[Tool(f, sequential=True) for f in (query_sql, cerca_documenti, apri_documento)],
         retries=3,
     )
 
