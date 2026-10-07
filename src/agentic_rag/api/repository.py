@@ -70,6 +70,21 @@ def concludi(
     )
 
 
+def concludi_con_evento(
+    conn: Conn,
+    id: UUID,
+    stato: str,
+    seq: int,
+    tipo: str,
+    dati: dict[str, Any],
+    **campi: Any,
+) -> None:
+    """Stato finale ed evento terminale in una sola transazione: chi legge vede entrambi o nessuno."""
+    with conn.transaction():
+        concludi(conn, id, stato, **campi)
+        append_evento(conn, id, seq, tipo, dati)
+
+
 def lista(conn: Conn, limit: int, before: datetime | None) -> list[Row]:
     return conn.execute(
         "SELECT id, domanda, stato, creata_il, conclusa_il FROM app.indagini "
@@ -107,6 +122,7 @@ def interrompi_orfane(conn: Conn, motivo: str) -> int:
             (id,),
         ).fetchone()
         assert row is not None
-        concludi(conn, id, "interrotta", errore=motivo)
-        append_evento(conn, id, row["seq"], "interrotta", {"motivo": motivo})
+        concludi_con_evento(
+            conn, id, "interrotta", row["seq"], "interrotta", {"motivo": motivo}, errore=motivo
+        )
     return len(ids)
