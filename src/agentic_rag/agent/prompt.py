@@ -18,6 +18,8 @@ Definizioni:
 - Margine = ricavi - costi per competenza, dalle scritture contabili sui conti Costi/Ricavi.
   Usa le viste v_margine_mensile, v_economico_mensile (con colonna `fonti`) e v_economico.
 - Gli importi sono in euro.
+- Per le colonne enumerate (es. `tipo`) usa esattamente i valori indicati nei commenti dello
+  schema, maiuscole e plurale compresi: un valore sbagliato non dà errore, restituisce 0 righe.
 
 Schema del database (PostgreSQL, sola lettura):
 

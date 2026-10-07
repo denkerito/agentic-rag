@@ -1,3 +1,4 @@
+import re
 from decimal import Decimal
 
 import psycopg
@@ -99,3 +100,28 @@ def test_schema_prompt_includes_comments_and_views(deps) -> None:
     assert "VISTA v_margine_mensile" in ddl and "TABELLA fatture" in ddl
     assert "Positivo = entrata" in ddl
     assert "embedding" not in ddl
+
+
+def test_schema_prompt_lists_values_of_enum_columns(deps) -> None:
+    ddl = build_schema_ddl(deps.conn)
+    for rel in ("v_economico", "v_economico_mensile"):
+        blocco = ddl.split(f"-- VISTA {rel}:")[1].split("\n\n")[0]
+        assert "'Costi'" in blocco and "'Ricavi'" in blocco
+
+
+def test_enum_comments_match_check_constraints(owner) -> None:
+    """Ogni valore di un CHECK (col IN (...)) deve comparire nel commento della colonna."""
+    rows = owner.execute(
+        "SELECT k.conrelid::regclass::text, a.attname, pg_get_constraintdef(k.oid), "
+        "       col_description(c.oid, a.attnum) "
+        "FROM pg_constraint k "
+        "JOIN pg_class c ON c.oid = k.conrelid "
+        "JOIN pg_attribute a ON a.attrelid = k.conrelid AND a.attnum = k.conkey[1] "
+        "WHERE k.contype = 'c' AND cardinality(k.conkey) = 1 "
+        "AND pg_get_constraintdef(k.oid) LIKE '%ANY (ARRAY[%' "
+        "AND c.relnamespace = 'public'::regnamespace"
+    ).fetchall()
+    assert rows, "nessun CHECK enumerato trovato"
+    for tabella, colonna, definizione, commento in rows:
+        for valore in re.findall(r"'([^']+)'::text", definizione):
+            assert commento and f"'{valore}'" in commento, f"{tabella}.{colonna}: manca '{valore}'"

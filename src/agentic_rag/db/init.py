@@ -18,6 +18,7 @@ AGENT_ROLE = "agent_ro"
 APP_ROLE = "app_rw"
 SCHEMA_FILE = Path(__file__).with_name("schema.sql")
 SCHEMA_APP_FILE = Path(__file__).with_name("schema_app.sql")
+SCHEMA_COMMENTS_FILE = Path(__file__).with_name("schema_comments.sql")
 
 
 def _creds(url: str) -> tuple[str, str, str]:
@@ -84,6 +85,7 @@ def apply_schema(owner_url: str, reset: bool) -> None:
                     sql.SQL("DROP TABLE IF EXISTS {} CASCADE").format(sql.Identifier(table))
                 )
         cur.execute(ddl)
+        cur.execute(SCHEMA_COMMENTS_FILE.read_text(encoding="utf-8"))
         role_a = sql.Identifier(AGENT_ROLE)
         cur.execute(sql.SQL("GRANT SELECT ON ALL TABLES IN SCHEMA public TO {}").format(role_a))
         cur.execute(
@@ -91,6 +93,12 @@ def apply_schema(owner_url: str, reset: bool) -> None:
                 "ALTER DEFAULT PRIVILEGES FOR ROLE {} IN SCHEMA public GRANT SELECT ON TABLES TO {}"
             ).format(sql.Identifier(OWNER_ROLE), role_a)
         )
+
+
+def apply_schema_comments(owner_url: str) -> None:
+    """Commenti con i valori ammessi delle colonne enumerate: idempotente, non tocca i dati."""
+    with psycopg.connect(owner_url, autocommit=True) as conn:
+        conn.execute(SCHEMA_COMMENTS_FILE.read_text(encoding="utf-8"))  # type: ignore[arg-type]
 
 
 def apply_schema_app(owner_url: str) -> None:
@@ -113,6 +121,11 @@ def main() -> None:
         action="store_true",
         help="solo ruolo app_rw e schema `app` (storico indagini): non tocca dati ed embedding",
     )
+    parser.add_argument(
+        "--comments-only",
+        action="store_true",
+        help="solo i commenti con i valori ammessi delle colonne enumerate: non tocca dati ed embedding",
+    )
     args = parser.parse_args()
     for name in ("DATABASE_URL_ADMIN", "DATABASE_URL", "DATABASE_URL_AGENT", "DATABASE_URL_APP"):
         if not getattr(config, name):
@@ -127,6 +140,10 @@ def main() -> None:
     if args.app_only:
         apply_schema_app(config.DATABASE_URL)
         print("Schema `app` e ruolo app_rw pronti.")
+        return
+    if args.comments_only:
+        apply_schema_comments(config.DATABASE_URL)
+        print("Commenti sulle colonne enumerate aggiornati.")
         return
     apply_schema(config.DATABASE_URL, args.reset)
     apply_schema_app(config.DATABASE_URL)
