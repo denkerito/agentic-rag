@@ -1,0 +1,170 @@
+{
+  "meta": {
+    "data": "2026-10-07T17:11:02+02:00",
+    "modello": "google:gemini-3.5-flash-lite",
+    "giudice": "spento",
+    "domande": 1,
+    "interrotta": false
+  },
+  "aggregati": {
+    "totale": {
+      "domande": 1,
+      "ok": 0,
+      "ko": 1,
+      "errore": 0,
+      "nd": 0,
+      "richieste_medie": 7.0
+    },
+    "per_storia": {
+      "ST-01": {
+        "domande": 1,
+        "ok": 0,
+        "ko": 1,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 7.0
+      }
+    },
+    "per_modalita": {
+      "normale": {
+        "domande": 1,
+        "ok": 0,
+        "ko": 1,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 7.0
+      }
+    }
+  },
+  "domande": [
+    {
+      "id": 1,
+      "storia": "ST-01",
+      "modalita": "normale",
+      "esito": "ko",
+      "richieste": 7,
+      "passi_tool": 5,
+      "durata_s": 59.2,
+      "sql_agente": [
+        "SELECT mese, ricavi, costi, margine FROM v_margine_mensile WHERE mese IN ('2025-07-01', '2025-08-01') ORDER BY mese",
+        "SELECT mese, conto_codice, conto_descrizione, tipo, importo, fonti FROM v_economico_mensile WHERE mese IN ('2025-07-01', '2025-08-01') ORDER BY mese, tipo DESC, importo DESC"
+      ],
+      "tabelle_lette": [
+        "clienti",
+        "documenti",
+        "documenti_chunks",
+        "fatture",
+        "fornitori",
+        "piano_dei_conti",
+        "scritture_contabili",
+        "v_economico_mensile",
+        "v_margine_mensile"
+      ],
+      "risposta": {
+        "conclusione": "Il margine economico è diminuito ad agosto 2025 rispetto a luglio 2025 passando da 18.535,00 € a 355,00 €.\n\nDall'analisi dei dati di competenza (v_margine_mensile e v_economico_mensile):\n- I ricavi totali sono diminuiti di 17.800,00 € (da 97.800,00 € a 80.000,00 €), in particolare per la contrazione sia dei ricavi per sviluppo software su commessa (conto 70.01: da 58.680,00 € a 48.000,00 €) sia dei ricavi per contratti di manutenzione evolutiva e SLA (conto 70.02: da 39.120,00 € a 32.000,00 €).\n- I costi totali sono rimasti sostanzialmente stabili, passando da 79.265,00 € a 79.645,00 € (con un leggero incremento sui canoni software/licenze sviluppo, conto 61.02, salito da 4.000,00 € a 5.360,00 €).\n\nLa causa della contrazione dei ricavi e della conseguente riduzione del margine è documentata nella Circolare interna n. 04/2025 (DOC-NOT-002), che stabilisce la chiusura aziendale estiva e il piano ferie collettive dall'11 al 22 agosto 2025 (con interruzione delle attività ordinarie di sviluppo su commessa e fatturazione concordata con i clienti basata sulle sole ore effettivamente lavorate).",
+        "confidenza": "alta",
+        "causa_documentata": true,
+        "limiti": null,
+        "numeri": [
+          {
+            "descrizione": "Margine luglio 2025",
+            "valore": "18535.00",
+            "fonti": [
+              "FATT-A-2025-0043",
+              "FATT-A-2025-0044",
+              "FATT-A-2025-0045",
+              "FATT-A-2025-0046",
+              "FATT-A-2025-0047",
+              "FATT-A-2025-0048",
+              "FATT-A-2025-0049",
+              "FATT-P-2025-0007"
+            ]
+          },
+          {
+            "descrizione": "Margine agosto 2025",
+            "valore": "355.00",
+            "fonti": [
+              "FATT-A-2025-0050",
+              "FATT-A-2025-0051",
+              "FATT-A-2025-0052",
+              "FATT-A-2025-0053",
+              "FATT-A-2025-0054",
+              "FATT-A-2025-0055",
+              "FATT-A-2025-0056",
+              "FATT-P-2025-0008"
+            ]
+          },
+          {
+            "descrizione": "Ricavi luglio 2025",
+            "valore": "97800.00",
+            "fonti": [
+              "FATT-A-2025-0043",
+              "FATT-A-2025-0044",
+              "FATT-A-2025-0045",
+              "FATT-A-2025-0046",
+              "FATT-A-2025-0047",
+              "FATT-A-2025-0048",
+              "FATT-A-2025-0049"
+            ]
+          },
+          {
+            "descrizione": "Ricavi agosto 2025",
+            "valore": "80000.00",
+            "fonti": [
+              "FATT-A-2025-0050",
+              "FATT-A-2025-0051",
+              "FATT-A-2025-0052",
+              "FATT-A-2025-0053",
+              "FATT-A-2025-0054",
+              "FATT-A-2025-0055",
+              "FATT-A-2025-0056"
+            ]
+          },
+          {
+            "descrizione": "Costi luglio 2025",
+            "valore": "79265.00",
+            "fonti": [
+              "FATT-P-2025-0007"
+            ]
+          },
+          {
+            "descrizione": "Costi agosto 2025",
+            "valore": "79645.00",
+            "fonti": [
+              "FATT-P-2025-0008"
+            ]
+          }
+        ],
+        "fonti": [
+          "DOC-NOT-002",
+          "FATT-A-2025-0043",
+          "FATT-A-2025-0044",
+          "FATT-A-2025-0045",
+          "FATT-A-2025-0046",
+          "FATT-A-2025-0047",
+          "FATT-A-2025-0048",
+          "FATT-A-2025-0049",
+          "FATT-A-2025-0050",
+          "FATT-A-2025-0051",
+          "FATT-A-2025-0052",
+          "FATT-A-2025-0053",
+          "FATT-A-2025-0054",
+          "FATT-A-2025-0055",
+          "FATT-A-2025-0056",
+          "FATT-P-2025-0007",
+          "FATT-P-2025-0008"
+        ]
+      },
+      "metriche": {
+        "fonti_id": "3/6",
+        "tabelle": null,
+        "numeri": "4/6",
+        "numeri_na": null,
+        "fonti_extra": 14,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    }
+  ]
+}
