@@ -166,3 +166,57 @@ def test_la_pausa_si_applica_solo_tra_le_domande(tmp_path, monkeypatch, dati) ->
     pause: list[float] = []
     esegui(gt.domande, pausa=3.5, dormi=pause.append)
     assert pause == [3.5, 3.5]
+
+
+def test_una_domanda_bloccata_va_in_timeout_e_la_batteria_prosegue(
+    tmp_path, monkeypatch, dati
+) -> None:
+    import asyncio
+
+    gt = _gt(tmp_path, dati)
+
+    async def lenta(messages, info):
+        await asyncio.sleep(30)
+        raise AssertionError("non deve arrivare qui")
+
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(lenta))
+    risultati = esegui(gt.domande[:2], pausa=0, timeout=0.3)
+    assert [r.esito for r in risultati] == ["errore", "errore"]
+    assert [r.errore for r in risultati] == ["TimeoutError", "TimeoutError"]
+    assert [r.passi_tool for r in risultati] == [0, 0]
+
+
+def test_interruzione_conserva_le_domande_completate(tmp_path, monkeypatch, dati) -> None:
+    gt = _gt(tmp_path, dati)
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: _modello(dati))
+
+    def ctrl_c(_secondi: float) -> None:
+        raise KeyboardInterrupt
+
+    risultati: list = []
+    with pytest.raises(KeyboardInterrupt):
+        esegui(gt.domande, pausa=1, dormi=ctrl_c, risultati=risultati)
+    assert [r.domanda.id for r in risultati] == [1]  # la prima è completa e non si perde
+
+
+def test_inizio_e_progresso_sono_notificati_in_ordine(tmp_path, monkeypatch, dati) -> None:
+    gt = _gt(tmp_path, dati)
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: _modello(dati))
+    eventi: list[str] = []
+    esegui(
+        gt.domande[:2],
+        pausa=0,
+        inizio=lambda d: eventi.append(f"inizio {d.id}"),
+        progresso=lambda r: eventi.append(f"fine {r.domanda.id}"),
+    )
+    assert eventi == ["inizio 1", "fine 1", "inizio 2", "fine 2"]
+
+
+def test_database_giu_non_blocca_la_batteria(tmp_path, monkeypatch, dati) -> None:
+    gt = _gt(tmp_path, dati)
+    monkeypatch.setattr(config, "DATABASE_URL_AGENT", "postgresql://u:p@127.0.0.1:1/db")
+    from agentic_rag import config as app_config
+
+    monkeypatch.setattr(app_config, "DATABASE_URL_AGENT", "postgresql://u:p@127.0.0.1:1/db")
+    risultati = esegui(gt.domande[:1], pausa=0)
+    assert risultati[0].esito == "errore" and risultati[0].errore.startswith("database:")

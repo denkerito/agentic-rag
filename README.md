@@ -99,7 +99,10 @@ python -m agentic_rag.eval --ids 1,4 --judge    # solo alcune domande, con giudi
 ```
 
 Opzioni: `--ids`, `--storia ST-01`, `--modalita normale|onesta|non_rispondibile|regolare`, `--model`,
-`--judge` / `--judge-model`, `--pause` (secondi tra le domande), `--gt`, `--out`.
+`--judge` / `--judge-model`, `--pause` (secondi tra le domande), `--timeout` (secondi massimi per
+domanda, default 300: oltre, la domanda risulta in errore e la batteria prosegue), `--gt`, `--out`.
+Ogni domanda stampa una riga all'avvio e una alla fine; con Ctrl+C si salva comunque il report delle
+domande già completate.
 
 Per ogni domanda: **fonti** (ID attesi citati; tabelle `nome.csv` lette dalle query dell'agente, viste
 comprese), **numeri** (la `query_sql` attesa gira su un SQLite in memoria costruito da `data/csv`, perché è

@@ -23,7 +23,7 @@ def open_session(model: str | None = None) -> tuple[Agent[AgentDeps, Risposta], 
         raise SystemExit("DATABASE_URL_AGENT non impostata (vedi .env.example)")
     # autocommit: agent_ro ha idle_in_transaction_session_timeout=30s, e una transazione implicita
     # aperta da una query di setup o di ricerca verrebbe uccisa mentre si attende il modello.
-    conn = psycopg.connect(app_config.DATABASE_URL_AGENT, autocommit=True)
+    conn = psycopg.connect(app_config.DATABASE_URL_AGENT, autocommit=True, connect_timeout=10)
     try:
         deps = AgentDeps(conn=conn, relations=list_relations(conn))
         agent = build_agent(build_model(model), schema=build_schema_ddl(conn))
