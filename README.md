@@ -87,3 +87,30 @@ sulle fonti), la risposta con confidenza, limiti e fonti cliccabili (pannello co
 movimento, il documento, ... e i collegamenti tra fonti), lo storico e il pulsante **Ferma**. Il tema (sistema / chiaro / scuro) si cambia dall'interruttore in basso a sinistra e viene ricordato.
 Lo stream usa `EventSource` nativo: riconnette da solo riprendendo da `Last-Event-ID`.
 Test: `npm test`; build con type-check: `npm run build`.
+
+## Eval
+
+Esegue le domande di `eval/ground_truth/` con lo stesso agente dell'API e misura i risultati.
+
+```bash
+python -m agentic_rag.eval --dry-run            # valida il ground truth, senza chiamare il modello
+python -m agentic_rag.eval --pause 10           # batteria completa (~7 richieste al modello per domanda)
+python -m agentic_rag.eval --ids 1,4 --judge    # solo alcune domande, con giudice LLM sulla causa
+```
+
+Opzioni: `--ids`, `--storia ST-01`, `--modalita normale|onesta|non_rispondibile|regolare`, `--model`,
+`--judge` / `--judge-model`, `--pause` (secondi tra le domande), `--gt`, `--out`.
+
+Per ogni domanda: **fonti** (ID attesi citati; tabelle `nome.csv` lette dalle query dell'agente, viste
+comprese), **numeri** (la `query_sql` attesa gira su un SQLite in memoria costruito da `data/csv`, perché è
+scritta per quel layout; i valori si cercano in `numeri[]` e nella conclusione), **comportamento** per i
+casi "causa non documentata" e "non rispondibile", **costo** (richieste al modello) e, con `--judge`, il
+verdetto del giudice. Gli esiti (`ok` / `ko` / `errore` / `nd`) sono euristiche con soglie in
+`eval/valutazione.py`.
+
+Due report in `eval/reports/`: **pubblico** (esiti, conteggi come `2/3`, risposta e query dell'agente) e
+**privato** in `eval/reports/private/` (ignorato da git), con domande, risposte e fonti attese e la
+motivazione del giudice. Il privato non va condiviso con chi sviluppa l'agente (vedi `AGENTS.md`).
+Con poche domande i punteggi sono un segnale, non un obiettivo: ritoccare prompt e soglie guardando il
+test set lo rende meno affidabile.
+

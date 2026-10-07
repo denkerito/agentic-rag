@@ -82,9 +82,15 @@ class IndagineRunner:
             await asyncio.to_thread(repository.append_evento, conn, id, seq, tipo, dati)
 
         async def termina(stato: str, evento: BaseModel, **campi: Any) -> None:
-            # prima lo stato, poi l'evento terminale: chi lo riceve trova già lo stato aggiornato
-            await asyncio.to_thread(repository.concludi, conn, id, stato, **campi)
-            await emit(evento)
+            # stato ed evento terminale insieme (stessa transazione): lo stream SSE non può vedere
+            # uno stato finale senza l'evento, e chi riceve l'evento trova lo stato già aggiornato
+            nonlocal seq
+            seq += 1
+            dati = evento.model_dump(mode="json", exclude={"tipo"})
+            tipo = evento.model_dump()["tipo"]
+            await asyncio.to_thread(
+                repository.concludi_con_evento, conn, id, stato, seq, tipo, dati, **campi
+            )
 
         try:
             async with self._sem:
