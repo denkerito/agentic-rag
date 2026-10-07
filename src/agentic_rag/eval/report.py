@@ -31,6 +31,7 @@ def riga_pubblica(r: RisultatoDomanda) -> dict[str, Any]:
         "modalita": d.modalita.value,
         "esito": r.esito,
         "richieste": r.richieste,
+        "passi_tool": r.passi_tool,
         "durata_s": round(r.durata_s, 1),
         "sql_agente": r.sql_agente,
         "tabelle_lette": r.tabelle_lette,

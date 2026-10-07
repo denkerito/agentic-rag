@@ -1,0 +1,1196 @@
+{
+  "meta": {
+    "data": "2026-10-07T17:33:31+02:00",
+    "modello": "google:gemini-3.5-flash-lite",
+    "giudice": "spento",
+    "domande": 12,
+    "interrotta": false
+  },
+  "aggregati": {
+    "totale": {
+      "domande": 12,
+      "ok": 5,
+      "ko": 7,
+      "errore": 0,
+      "nd": 0,
+      "richieste_medie": 8.9
+    },
+    "per_storia": {
+      "-": {
+        "domande": 3,
+        "ok": 1,
+        "ko": 2,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 8.7
+      },
+      "ST-01": {
+        "domande": 2,
+        "ok": 0,
+        "ko": 2,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 10.0
+      },
+      "ST-02": {
+        "domande": 2,
+        "ok": 2,
+        "ko": 0,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 9.0
+      },
+      "ST-03": {
+        "domande": 2,
+        "ok": 1,
+        "ko": 1,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 8.5
+      },
+      "ST-04": {
+        "domande": 1,
+        "ok": 1,
+        "ko": 0,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 12.0
+      },
+      "ST-05": {
+        "domande": 1,
+        "ok": 0,
+        "ko": 1,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 8.0
+      },
+      "ST-06": {
+        "domande": 1,
+        "ok": 0,
+        "ko": 1,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 6.0
+      }
+    },
+    "per_modalita": {
+      "non_rispondibile": {
+        "domande": 1,
+        "ok": 1,
+        "ko": 0,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 9.0
+      },
+      "normale": {
+        "domande": 9,
+        "ok": 3,
+        "ko": 6,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 8.7
+      },
+      "onesta": {
+        "domande": 1,
+        "ok": 1,
+        "ko": 0,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 12.0
+      },
+      "regolare": {
+        "domande": 1,
+        "ok": 0,
+        "ko": 1,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 8.0
+      }
+    }
+  },
+  "domande": [
+    {
+      "id": 1,
+      "storia": "ST-01",
+      "modalita": "normale",
+      "esito": "ko",
+      "richieste": 15,
+      "passi_tool": 12,
+      "durata_s": 103.1,
+      "sql_agente": [
+        "SELECT mese, ricavi, costi, margine FROM v_margine_mensile WHERE mese IN ('2024-07-01', '2024-08-01', '2025-07-01', '2025-08-01') ORDER BY mese",
+        "SELECT m.conto_codice, m.conto_descrizione, m.tipo, m.importo, m.fontilabel, m.fonti FROM (SELECT mese, conto_codice, conto_descrizione, tipo, importo, fonti, ARRAY_TO_STRING(fonti, ', ') AS fontilabel FROM v_economico_mensile WHERE mese IN ('2025-07-01', '2025-08-01')) AS m ORDER BY m.mese, m.tipo DESC, m.importo DESC",
+        "SELECT t1.conto_code, t1.conto_desc, t1.imp_lug, t2.imp_ago, t2.imp_ago - t1.imp_lug AS diff FROM (SELECT conto_codice AS conto_code, conto_descrizione AS conto_desc, importo AS imp_lug FROM v_economico_mensile WHERE mese = '2025-07-01') AS t1 FULL OUTER JOIN (SELECT conto_codice AS conto_code, conto_descrizione AS conto_desc, importo AS imp_ago FROM v_economico_mensile WHERE mese = '2025-08-01') AS t2 ON t1.conto_code = t2.conto_code ORDER BY diff",
+        "SELECT f.id AS fattura_id, f.data, f.cliente_id, c.denominazione AS cliente_denominazione, f.imponibile FROM fatture AS f JOIN clienti AS c ON f.cliente_id = c.id WHERE f.data >= '2025-08-01' AND f.data <= '2025-08-31' ORDER BY f.imponibile DESC",
+        "SELECT f.id AS fattura_id, f.data, f.cliente_id, c.denominazione AS cliente_denominazione, f.imponibile FROM fatture AS f JOIN clienti AS c ON f.cliente_id = c.id WHERE f.data >= '2025-07-01' AND f.data <= '2025-07-31' ORDER BY f.imponibile DESC",
+        "SELECT SUM(ricavi) AS ricavi_lug, SUM(costi) AS costi_lug, SUM(margine) AS margine_lug FROM v_margine_mensile WHERE mese = '2025-07-01'",
+        "SELECT SUM(ricavi) AS ricavi_ago, SUM(costi) AS costi_ago, SUM(margine) AS margine_ago FROM v_margine_mensile WHERE mese = '2025-08-01'",
+        "SELECT 80000.00 - 97800.00 AS diff_ricavi, 79645.00 - 79265.00 AS diff_costi, 355.00 - 18535.00 AS diff_margine"
+      ],
+      "tabelle_lette": [
+        "clienti",
+        "documenti",
+        "documenti_chunks",
+        "fatture",
+        "fornitori",
+        "piano_dei_conti",
+        "scritture_contabili",
+        "v_economico_mensile",
+        "v_margine_mensile"
+      ],
+      "risposta": {
+        "conclusione": "Il margine aziendale è diminuito drasticamente ad agosto 2025 rispetto a luglio 2025, passando da 18.535,00 € a 355,00 € (con una contrazione complessiva di -18.180,00 €). \n\nQuesta flessione è dovuta a due fattori principali emersi dai dati contabili e documentali:\n\n1. **Contrazione dei ricavi (-17.800,00 €):**\n   I ricavi totali sono scesi dai 97.800,00 € di luglio agli 80.000,00 € di agosto. Tale calo è attribuibile alla riduzione generalizzata degli importi fatturati ai clienti alla fine del mese di agosto 2025 (FATT-A-2025-0050, FATT-A-2025-0051, FATT-A-2025-0052, FATT-A-2025-0053, FATT-A-2025-0054, FATT-A-2025-0055, FATT-A-2025-0056) rispetto a luglio (FATT-A-2025-0043, FATT-A-2025-0044, FATT-A-2025-0045, FATT-A-2025-0046, FATT-A-2025-0047, FATT-A-2025-0048, FATT-A-2025-0049), verosimilmente legata alla stagionalità estiva e alla minore attività sui progetti di sviluppo.\n\n2. **Incremento dei costi (+380,00 €):**\n   I costi totali sono leggermente aumentati, passando da 79.265,00 € a 79.645,00 €. L'incremento è imputabile principalmente al conto dei canoni software, SaaS e licenze di sviluppo (conto 61.02), salito da 4.000,00 € (FATT-P-2025-0007) a 5.360,00 € (FATT-P-2025-0008) (+1.360,00 €) a seguito dell'aumento tariffario del 34% applicato da Nimbus Software sulla piattaforma DevOps Enterprise (come documentato da DOC-EML-001 e DOC-EML-002). Tale aumento è stato in parte compensato da lievi riduzioni sui costi di cloud hosting e utenze.",
+        "confidenza": "alta",
+        "causa_documentata": true,
+        "limiti": "La contrazione dei ricavi per cliente ad agosto non è associata a un singolo verbale o ordine specifico di riduzione straordinaria per quel mese specifico (la comunicazione formale di internalizzazione da parte di Barilli Logistica riguarda il trimestre successivo, a partire da ottobre 2025), configurandosi quindi come una flessione di natura prevalentemente congiunturale/stagionale estiva sui volumi di sviluppo.",
+        "numeri": [
+          {
+            "descrizione": "Margine di luglio 2025",
+            "valore": "18535.00",
+            "fonti": [
+              "FATT-A-2025-0043",
+              "FATT-A-2025-0044",
+              "FATT-A-2025-0045",
+              "FATT-A-2025-0046",
+              "FATT-A-2025-0047",
+              "FATT-A-2025-0048",
+              "FATT-A-2025-0049",
+              "FATT-P-2025-0007"
+            ]
+          },
+          {
+            "descrizione": "Margine di agosto 2025",
+            "valore": "355.00",
+            "fonti": [
+              "FATT-A-2025-0050",
+              "FATT-A-2025-0051",
+              "FATT-A-2025-0052",
+              "FATT-A-2025-0053",
+              "FATT-A-2025-0054",
+              "FATT-A-2025-0055",
+              "FATT-A-2025-0056",
+              "FATT-P-2025-0008"
+            ]
+          },
+          {
+            "descrizione": "Variazione del margine (agosto vs luglio)",
+            "valore": "-18180.00",
+            "fonti": [
+              "FATT-A-2025-0043",
+              "FATT-A-2025-0050"
+            ]
+          },
+          {
+            "descrizione": "Ricavi di luglio 2025",
+            "valore": "97800.00",
+            "fonti": [
+              "FATT-A-2025-0043",
+              "FATT-A-2025-0044",
+              "FATT-A-2025-0045",
+              "FATT-A-2025-0046",
+              "FATT-A-2025-0047",
+              "FATT-A-2025-0048",
+              "FATT-A-2025-0049"
+            ]
+          },
+          {
+            "descrizione": "Ricavi di agosto 2025",
+            "valore": "80000.00",
+            "fonti": [
+              "FATT-A-2025-0050",
+              "FATT-A-2025-0051",
+              "FATT-A-2025-0052",
+              "FATT-A-2025-0053",
+              "FATT-A-2025-0054",
+              "FATT-A-2025-0055",
+              "FATT-A-2025-0056"
+            ]
+          },
+          {
+            "descrizione": "Variazione dei ricavi (agosto vs luglio)",
+            "valore": "-17800.00",
+            "fonti": [
+              "FATT-A-2025-0050",
+              "FATT-A-2025-0043"
+            ]
+          },
+          {
+            "descrizione": "Costi di luglio 2025",
+            "valore": "79265.00",
+            "fonti": [
+              "FATT-P-2025-0007"
+            ]
+          },
+          {
+            "descrizione": "Costi di agosto 2025",
+            "valore": "79645.00",
+            "fonti": [
+              "FATT-P-2025-0008"
+            ]
+          },
+          {
+            "descrizione": "Variazione dei costi (agosto vs luglio)",
+            "valore": "380.00",
+            "fonti": [
+              "FATT-P-2025-0007",
+              "FATT-P-2025-0008"
+            ]
+          },
+          {
+            "descrizione": "Canone software Nimbus di luglio 2025 (conto 61.02)",
+            "valore": "4000.00",
+            "fonti": [
+              "FATT-P-2025-0007"
+            ]
+          },
+          {
+            "descrizione": "Canone software Nimbus di agosto 2025 (conto 61.02)",
+            "valore": "5360.00",
+            "fonti": [
+              "FATT-P-2025-0008"
+            ]
+          }
+        ],
+        "fonti": [
+          "FATT-A-2025-0043",
+          "FATT-A-2025-0044",
+          "FATT-A-2025-0045",
+          "FATT-A-2025-0046",
+          "FATT-A-2025-0047",
+          "FATT-A-2025-0048",
+          "FATT-A-2025-0049",
+          "FATT-A-2025-0050",
+          "FATT-A-2025-0051",
+          "FATT-A-2025-0052",
+          "FATT-A-2025-0053",
+          "FATT-A-2025-0054",
+          "FATT-A-2025-0055",
+          "FATT-A-2025-0056",
+          "FATT-P-2025-0007",
+          "FATT-P-2025-0008",
+          "DOC-EML-001",
+          "DOC-EML-002"
+        ]
+      },
+      "metriche": {
+        "fonti_id": "3/6",
+        "tabelle": null,
+        "numeri": "4/6",
+        "numeri_na": null,
+        "fonti_extra": 15,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    },
+    {
+      "id": 2,
+      "storia": "ST-01",
+      "modalita": "normale",
+      "esito": "ko",
+      "richieste": 5,
+      "passi_tool": 4,
+      "durata_s": 13.9,
+      "sql_agente": [
+        "SELECT f.id, f.data, f.numero, f.imponibile, f.iva, f.totale, r.imponibile AS riga_imponibile, r.descrizione, r.conto_codice, f.fornitore_id FROM fatture AS f JOIN fatture_righe AS r ON f.id = r.fattura_id WHERE f.fornitore_id = 'FOR-001' ORDER BY f.data",
+        "SELECT (5360.00 - 4000.00) AS incremento_imponibile, ROUND(CAST(((5360.00 - 4000.00) / 4000.00) * 100 AS DECIMAL), 2) AS incremento_percentuale_imponibile, (6539.20 - 4880.00) AS incremento_totale_iva_inclusa, ROUND(CAST(((6539.20 - 4880.00) / 4880.00) * 100 AS DECIMAL), 2) AS incremento_percentuale_totale"
+      ],
+      "tabelle_lette": [
+        "documenti",
+        "documenti_chunks",
+        "fatture",
+        "fatture_righe"
+      ],
+      "risposta": {
+        "conclusione": "Il canone mensile della piattaforma Nimbus DevOps Enterprise (Fornitore: Nimbus Software S.r.l., FOR-001) ha subito un incremento a seguito della comunicazione di revisione tariffaria inviata dal fornitore. \n\nDi seguito i dettagli economici verificati:\n- **Canone precedente (imponibile):** € 4.000,00 mensili (+ € 880,00 di IVA al 22%, per un totale di € 4.880,00) stabiliti dall'Art. 3.1 del contratto originario (CTR-001).\n- **Nuovo canone (imponibile):** € 5.360,00 mensili (+ € 1.179,20 di IVA al 22%, per un totale di € 6.539,20) come comunicato nella lettera formale (DOC-LET-001) e applicato a partire dalla fattura di agosto 2025 (FATT-P-2025-0008).\n- **Differenza (aumento):** L'aumento netto è di **€ 1.360,00** al mese di imponibile (pari a **+34,00%**), che salgono a **€ 1.659,20** al mese considerando l'IVA inclusa.\n- **Decorrenza:** L'aumento è operativo a decorrere dal **1° agosto 2025** (rif. DOC-LET-001 e FATT-P-2025-0008), nel rispetto del preavviso contrattuale di 60 giorni previsto dall'Art. 7.2 del contratto CTR-001.",
+        "confidenza": "alta",
+        "causa_documentata": true,
+        "limiti": null,
+        "numeri": [
+          {
+            "descrizione": "Canone mensile precedente (imponibile)",
+            "valore": "4000.00 EUR",
+            "fonti": [
+              "CTR-001",
+              "FATT-P-2025-0001"
+            ]
+          },
+          {
+            "descrizione": "Canone mensile precedente (totale IVA inclusa)",
+            "valore": "4880.00 EUR",
+            "fonti": [
+              "CTR-001",
+              "FATT-P-2025-0001"
+            ]
+          },
+          {
+            "descrizione": "Nuovo canone mensile (imponibile) dal 01/08/2025",
+            "valore": "5360.00 EUR",
+            "fonti": [
+              "DOC-LET-001",
+              "FATT-P-2025-0008"
+            ]
+          },
+          {
+            "descrizione": "Nuovo canone mensile (totale IVA inclusa) dal 01/08/2025",
+            "valore": "6539.20 EUR",
+            "fonti": [
+              "DOC-LET-001",
+              "FATT-P-2025-0008"
+            ]
+          },
+          {
+            "descrizione": "Incremento mensile (imponibile)",
+            "valore": "1360.00 EUR",
+            "fonti": [
+              "DOC-LET-001",
+              "FATT-P-2025-0001",
+              "FATT-P-2025-0008"
+            ]
+          },
+          {
+            "descrizione": "Incremento percentuale (imponibile e totale)",
+            "valore": "34.00 %",
+            "fonti": [
+              "DOC-LET-001",
+              "FATT-P-2025-0001",
+              "FATT-P-2025-0008"
+            ]
+          },
+          {
+            "descrizione": "Incremento mensile (totale IVA inclusa)",
+            "valore": "1659.20 EUR",
+            "fonti": [
+              "DOC-LET-001",
+              "FATT-P-2025-0001",
+              "FATT-P-2025-0008"
+            ]
+          }
+        ],
+        "fonti": [
+          "CTR-001",
+          "DOC-LET-001",
+          "FATT-P-2025-0001",
+          "FATT-P-2025-0008"
+        ]
+      },
+      "metriche": {
+        "fonti_id": "3/4",
+        "tabelle": null,
+        "numeri": "6/6",
+        "numeri_na": null,
+        "fonti_extra": 1,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    },
+    {
+      "id": 3,
+      "storia": "ST-02",
+      "modalita": "normale",
+      "esito": "ok",
+      "richieste": 8,
+      "passi_tool": 6,
+      "durata_s": 72.5,
+      "sql_agente": [
+        "SELECT * FROM v_margine_mensile ORDER BY mese",
+        "SELECT mese, conto_codice, conto_descrizione, tipo, importo, fonti FROM v_economico_mensile WHERE mese = '2025-03-01' ORDER BY importo DESC",
+        "SELECT mese, conto_codice, conto_descrizione, importo, fonti FROM v_economico_mensile WHERE conto_codice IN ('63.01', '61.01') AND mese BETWEEN '2025-01-01' AND '2025-04-01' ORDER BY conto_codice, mese"
+      ],
+      "tabelle_lette": [
+        "clienti",
+        "documenti",
+        "documenti_chunks",
+        "fatture",
+        "fornitori",
+        "piano_dei_conti",
+        "scritture_contabili",
+        "v_economico_mensile",
+        "v_margine_mensile"
+      ],
+      "risposta": {
+        "conclusione": "L'analisi dei dati contabili e dei documenti aziendali spiega chiaramente perché i costi del mese di marzo 2025 risultano più elevati rispetto agli altri mesi dell'anno (90.405,00 € a marzo contro circa 79.000-80.000 € negli altri mesi). \n\nLa causa principale risiede in un costo di consulenza legale straordinaria una tantum pari a 12.000,00 € (imponibile), registrato sul conto 63.01 (\"Consulenza legale e contrattuale straordinaria\") in relazione alla fattura n. FERR-2025-042 (rif. FATT-P-2025-0037) emessa dallo Studio Legale Ferraris & Associati. Tale importo riguarda l'attività di legal due diligence e assistenza per l'operazione di acquisizione societaria denominata \"Project Alpha\" (Brescia Software Lab S.r.l.). \n\nL'operazione è stata successivamente interrotta dal Consiglio di Amministrazione a causa delle gravi criticità emerse (debiti previdenziali pregressi e rischi sulla proprietà intellettuale), come documentato nel verbale del CdA del 28 marzo 2025 (DOC-NOT-001). Per il resto, le principali voci di costo strutturali (personale dipendente, oneri sociali e consulenze freelance) sono rimaste allineate agli altri mesi.",
+        "confidenza": "alta",
+        "causa_documentata": true,
+        "limiti": null,
+        "numeri": [
+          {
+            "descrizione": "Costi totali di marzo 2025",
+            "valore": "90405.00",
+            "fonti": [
+              "FATT-P-2025-0037"
+            ]
+          },
+          {
+            "descrizione": "Costi totali di febbraio 2025 (mese precedente di confronto)",
+            "valore": "79165.00",
+            "fonti": [
+              "FATT-P-2025-0037"
+            ]
+          },
+          {
+            "descrizione": "Costo di consulenza legale e contrattuale straordinaria a marzo 2025 (conto 63.01)",
+            "valore": "12000.00",
+            "fonti": [
+              "FATT-P-2025-0037"
+            ]
+          }
+        ],
+        "fonti": [
+          "FATT-P-2025-0037",
+          "DOC-PRV-001",
+          "DOC-EML-004",
+          "DOC-EML-005",
+          "DOC-EML-006",
+          "DOC-NOT-001"
+        ]
+      },
+      "metriche": {
+        "fonti_id": "4/4",
+        "tabelle": null,
+        "numeri": "1/1",
+        "numeri_na": null,
+        "fonti_extra": 2,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    },
+    {
+      "id": 4,
+      "storia": "ST-02",
+      "modalita": "normale",
+      "esito": "ok",
+      "richieste": 10,
+      "passi_tool": 7,
+      "durata_s": 172.9,
+      "sql_agente": [
+        "SELECT * FROM v_economico WHERE tipo = 'Costo' AND (conto_descrizione ILIKE '%legale%' OR descrizione ILIKE '%legale%') AND data >= '2025-03-01' AND data <= '2025-03-31'",
+        "SELECT * FROM v_economico WHERE tipo = 'Costo' AND (conto_descrizione ILIKE '%consulenz%' OR descrizione ILIKE '%consulenz%') AND data >= '2025-03-01' AND data <= '2025-03-31'",
+        "SELECT * FROM v_economico WHERE tipo = 'Costo' AND data >= '2025-03-01' AND data <= '2025-03-31' ORDER BY importo DESC",
+        "SELECT DISTINCT codice, descrizione, tipo FROM piano_dei_conti",
+        "SELECT * FROM v_economico WHERE conto_codice = '63.01'",
+        "SELECT id, numero, imponibile, totale FROM fatture WHERE id = 'FATT-P-2025-0037'"
+      ],
+      "tabelle_lette": [
+        "clienti",
+        "documenti",
+        "documenti_chunks",
+        "fatture",
+        "fornitori",
+        "piano_dei_conti",
+        "scritture_contabili",
+        "v_economico"
+      ],
+      "risposta": {
+        "conclusione": "Il costo della consulenza legale registrato a marzo 2025 (€ 12.000,00 imponibile, conto 63.01 \"Consulenza legale e contrattuale straordinaria\") non si ripeterà. Tale costo si riferisce a una prestazione una tantum per la due diligence legale straordinaria relativa all'operazione M&A denominata \"Project Alpha\" (acquisizione di Brescia Software Lab S.r.l.), svolta dallo Studio Legale Ferraris & Associati. A seguito delle gravi criticità emerse, il Consiglio di Amministrazione ha deliberato in data 28 marzo 2025 l'interruzione definitiva di ogni trattativa. Come stabilito dal preventivo, il compenso forfettario era dovuto a conclusione delle attività di due diligence indipendentemente dal closing dell'operazione. Pertanto, trattandosi di un costo straordinario legato a un'operazione conclusasi negativamente, non vi sono impegni futuri o costi ricorrenti associati.",
+        "confidenza": "alta",
+        "causa_documentata": true,
+        "limiti": null,
+        "numeri": [
+          {
+            "descrizione": "Costo di consulenza legale straordinaria (imponibile marzo 2025)",
+            "valore": "12000.00 EUR",
+            "fonti": [
+              "SCR-000447",
+              "FATT-P-2025-0037"
+            ]
+          },
+          {
+            "descrizione": "Totale fattura consulenza legale comprensivo di IVA",
+            "valore": "14640.00 EUR",
+            "fonti": [
+              "FATT-P-2025-0037"
+            ]
+          }
+        ],
+        "fonti": [
+          "SCR-000447",
+          "FATT-P-2025-0037",
+          "DOC-PRV-001",
+          "DOC-EML-004",
+          "DOC-EML-005",
+          "DOC-EML-006",
+          "DOC-NOT-001"
+        ]
+      },
+      "metriche": {
+        "fonti_id": "3/3",
+        "tabelle": null,
+        "numeri": "1/1",
+        "numeri_na": null,
+        "fonti_extra": 4,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    },
+    {
+      "id": 5,
+      "storia": "ST-03",
+      "modalita": "normale",
+      "esito": "ko",
+      "richieste": 11,
+      "passi_tool": 9,
+      "durata_s": 190.1,
+      "sql_agente": [
+        "SELECT * FROM v_margine_mensile ORDER BY mese DESC LIMIT 6",
+        "SELECT mese, conto_codice, conto_descrizione, importo, fonti FROM v_economico_mensile WHERE tipo = 'Ricavo' AND mese >= '2025-07-01' ORDER BY mese DESC, importo DESC",
+        "SELECT DISTINCT tipo FROM piano_dei_conti",
+        "SELECT * FROM v_economico_mensile WHERE mese >= '2025-07-01' ORDER BY mese DESC, importo DESC",
+        "SELECT mese, SUM(importo) AS totale_ricavi FROM v_economico_mensile WHERE tipo = 'Ricavo' AND mese >= '2025-01-01' GROUP BY mese ORDER BY mese DESC",
+        "SELECT DISTINCT tipo FROM v_economico_mensile",
+        "SELECT mese, SUM(importo) AS totale_ricavi FROM v_economico_mensile WHERE tipo = 'Ricavi' AND mese >= '2025-01-01' GROUP BY mese ORDER BY mese DESC",
+        "SELECT mese, ricavi, costi, margine FROM v_margine_mensile WHERE mese >= '2025-07-01' ORDER BY mese DESC"
+      ],
+      "tabelle_lette": [
+        "clienti",
+        "documenti",
+        "documenti_chunks",
+        "fatture",
+        "fornitori",
+        "piano_dei_conti",
+        "scritture_contabili",
+        "v_economico_mensile",
+        "v_margine_mensile"
+      ],
+      "risposta": {
+        "conclusione": "I ricavi dell'azienda sono calati in modo significativo nel quarto trimestre del 2025 (passando da una media di circa 90.000–97.000 €/mese dei mesi precedenti a circa 74.000–77.000 €/mese a ottobre, novembre e dicembre).\n\nQuesta flessione è interamente documentata e riconducibile alla decisione strategica del cliente **Barilli Logistica S.p.A.** di internalizzare lo sviluppo software a partire dal 1° ottobre 2025. Di conseguenza, il contratto di fornitura (Accordo Quadro CTR-008) ha subito una riduzione dei volumi operativi da un valore storico medio di circa 28.000 €/mese a 12.000 €/mese per i soli servizi di presidio e manutenzione di terzo livello (L3), generando una minore fatturazione mensile di circa 16.000 € per ciascuno dei mesi di ottobre, novembre e dicembre 2025 (comunicazione formale in DOC-EML-008 e nota interna in DOC-EML-010).",
+        "confidenza": "alta",
+        "causa_documentata": true,
+        "limiti": "La flessione dei ricavi è chiaramente spiegata e documentata dalla riduzione dei volumi del cliente principale (Barilli Logistica S.p.A.). Nell'ultimo trimestre si evidenzia inoltre un deterioramento dei margini netti (negativi) dovuto alla rigidità dei costi fissi del personale dipendente e dei canoni software, che non si sono ridotti proporzionalmente alla diminuzione dei ricavi.",
+        "numeri": [
+          {
+            "descrizione": "Ricavi totali luglio 2025",
+            "valore": "97800.00 €",
+            "fonti": [
+              "CTR-008"
+            ]
+          },
+          {
+            "descrizione": "Ricavi totali agosto 2025",
+            "valore": "80000.00 €",
+            "fonti": [
+              "CTR-008"
+            ]
+          },
+          {
+            "descrizione": "Ricavi totali settembre 2025",
+            "valore": "92500.00 €",
+            "fonti": [
+              "CTR-008"
+            ]
+          },
+          {
+            "descrizione": "Ricavi totali ottobre 2025",
+            "valore": "75300.00 €",
+            "fonti": [
+              "CTR-008"
+            ]
+          },
+          {
+            "descrizione": "Ricavi totali novembre 2025",
+            "valore": "74000.00 €",
+            "fonti": [
+              "CTR-008"
+            ]
+          },
+          {
+            "descrizione": "Ricavi totali dicembre 2025",
+            "valore": "77200.00 €",
+            "fonti": [
+              "CTR-008"
+            ]
+          }
+        ],
+        "fonti": [
+          "DOC-EML-008",
+          "DOC-EML-010",
+          "DOC-NOT-004",
+          "CTR-008"
+        ]
+      },
+      "metriche": {
+        "fonti_id": "3/5",
+        "tabelle": null,
+        "numeri": "2/19",
+        "numeri_na": null,
+        "fonti_extra": 1,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    },
+    {
+      "id": 6,
+      "storia": "ST-03",
+      "modalita": "normale",
+      "esito": "ok",
+      "richieste": 6,
+      "passi_tool": 5,
+      "durata_s": 134.9,
+      "sql_agente": [
+        "SELECT id, denominazione, peso_fatturato_pct FROM clienti WHERE denominazione ILIKE '%Barilli%' OR id ILIKE '%Barilli%'",
+        "SELECT DATE_TRUNC('YEAR', f.data) AS anno, SUM(f.imponibile) AS ricavi_totali, SUM(CASE WHEN f.cliente_id = 'CLI-001' THEN f.imponibile ELSE 0 END) AS ricavi_barilli, ROUND(SUM(CASE WHEN f.cliente_id = 'CLI-001' THEN f.imponibile ELSE 0 END) * 100.0 / NULLIF(SUM(f.imponibile), 0), 2) AS peso_pct, ARRAY_AGG(f.id) AS fonti FROM fatture AS f WHERE f.tipo = 'attiva' GROUP BY DATE_TRUNC('YEAR', f.data) ORDER BY anno",
+        "SELECT DATE_TRUNC('MONTH', f.data) AS mese, SUM(f.imponibile) AS ricavi_totali, SUM(CASE WHEN f.cliente_id = 'CLI-001' THEN f.imponibile ELSE 0 END) AS ricavi_barilli, ROUND(SUM(CASE WHEN f.cliente_id = 'CLI-001' THEN f.imponibile ELSE 0 END) * 100.0 / NULLIF(SUM(f.imponibile), 0), 2) AS peso_pct, ARRAY_AGG(f.id) AS fonti FROM fatture AS f WHERE f.tipo = 'attiva' GROUP BY DATE_TRUNC('MONTH', f.data) ORDER BY mese"
+      ],
+      "tabelle_lette": [
+        "clienti",
+        "documenti",
+        "documenti_chunks",
+        "fatture"
+      ],
+      "risposta": {
+        "conclusione": "Barilli Logistica S.p.A. (cliente ID: CLI-001) ha rappresentato il 26,81% del fatturato totale dell'azienda nell'anno 2025 (pari a 284.000,00 € su un totale di 1.059.400,00 € di ricavi imponibili). \n\nAnalizzando l'andamento mensile, il peso di Barilli sul fatturato è rimasto stabile intorno al 29-31% nei primi nove mesi dell'anno (circa 28.000,00 € - 28.500,00 € mensili su circa 89.000,00 - 97.000,00 € di ricavi totali). A partire da ottobre 2025, il fatturato mensile generato da Barilli si è contratto drasticamente a 12.000,00 € al mese, riducendo il suo peso sul totale dei ricavi mensili al di sotto del 16,3% (circa 15,54% - 16,22%).\n\nLa causa di tale cambiamento è ampiamente documentata: in data 15 settembre 2025 Barilli Logistica S.p.A. ha inviato una comunicazione formale (DOC-EML-008) ai sensi dell'Art. 4.3 dell'Accordo Quadro CTR-008, notificando la decisione strategica di internalizzare le attività di sviluppo applicativo del sistema TMS a partire dal 1° ottobre 2025. Di conseguenza, il contratto è stato ridotto al solo supporto specialistico di terzo livello e manutenzione infrastrutturale, con un corrispettivo mensile forfettario ridotto da circa 28.000,00 € a 12.000,00 € + IVA. La nota interna della direzione (DOC-EML-010) conferma l'impatto economico di tale contrazione sul quarto trimestre 2025.",
+        "confidenza": "alta",
+        "causa_documentata": true,
+        "limiti": null,
+        "numeri": [
+          {
+            "descrizione": "Ricavi totali anno 2025",
+            "valore": "1059400.00",
+            "fonti": [
+              "FATT-A-2025-0001",
+              "FATT-A-2025-0084"
+            ]
+          },
+          {
+            "descrizione": "Ricavi da Barilli anno 2025",
+            "valore": "284000.00",
+            "fonti": [
+              "FATT-A-2025-0001",
+              "FATT-A-2025-0084"
+            ]
+          },
+          {
+            "descrizione": "Peso percentuale Barilli sul fatturato totale 2025",
+            "valore": "26.81",
+            "fonti": [
+              "FATT-A-2025-0001",
+              "FATT-A-2025-0084"
+            ]
+          },
+          {
+            "descrizione": "Fatturato mensile medio da Barilli (gennaio-settembre 2025)",
+            "valore": "28166.67",
+            "fonti": [
+              "FATT-A-2025-0001",
+              "FATT-A-2025-0063"
+            ]
+          },
+          {
+            "descrizione": "Fatturato mensile da Barilli (ottobre-dicembre 2025)",
+            "valore": "12000.00",
+            "fonti": [
+              "FATT-A-2025-0064",
+              "FATT-A-2025-0084"
+            ]
+          }
+        ],
+        "fonti": [
+          "CLI-001",
+          "CTR-008",
+          "DOC-EML-007",
+          "DOC-EML-008",
+          "DOC-EML-010",
+          "FATT-A-2025-0001",
+          "FATT-A-2025-0002",
+          "FATT-A-2025-0003",
+          "FATT-A-2025-0004",
+          "FATT-A-2025-0005",
+          "FATT-A-2025-0006",
+          "FATT-A-2025-0007",
+          "FATT-A-2025-0008",
+          "FATT-A-2025-0009",
+          "FATT-A-2025-0010",
+          "FATT-A-2025-0011",
+          "FATT-A-2025-0012",
+          "FATT-A-2025-0013",
+          "FATT-A-2025-0014",
+          "FATT-A-2025-0015",
+          "FATT-A-2025-0016",
+          "FATT-A-2025-0017",
+          "FATT-A-2025-0018",
+          "FATT-A-2025-0019",
+          "FATT-A-2025-0020",
+          "FATT-A-2025-0021",
+          "FATT-A-2025-0022",
+          "FATT-A-2025-0023",
+          "FATT-A-2025-0024",
+          "FATT-A-2025-0025",
+          "FATT-A-2025-0026",
+          "FATT-A-2025-0027",
+          "FATT-A-2025-0028",
+          "FATT-A-2025-0029",
+          "FATT-A-2025-0030",
+          "FATT-A-2025-0031",
+          "FATT-A-2025-0032",
+          "FATT-A-2025-0033",
+          "FATT-A-2025-0034",
+          "FATT-A-2025-0035",
+          "FATT-A-2025-0036",
+          "FATT-A-2025-0037",
+          "FATT-A-2025-0038",
+          "FATT-A-2025-0039",
+          "FATT-A-2025-0040",
+          "FATT-A-2025-0041",
+          "FATT-A-2025-0042",
+          "FATT-A-2025-0043",
+          "FATT-A-2025-0044",
+          "FATT-A-2025-0045",
+          "FATT-A-2025-0046",
+          "FATT-A-2025-0047",
+          "FATT-A-2025-0048",
+          "FATT-A-2025-0049",
+          "FATT-A-2025-0050",
+          "FATT-A-2025-0051",
+          "FATT-A-2025-0052",
+          "FATT-A-2025-0053",
+          "FATT-A-2025-0054",
+          "FATT-A-2025-0055",
+          "FATT-A-2025-0056",
+          "FATT-A-2025-0057",
+          "FATT-A-2025-0058",
+          "FATT-A-2025-0059",
+          "FATT-A-2025-0060",
+          "FATT-A-2025-0061",
+          "FATT-A-2025-0062",
+          "FATT-A-2025-0063",
+          "FATT-A-2025-0064",
+          "FATT-A-2025-0065",
+          "FATT-A-2025-0066",
+          "FATT-A-2025-0067",
+          "FATT-A-2025-0068",
+          "FATT-A-2025-0069",
+          "FATT-A-2025-0070",
+          "FATT-A-2025-0071",
+          "FATT-A-2025-0072",
+          "FATT-A-2025-0073",
+          "FATT-A-2025-0074",
+          "FATT-A-2025-0075",
+          "FATT-A-2025-0076",
+          "FATT-A-2025-0077",
+          "FATT-A-2025-0078",
+          "FATT-A-2025-0079",
+          "FATT-A-2025-0080",
+          "FATT-A-2025-0081",
+          "FATT-A-2025-0082",
+          "FATT-A-2025-0083",
+          "FATT-A-2025-0084"
+        ]
+      },
+      "metriche": {
+        "fonti_id": "2/2",
+        "tabelle": "2/2",
+        "numeri": "3/3",
+        "numeri_na": null,
+        "fonti_extra": 87,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    },
+    {
+      "id": 7,
+      "storia": "ST-04",
+      "modalita": "onesta",
+      "esito": "ok",
+      "richieste": 12,
+      "passi_tool": 9,
+      "durata_s": 33.3,
+      "sql_agente": [
+        "SELECT * FROM v_economico_mensile WHERE conto_descrizione ILIKE '%trasferta%' OR conto_codice ILIKE '%trasferta%' ORDER BY mese DESC",
+        "SELECT * FROM piano_dei_conti WHERE descrizione ILIKE '%trasferta%' OR descrizione ILIKE '%viagg%' OR descrizione ILIKE '%trasport%' OR descrizione ILIKE '%rimborso%'",
+        "SELECT mese, conto_codice, conto_descrizione, tipo, importo, n_scritture, fonti FROM v_economico_mensile WHERE conto_codice = '64.02' ORDER BY mese DESC",
+        "SELECT f.id, f.numero, f.data, f.fornitore_id, fo.denominazione, f.imponibile, f.totale FROM fatture AS f JOIN fornitori AS fo ON f.fornitore_id = fo.id WHERE f.id IN ('FATT-P-2025-0197', 'FATT-P-2025-0198', 'FATT-P-2025-0199', 'FATT-P-2025-0200')",
+        "SELECT fr.id, fr.fattura_id, fr.riga_numero, fr.descrizione, fr.imponibile FROM fatture_righe AS fr WHERE fr.fattura_id IN ('FATT-P-2025-0197', 'FATT-P-2025-0198', 'FATT-P-2025-0199', 'FATT-P-2025-0200')"
+      ],
+      "tabelle_lette": [
+        "clienti",
+        "documenti",
+        "documenti_chunks",
+        "fatture",
+        "fatture_righe",
+        "fornitori",
+        "piano_dei_conti",
+        "scritture_contabili",
+        "v_economico_mensile"
+      ],
+      "risposta": {
+        "conclusione": "Nel mese di novembre 2025 i costi di trasferta (registrati sul conto 64.02 \"Spese trasporti, biglietti ferroviari e aerei\") sono aumentati a € 1.750,00 rispetto alla media mensile consueta di € 550,00. L'incremento è dovuto all'emissione di quattro fatture passive da parte del fornitore Ferrovie Nazionali S.p.A. (FOR-016), tutte relative all'acquisto di biglietti ferroviari di alta velocità per la tratta Milano Centrale - Roma Termini A/R per il team tecnico. Tuttavia, non è stato reperito alcun documento specifico (email, verbale o nota interna) che documenti o motivi formalmente le ragioni di tali trasferte straordinarie a Roma nel mese di novembre.",
+        "confidenza": "media",
+        "causa_documentata": false,
+        "limiti": "Le fatture passive spiegano l'origine numerica e contabile dell'aumento dei costi sul conto 64.02, ma non esiste documentazione testuale a supporto della motivazione o della finalità aziendale specifica delle trasferte del team tecnico sulla tratta Milano-Roma nel mese di novembre 2025.",
+        "numeri": [
+          {
+            "descrizione": "Costi di trasferta del mese di novembre 2025 (conto 64.02)",
+            "valore": "1750.00",
+            "fonti": [
+              "FATT-P-2025-0197",
+              "FATT-P-2025-0198",
+              "FATT-P-2025-0199",
+              "FATT-P-2025-0200"
+            ]
+          },
+          {
+            "descrizione": "Costi di trasferta tipici mensili (mesi precedenti e successivi)",
+            "valore": "550.00",
+            "fonti": [
+              "FATT-P-2025-0194",
+              "FATT-P-2025-0209"
+            ]
+          }
+        ],
+        "fonti": [
+          "FATT-P-2025-0197",
+          "FATT-P-2025-0198",
+          "FATT-P-2025-0199",
+          "FATT-P-2025-0200",
+          "RIG-0365",
+          "RIG-0366",
+          "RIG-0367",
+          "RIG-0368"
+        ]
+      },
+      "metriche": {
+        "fonti_id": "0/3",
+        "tabelle": "1/1",
+        "numeri": null,
+        "numeri_na": "la query attesa non restituisce numeri",
+        "fonti_extra": 10,
+        "citate_non_viste": 0,
+        "comportamento_ok": true,
+        "giudice": null
+      }
+    },
+    {
+      "id": 8,
+      "storia": "ST-05",
+      "modalita": "regolare",
+      "esito": "ko",
+      "richieste": 8,
+      "passi_tool": 7,
+      "durata_s": 24.6,
+      "sql_agente": [
+        "SELECT * FROM v_economico_mensile WHERE conto_descrizione ILIKE '%affitto%' OR conto_descrizione ILIKE '%locazione%' ORDER BY mese DESC",
+        "SELECT id, data, imponibile, iva, totale FROM fatture WHERE fornitore_id = 'FOR-003' AND data >= '2025-09-01' ORDER BY data",
+        "SELECT m.id, m.data, m.importo, m.causale, m.fattura_id FROM movimenti_bancari AS m JOIN fatture AS f ON m.fattura_id = f.id WHERE f.fornitore_id = 'FOR-003' AND m.data >= '2025-09-01' ORDER BY m.data"
+      ],
+      "tabelle_lette": [
+        "clienti",
+        "documenti",
+        "documenti_chunks",
+        "fatture",
+        "fornitori",
+        "movimenti_bancari",
+        "piano_dei_conti",
+        "scritture_contabili",
+        "v_economico_mensile"
+      ],
+      "risposta": {
+        "conclusione": "Sì, l'aumento dell'affitto a partire da ottobre 2025 è del tutto regolare e pienamente conforme alle clausole contrattuali.\n\nDall'analisi dei documenti e dei dati contabili emerge quanto segue:\n1. **Previsione Contrattuale:** Il contratto di locazione ad uso commerciale degli uffici di Via Tortona 32 (ID: `CTR-002`, fornitore `FOR-003` - Locazioni Navigli S.r.l.), stipulato in data 1° ottobre 2022, prevede espressamente all'Articolo 5 (\"Aggiornamento ISTAT del canone\") che il canone sia aggiornato automaticamente ogni anno a decorrere dal 1° ottobre, applicando il 100% della variazione dell'indice FOI (senza tabacchi) comunicata dal locatore entro il mese di settembre.\n2. **Comunicazione Formale:** Il locatore ha inviato formale comunicazione PEC in data 10 settembre 2025 (`DOC-LET-002`), accertando una variazione ISTAT su base annua del +3,94%. Tale incremento (+€ 150,00) ha portato il canone mensile imponibile da € 3.800,00 a € 3.950,00 a decorrere dal 1° ottobre 2025.\n3. **Riscontro Amministrativo:** L'amministrazione aziendale ha preso atto della variazione con email del 12 settembre 2025 (`DOC-EML-011`) e ha regolarmente registrato le fatture passive successive all'adeguamento (`FATT-P-2025-0034` per ottobre, `FATT-P-2025-0035` per novembre, `FATT-P-2025-0036` per dicembre), saldate puntualmente tramite bonifico bancario (`MOV-000239`, `MOV-000269`, `MOV-000291`).",
+        "confidenza": "alta",
+        "causa_documentata": true,
+        "limiti": null,
+        "numeri": [
+          {
+            "descrizione": "Canone mensile originario (imponibile) fino a settembre 2025",
+            "valore": "3800.00 EUR",
+            "fonti": [
+              "CTR-002",
+              "FATT-P-2025-0033"
+            ]
+          },
+          {
+            "descrizione": "Canone mensile aggiornato (imponibile) da ottobre 2025",
+            "valore": "3950.00 EUR",
+            "fonti": [
+              "DOC-LET-002",
+              "FATT-P-2025-0034",
+              "FATT-P-2025-0035",
+              "FATT-P-2025-0036"
+            ]
+          },
+          {
+            "descrizione": "Variazione ISTAT applicata",
+            "valore": "3.94 %",
+            "fonti": [
+              "DOC-LET-002"
+            ]
+          },
+          {
+            "descrizione": "Totale fattura mensile con IVA (da ottobre 2025)",
+            "valore": "4819.00 EUR",
+            "fonti": [
+              "FATT-P-2025-0034",
+              "FATT-P-2025-0035",
+              "FATT-P-2025-0036"
+            ]
+          }
+        ],
+        "fonti": [
+          "CTR-002",
+          "DOC-LET-002",
+          "DOC-EML-011",
+          "FATT-P-2025-0033",
+          "FATT-P-2025-0034",
+          "FATT-P-2025-0035",
+          "FATT-P-2025-0036",
+          "MOV-000206",
+          "MOV-000239",
+          "MOV-000269",
+          "MOV-000291"
+        ]
+      },
+      "metriche": {
+        "fonti_id": "5/5",
+        "tabelle": null,
+        "numeri": "3/4",
+        "numeri_na": null,
+        "fonti_extra": 6,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    },
+    {
+      "id": 9,
+      "storia": "ST-06",
+      "modalita": "normale",
+      "esito": "ko",
+      "richieste": 6,
+      "passi_tool": 4,
+      "durata_s": 12.9,
+      "sql_agente": [
+        "SELECT f.id AS fattura_id, f.numero, f.data, f.totale, COUNT(m.id) AS num_movimenti, ARRAY_AGG(m.id) AS movimenti_ids, ARRAY_AGG(m.importo) AS importi_movimenti, SUM(m.importo) AS totale_movimenti FROM fatture AS f JOIN movimenti_bancari AS m ON m.fattura_id = f.id GROUP BY f.id, f.numero, f.data, f.totale HAVING COUNT(m.id) > 1",
+        "SELECT m.id AS movimento_id, m.data, m.importo, m.causale, m.fattura_id, f.numero AS fattura_numero, f.totale AS fattura_totale FROM movimenti_bancari AS m JOIN fatture AS f ON f.id = m.fattura_id WHERE m.importo <> f.totale",
+        "SELECT COUNT(*) AS totale_movimenti_collegati, COUNT(DISTINCT fattura_id) AS fatture_distinte_collegate FROM movimenti_bancari WHERE fattura_id IS NOT NULL"
+      ],
+      "tabelle_lette": [
+        "documenti",
+        "documenti_chunks",
+        "fatture",
+        "movimenti_bancari"
+      ],
+      "risposta": {
+        "conclusione": "Sì, sono emerse evidenze documentali di un doppio pagamento (bonifico duplicato) per una fattura specifica. Nello specifico, la fattura FT-2025-1089 emessa in data 14/10/2025 da TechHardware Solutions S.r.l. per un totale di € 2.257,00 è stata pagata due volte tramite due distinti bonifici bancari (effettuati rispettivamente in data 24/10/2025 e 29/10/2025), a causa di un disallineamento e della doppia registrazione nel sistema gestionale. La posizione è stata successivamente gestita tramite accordo per trattenere la somma in acconto / compensazione sulle forniture successive. Per quanto riguarda il resto delle fatture collegate nei movimenti bancari, non risultano ulteriori duplicazioni.",
+        "confidenza": "alta",
+        "causa_documentata": true,
+        "limiti": "Il controllo sistematico sui movimenti bancari copre le fatture correttamente riconciliate nel database; il caso specifico di doppio pagamento è emerso dalla corrispondenza email (DOC-EML-012 e DOC-EML-013).",
+        "numeri": [
+          {
+            "descrizione": "Importo della fattura duplicata FT-2025-1089 e dei relativi doppi bonifici",
+            "valore": "2257.00 EUR",
+            "fonti": [
+              "DOC-EML-012"
+            ]
+          }
+        ],
+        "fonti": [
+          "DOC-EML-012",
+          "DOC-EML-013",
+          "MOV-000001",
+          "MOV-000002"
+        ]
+      },
+      "metriche": {
+        "fonti_id": "2/6",
+        "tabelle": null,
+        "numeri": "0/2",
+        "numeri_na": null,
+        "fonti_extra": 2,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    },
+    {
+      "id": 10,
+      "storia": "-",
+      "modalita": "normale",
+      "esito": "ko",
+      "richieste": 14,
+      "passi_tool": 12,
+      "durata_s": 56.4,
+      "sql_agente": [
+        "SELECT conto_codice, conto_descrizione, SUM(CASE WHEN data >= '2025-06-01' AND data <= '2025-06-30' THEN importo ELSE 0 END) AS costo_giugno, SUM(CASE WHEN data >= '2025-11-01' AND data <= '2025-11-30' THEN importo ELSE 0 END) AS costo_novembre, SUM(CASE WHEN data >= '2025-11-01' AND data <= '2025-11-30' THEN importo ELSE 0 END) - SUM(CASE WHEN data >= '2025-06-01' AND data <= '2025-06-30' THEN importo ELSE 0 END) AS differenza, ARRAY_AGG(DISTINCT scrittura_id) AS fonti FROM v_economico WHERE tipo = 'Costo' AND data >= '2025-01-01' AND data <= '2025-12-31' GROUP BY conto_codice, conto_descrizione ORDER BY differenza DESC",
+        "SELECT MIN(data), MAX(data) FROM v_economico",
+        "SELECT DISTINCT data FROM v_economico WHERE tipo = 'Costo' ORDER BY data",
+        "SELECT * FROM v_economico LIMIT 5",
+        "SELECT DISTINCT tipo FROM v_economico",
+        "SELECT conto_codice, conto_descrizione, SUM(CASE WHEN data >= '2025-06-01' AND data <= '2025-06-30' THEN importo ELSE 0 END) AS costo_giugno, SUM(CASE WHEN data >= '2025-11-01' AND data <= '2025-11-30' THEN importo ELSE 0 END) AS costo_novembre, SUM(CASE WHEN data >= '2025-11-01' AND data <= '2025-11-30' THEN importo ELSE 0 END) - SUM(CASE WHEN data >= '2025-06-01' AND data <= '2025-06-30' THEN importo ELSE 0 END) AS differenza, ARRAY_AGG(DISTINCT scrittura_id) AS fonti FROM v_economico WHERE tipo = 'Costi' AND data >= '2025-01-01' AND data <= '2025-12-31' GROUP BY conto_codice, conto_descrizione ORDER BY differenza DESC",
+        "SELECT conto_codice, conto_descrizione, SUM(CASE WHEN data >= '2025-06-01' AND data <= '2025-06-30' THEN importo ELSE 0 END) AS costo_giugno, SUM(CASE WHEN data >= '2025-11-01' AND data <= '2025-11-30' THEN importo ELSE 0 END) AS costo_novembre, SUM(CASE WHEN data >= '2025-11-01' AND data <= '2025-11-30' THEN importo ELSE 0 END) - SUM(CASE WHEN data >= '2025-06-01' AND data <= '2025-06-30' THEN importo ELSE 0 END) AS differenza FROM v_economico WHERE tipo = 'Costi' AND data >= '2025-01-01' AND data <= '2025-12-31' GROUP BY conto_codice, conto_descrizione ORDER BY differenza DESC",
+        "SELECT ARRAY_AGG(DISTINCT scrittura_id) FROM v_economico WHERE tipo = 'Costi' AND data >= '2025-11-01' AND data <= '2025-11-30' AND conto_codice = '64.01'",
+        "SELECT ARRAY_AGG(DISTINCT scrittura_id) FROM v_economico WHERE tipo = 'Costi' AND data >= '2025-06-01' AND data <= '2025-06-30' AND conto_codice = '64.01'"
+      ],
+      "tabelle_lette": [
+        "clienti",
+        "documenti",
+        "documenti_chunks",
+        "fatture",
+        "fornitori",
+        "piano_dei_conti",
+        "scritture_contabili",
+        "v_economico"
+      ],
+      "risposta": {
+        "conclusione": "La categoria di costo che è cresciuta di più da giugno a novembre 2025 è \"Spese alberghiere e alloggi trasferte\" (conto 64.01), con un incremento di 2.250,00 €. I costi sono passati da 850,00 € a giugno 2025 a 3.100,00 € a novembre 2025. Altre voci in crescita significativa sono i canoni software/SaaS (+1.360,00 €) e le spese di ristorazione/trasporto trasferte (+1.200,00 € ciascuna). Sebbene vi siano comunicazioni relative a picchi di attività nel periodo (es. pianificazione per il Black Friday con RetailNext), i documenti interni ed email esaminati non riportano una specifica motivazione documentata (causa_documentata = false) per tale incremento puntuale delle trasferte alberghiere.",
+        "confidenza": "alta",
+        "causa_documentata": false,
+        "limiti": "La causa specifica dell'aumento delle spese alberghiere e di trasferta a novembre rispetto a giugno non è esplicitamente documentata nei verbali o nelle note interne reperite, sebbene vi siano riferimenti ad attività straordinarie di fine anno (es. preparazione Black Friday).",
+        "numeri": [
+          {
+            "descrizione": "Costo Spese alberghiere e alloggi trasferte (giugno 2025)",
+            "valore": "850.00 €",
+            "fonti": [
+              "SCR-000885"
+            ]
+          },
+          {
+            "descrizione": "Costo Spese alberghiere e alloggi trasferte (novembre 2025)",
+            "valore": "3100.00 €",
+            "fonti": [
+              "SCR-000939",
+              "SCR-000942",
+              "SCR-000945",
+              "SCR-000948",
+              "SCR-000951"
+            ]
+          },
+          {
+            "descrizione": "Incremento Spese alberghiere e alloggi trasferte",
+            "valore": "2250.00 €",
+            "fonti": [
+              "SCR-000885",
+              "SCR-000939",
+              "SCR-000942",
+              "SCR-000945",
+              "SCR-000948",
+              "SCR-000951"
+            ]
+          }
+        ],
+        "fonti": [
+          "SCR-000885",
+          "SCR-000939",
+          "SCR-000942",
+          "SCR-000945",
+          "SCR-000948",
+          "SCR-000951",
+          "DOC-EML-021"
+        ]
+      },
+      "metriche": {
+        "fonti_id": null,
+        "tabelle": "2/3",
+        "numeri": null,
+        "numeri_na": "più di 25 valori attesi",
+        "fonti_extra": 7,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    },
+    {
+      "id": 11,
+      "storia": "-",
+      "modalita": "non_rispondibile",
+      "esito": "ok",
+      "richieste": 9,
+      "passi_tool": 8,
+      "durata_s": 18.8,
+      "sql_agente": [
+        "SELECT DISTINCT riferimento_esterno, descrizione, conto_codice FROM scritture_contabili WHERE riferimento_esterno LIKE '%PAGA%' OR riferimento_esterno LIKE '%STIP%' OR conto_codice LIKE '%PERS%' OR conto_codice LIKE '%DIP%' OR conto_codice LIKE '%RETRIB%' ORDER BY riferimento_esterno"
+      ],
+      "tabelle_lette": [
+        "documenti",
+        "documenti_chunks",
+        "scritture_contabili"
+      ],
+      "risposta": {
+        "conclusione": "Dall'analisi dei documenti aziendali (in particolare la lettera di incarico dello Studio Commercialista Brambilla CTR-004 e i cedolini mensili registrati in contabilità) risulta che l'azienda gestisce la contabilizzazione delle paghe per un organico standard di 8 dipendenti. Durante il periodo di riferimento non sono presenti nei documenti aziendali indagini strutturate, indicatori formali o circolari HR dedicate al calcolo del tasso di turnover del personale, ad eccezione dell'inserimento di una nuova risorsa (Davide Ferretti come Junior Software Engineer in data 3 marzo 2025, DOC-EML-033). Non disponendo di un registro formale delle assunzioni e cessazioni storiche puntuali di tutti i dipendenti, non è possibile calcolare matematicamente un tasso di turnover preciso tramite query SQL.",
+        "confidenza": "media",
+        "causa_documentata": false,
+        "limiti": "Il database non contiene una tabella anagrafica dei dipendenti con date di assunzione e cessazione storiche che permetta di calcolare in modo esatto il tasso di turnover del personale (rapporto tra entrate/uscite e organico medio). I documenti aziendali menzionano solo un organico di 8 dipendenti e l'inserimento di un nuovo developer nel corso del 2025, senza ulteriori dati sulle uscite.",
+        "numeri": [],
+        "fonti": [
+          "CTR-004",
+          "DOC-EML-033"
+        ]
+      },
+      "metriche": {
+        "fonti_id": null,
+        "tabelle": null,
+        "numeri": null,
+        "numeri_na": "nessuna query attesa",
+        "fonti_extra": 2,
+        "citate_non_viste": 0,
+        "comportamento_ok": true,
+        "giudice": null
+      }
+    },
+    {
+      "id": 12,
+      "storia": "-",
+      "modalita": "normale",
+      "esito": "ko",
+      "richieste": 3,
+      "passi_tool": 2,
+      "durata_s": 34.8,
+      "sql_agente": [
+        "SELECT c.id, c.tipo, c.cliente_id, c.fornitore_id, c.oggetto, c.importo, c.data_inizio, c.data_fine, c.rinnovo, c.preavviso_giorni, cl.denominazione AS cliente_denominazione, f.denominazione AS fornitore_denominazione FROM contratti AS c LEFT JOIN clienti AS cl ON c.cliente_id = cl.id LEFT JOIN fornitori AS f ON c.fornitore_id = f.id WHERE cl.denominazione ILIKE '%Altocumulo%' OR f.denominazione ILIKE '%Altocumulo%' OR c.oggetto ILIKE '%Altocumulo%'"
+      ],
+      "tabelle_lette": [
+        "clienti",
+        "contratti",
+        "documenti",
+        "documenti_chunks",
+        "fornitori"
+      ],
+      "risposta": {
+        "conclusione": "Il contratto passivo con Altocumulo Cloud Services S.r.l. (ID fornitore: FOR-002, ID contratto: CTR-003) ha una durata iniziale di 36 mesi con efficacia dal 15 novembre 2023 e naturale scadenza al 14 novembre 2026. Il contratto prevede il rinnovo tacito per un ulteriore periodo di 24 mesi, salvo disdetta scritta da inviare a mezzo PEC con un preavviso minimo di 90 giorni rispetto alla scadenza (il termine ultimo per la disdetta è quindi il 15 agosto 2026).",
+        "confidenza": "alta",
+        "causa_documentata": true,
+        "limiti": null,
+        "numeri": [
+          {
+            "descrizione": "Importo contratto quadro Cloud Enterprise",
+            "valore": "36000.00 EUR",
+            "fonti": [
+              "CTR-003"
+            ]
+          },
+          {
+            "descrizione": "Durata contratto in mesi",
+            "valore": "36",
+            "fonti": [
+              "CTR-003"
+            ]
+          },
+          {
+            "descrizione": "Preavviso di rinnovo in giorni",
+            "valore": "90",
+            "fonti": [
+              "CTR-003"
+            ]
+          }
+        ],
+        "fonti": [
+          "CTR-003",
+          "DOC-EML-027"
+        ]
+      },
+      "metriche": {
+        "fonti_id": "1/1",
+        "tabelle": "1/2",
+        "numeri": "1/1",
+        "numeri_na": null,
+        "fonti_extra": 1,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    }
+  ]
+}

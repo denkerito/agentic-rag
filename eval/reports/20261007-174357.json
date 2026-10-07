@@ -1,0 +1,364 @@
+{
+  "meta": {
+    "data": "2026-10-07T17:43:57+02:00",
+    "modello": "google:gemini-3.5-flash-lite",
+    "giudice": "spento",
+    "domande": 2,
+    "interrotta": false
+  },
+  "aggregati": {
+    "totale": {
+      "domande": 2,
+      "ok": 1,
+      "ko": 1,
+      "errore": 0,
+      "nd": 0,
+      "richieste_medie": 12.5
+    },
+    "per_storia": {
+      "-": {
+        "domande": 1,
+        "ok": 1,
+        "ko": 0,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 16.0
+      },
+      "ST-03": {
+        "domande": 1,
+        "ok": 0,
+        "ko": 1,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 9.0
+      }
+    },
+    "per_modalita": {
+      "normale": {
+        "domande": 2,
+        "ok": 1,
+        "ko": 1,
+        "errore": 0,
+        "nd": 0,
+        "richieste_medie": 12.5
+      }
+    }
+  },
+  "domande": [
+    {
+      "id": 5,
+      "storia": "ST-03",
+      "modalita": "normale",
+      "esito": "ko",
+      "richieste": 9,
+      "passi_tool": 8,
+      "durata_s": 55.0,
+      "sql_agente": [
+        "SELECT * FROM v_margine_mensile ORDER BY mese DESC LIMIT 6",
+        "SELECT mese, conto_codice, conto_descrizione, importo, fonti FROM v_economico_mensile WHERE mese >= '2025-10-01' AND tipo = 'Ricavi' ORDER BY mese DESC, importo DESC",
+        "SELECT mese, conto_codice, conto_descrizione, importo, fonti FROM v_economico_mensile WHERE mese >= '2025-07-01' AND mese < '2025-10-01' AND tipo = 'Ricavi' ORDER BY mese DESC, importo DESC",
+        "SELECT mese, ricavi, costi, margine FROM v_margine_mensile WHERE mese >= '2025-07-01' ORDER BY mese ASC",
+        "SELECT SUM(ricavi) AS ricavi_q3, (SELECT SUM(ricavi) FROM v_margine_mensile WHERE mese >= '2025-10-01') AS ricavi_q4 FROM v_margine_mensile WHERE mese >= '2025-07-01' AND mese < '2025-10-01'",
+        "SELECT c.id, c.denominazione, c.settore FROM clienti AS c JOIN fatture AS f ON f.cliente_id = c.id WHERE f.data >= '2025-10-01' GROUP BY c.id, c.denominazione, c.settore",
+        "SELECT f.cliente_id, c.denominazione, SUM(f.imponibile) AS imponibile_totale FROM fatture AS f JOIN clienti AS c ON f.cliente_id = c.id WHERE f.tipo = 'attiva' AND f.data >= '2025-07-01' AND f.data < '2025-10-01' GROUP BY f.cliente_id, c.denominazione UNION ALL SELECT f.cliente_id, c.denominazione, SUM(f.imponibile) AS imponibile_totale FROM fatture AS f JOIN clienti AS c ON f.cliente_id = c.id WHERE f.tipo = 'attiva' AND f.data >= '2025-10-01' GROUP BY f.cliente_id, c.denominazione"
+      ],
+      "tabelle_lette": [
+        "clienti",
+        "documenti",
+        "documenti_chunks",
+        "fatture",
+        "fornitori",
+        "piano_dei_conti",
+        "scritture_contabili",
+        "v_economico_mensile",
+        "v_margine_mensile"
+      ],
+      "risposta": {
+        "conclusione": "I ricavi dell'ultimo trimestre (Q4 2025: ottobre-dicembre) sono calati a € 226.500,00 rispetto ai € 270.300,00 del trimestre precedente (Q3 2025: luglio-settembre), registrando una contrazione complessiva di € 43.800,00. \n\nL'analisi dei dati e della documentazione aziendale individua la causa principale e documentata in Barilli Logistica S.p.A. (cliente CLI-001): il cliente ha comunicato formalmente in data 15/09/2025 l'internalizzazione delle attività di sviluppo applicativo a partire dal 1° ottobre 2025, in base all'Accordo Quadro CTR-008. Questo ha ridotto il fatturato mensile generato da Barilli da circa € 28.000,00 a € 12.000,00 mensili (una riduzione di € 16.000,00 al mese per ottobre, novembre e dicembre, pari a € 48.000,00 complessivi in meno nel trimestre). Tale flessione è parzialmente compensata da lievi variazioni sugli altri clienti.",
+        "confidenza": "alta",
+        "causa_documentata": true,
+        "limiti": null,
+        "numeri": [
+          {
+            "descrizione": "Ricavi totali Q3 2025 (luglio-settembre)",
+            "valore": "270300.00",
+            "fonti": [
+              "FATT-A-2025-0043",
+              "FATT-A-2025-0044",
+              "FATT-A-2025-0045",
+              "FATT-A-2025-0046",
+              "FATT-A-2025-0047",
+              "FATT-A-2025-0048",
+              "FATT-A-2025-0049",
+              "FATT-A-2025-0050",
+              "FATT-A-2025-0051",
+              "FATT-A-2025-0052",
+              "FATT-A-2025-0053",
+              "FATT-A-2025-0054",
+              "FATT-A-2025-0055",
+              "FATT-A-2025-0056",
+              "FATT-A-2025-0057",
+              "FATT-A-2025-0058",
+              "FATT-A-2025-0059",
+              "FATT-A-2025-0060",
+              "FATT-A-2025-0061",
+              "FATT-A-2025-0062",
+              "FATT-A-2025-0063"
+            ]
+          },
+          {
+            "descrizione": "Ricavi totali Q4 2025 (ottobre-dicembre)",
+            "valore": "226500.00",
+            "fonti": [
+              "FATT-A-2025-0064",
+              "FATT-A-2025-0065",
+              "FATT-A-2025-0066",
+              "FATT-A-2025-0067",
+              "FATT-A-2025-0068",
+              "FATT-A-2025-0069",
+              "FATT-A-2025-0070",
+              "FATT-A-2025-0071",
+              "FATT-A-2025-0072",
+              "FATT-A-2025-0073",
+              "FATT-A-2025-0074",
+              "FATT-A-2025-0075",
+              "FATT-A-2025-0076",
+              "FATT-A-2025-0077",
+              "FATT-A-2025-0078",
+              "FATT-A-2025-0079",
+              "FATT-A-2025-0080",
+              "FATT-A-2025-0081",
+              "FATT-A-2025-0082",
+              "FATT-A-2025-0083",
+              "FATT-A-2025-0084"
+            ]
+          },
+          {
+            "descrizione": "Fatturato Barilli Logistica Q3 2025 (luglio-settembre)",
+            "valore": "78500.00",
+            "fonti": [
+              "FATT-A-2025-0043",
+              "FATT-A-2025-0050",
+              "FATT-A-2025-0057"
+            ]
+          },
+          {
+            "descrizione": "Fatturato Barilli Logistica Q4 2025 (ottobre-dicembre)",
+            "valore": "36000.00",
+            "fonti": [
+              "FATT-A-2025-0064",
+              "FATT-A-2025-0071",
+              "FATT-A-2025-0078"
+            ]
+          }
+        ],
+        "fonti": [
+          "DOC-EML-008",
+          "DOC-EML-010",
+          "CTR-008",
+          "FATT-A-2025-0043",
+          "FATT-A-2025-0044",
+          "FATT-A-2025-0045",
+          "FATT-A-2025-0046",
+          "FATT-A-2025-0047",
+          "FATT-A-2025-0048",
+          "FATT-A-2025-0049",
+          "FATT-A-2025-0050",
+          "FATT-A-2025-0051",
+          "FATT-A-2025-0052",
+          "FATT-A-2025-0053",
+          "FATT-A-2025-0054",
+          "FATT-A-2025-0055",
+          "FATT-A-2025-0056",
+          "FATT-A-2025-0057",
+          "FATT-A-2025-0058",
+          "FATT-A-2025-0059",
+          "FATT-A-2025-0060",
+          "FATT-A-2025-0061",
+          "FATT-A-2025-0062",
+          "FATT-A-2025-0063",
+          "FATT-A-2025-0064",
+          "FATT-A-2025-0065",
+          "FATT-A-2025-0066",
+          "FATT-A-2025-0067",
+          "FATT-A-2025-0068",
+          "FATT-A-2025-0069",
+          "FATT-A-2025-0070",
+          "FATT-A-2025-0071",
+          "FATT-A-2025-0072",
+          "FATT-A-2025-0073",
+          "FATT-A-2025-0074",
+          "FATT-A-2025-0075",
+          "FATT-A-2025-0076",
+          "FATT-A-2025-0077",
+          "FATT-A-2025-0078",
+          "FATT-A-2025-0079",
+          "FATT-A-2025-0080",
+          "FATT-A-2025-0081",
+          "FATT-A-2025-0082",
+          "FATT-A-2025-0083",
+          "FATT-A-2025-0084"
+        ]
+      },
+      "metriche": {
+        "fonti_id": "5/5",
+        "tabelle": null,
+        "numeri": "2/19",
+        "numeri_na": null,
+        "fonti_extra": 40,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    },
+    {
+      "id": 10,
+      "storia": "-",
+      "modalita": "normale",
+      "esito": "ok",
+      "richieste": 16,
+      "passi_tool": 14,
+      "durata_s": 41.0,
+      "sql_agente": [
+        "SELECT v.conto_codice, v.conto_descrizione, SUM(CASE WHEN v.mese = '2024-06-01' THEN v.importo ELSE 0 END) AS costo_giugno, SUM(CASE WHEN v.mese = '2024-11-01' THEN v.importo ELSE 0 END) AS costo_novembre, SUM(CASE WHEN v.mese = '2024-11-01' THEN v.importo ELSE 0 END) - SUM(CASE WHEN v.mese = '2024-06-01' THEN v.importo ELSE 0 END) AS incremento, ARRAY_AGG(DISTINCT f) AS tutte_fonti FROM v_economico_mensile AS v, UNNEST(v.fonti) AS f WHERE v.tipo = 'Costi' AND v.mese IN ('2024-06-01', '2024-11-01') GROUP BY v.conto_codice, v.conto_descrizione ORDER BY incremento DESC LIMIT 5",
+        "SELECT DISTINCT mese FROM v_economico_mensile ORDER BY mese",
+        "SELECT v.conto_codice, v.conto_descrizione, SUM(CASE WHEN v.mese = '2025-06-01' THEN v.importo ELSE 0 END) AS costo_giugno, SUM(CASE WHEN v.mese = '2025-11-01' THEN v.importo ELSE 0 END) AS costo_novembre, SUM(CASE WHEN v.mese = '2025-11-01' THEN v.importo ELSE 0 END) - SUM(CASE WHEN v.mese = '2025-06-01' THEN v.importo ELSE 0 END) AS incremento, ARRAY_AGG(DISTINCT f) AS tutte_fonti FROM v_economico_mensile AS v, UNNEST(v.fonti) AS f WHERE v.tipo = 'Costi' AND v.mese IN ('2025-06-01', '2025-11-01') GROUP BY v.conto_codice, v.conto_descrizione ORDER BY incremento DESC",
+        "SELECT v.conto_codice, v.conto_descrizione, v.mese, v.importo, v.fonti FROM v_economico_mensile AS v WHERE v.tipo = 'Costi' AND v.conto_codice IN ('64.01', '64.02', '64.03') AND v.mese IN ('2025-06-01', '2025-11-01') ORDER BY v.conto_codice, v.mese",
+        "SELECT v.conto_codice, v.conto_descrizione, v.mese, v.importo, v.fonti FROM v_economico_mensile AS v WHERE v.tipo = 'Costi' AND v.conto_codice = '64.01' ORDER BY v.mese",
+        "SELECT v.conto_codice, v.conto_descrizione, v.mese, v.importo, v.fonti FROM v_economico_mensile AS v WHERE v.tipo = 'Costi' AND v.conto_codice = '64.01' AND v.mese = '2025-11-01'",
+        "SELECT id, imponibile, totale FROM fatture WHERE id IN ('FATT-P-2025-0201', 'FATT-P-2025-0202', 'FATT-P-2025-0203', 'FATT-P-2025-0204', 'FATT-P-2025-0205')",
+        "SELECT fr.fattura_id, fr.descrizione, fr.imponibile FROM fatture_righe AS fr WHERE fr.fattura_id IN ('FATT-P-2025-0201', 'FATT-P-2025-0202', 'FATT-P-2025-0203', 'FATT-P-2025-0204', 'FATT-P-2025-0205')"
+      ],
+      "tabelle_lette": [
+        "clienti",
+        "documenti",
+        "documenti_chunks",
+        "fatture",
+        "fatture_righe",
+        "fornitori",
+        "piano_dei_conti",
+        "scritture_contabili",
+        "v_economico_mensile"
+      ],
+      "risposta": {
+        "conclusione": "Dall'analisi dei dati contabili (viste v_economico_mensile e v_economico) per il periodo giugno-novembre 2025, la categoria di costo che è cresciuta di più in valore assoluto è la `64.01 - Spese alberghiere e alloggi trasferte`, con un incremento di 2.250,00 € (passando da 850,00 € a giugno a 3.100,00 € a novembre). Subito dopo seguono la `64.02 - Spese trasporti, biglietti ferroviari e aerei` (incremento di 1.200,00 €, da 550,00 € a 1.750,00 €) e la `64.03 - Spese ristorazione e pasti dipendenti/trasferte` (incremento di 1.200,00 €, da 450,00 € a 1.650,00 €). Si segnala inoltre che la spesa alberghiera mensile era fissa a 850,00 € da gennaio a ottobre ed è balzata a 3.100,00 € a novembre a seguito di specifiche fatture passive di alberghi (FATT-P-2025-0201, FATT-P-2025-0202, FATT-P-2025-0203, FATT-P-2025-0204, FATT-P-2025-0205). Tuttavia, i documenti aziendali non riportano una specifica motivazione o giustificazione testuale per tale aumento delle trasferte nel mese di novembre.",
+        "confidenza": "alta",
+        "causa_documentata": false,
+        "limiti": "La causa precisa o la motivazione operativa dietro l'aumento delle trasferte e dei pernottamenti nel mese di novembre 2025 non risulta esplicitamente documentata nei contratti o nelle comunicazioni aziendali reperite.",
+        "numeri": [
+          {
+            "descrizione": "Costo Spese alberghiere e alloggi trasferte a giugno 2025 (Conto 64.01)",
+            "valore": "850.00 EUR",
+            "fonti": [
+              "FATT-P-2025-0183"
+            ]
+          },
+          {
+            "descrizione": "Costo Spese alberghiere e alloggi trasferte a novembre 2025 (Conto 64.01)",
+            "valore": "3100.00 EUR",
+            "fonti": [
+              "FATT-P-2025-0201",
+              "FATT-P-2025-0202",
+              "FATT-P-2025-0203",
+              "FATT-P-2025-0204",
+              "FATT-P-2025-0205"
+            ]
+          },
+          {
+            "descrizione": "Incremento Spese alberghiere e alloggi trasferte (giugno-novembre 2025)",
+            "valore": "2250.00 EUR",
+            "fonti": [
+              "FATT-P-2025-0183",
+              "FATT-P-2025-0201",
+              "FATT-P-2025-0202",
+              "FATT-P-2025-0203",
+              "FATT-P-2025-0204",
+              "FATT-P-2025-0205"
+            ]
+          },
+          {
+            "descrizione": "Costo Spese trasporti, biglietti ferroviari e aerei a giugno 2025 (Conto 64.02)",
+            "valore": "550.00 EUR",
+            "fonti": [
+              "FATT-P-2025-0182"
+            ]
+          },
+          {
+            "descrizione": "Costo Spese trasporti, biglietti ferroviari e aerei a novembre 2025 (Conto 64.02)",
+            "valore": "1750.00 EUR",
+            "fonti": [
+              "FATT-P-2025-0197",
+              "FATT-P-2025-0198",
+              "FATT-P-2025-0199",
+              "FATT-P-2025-0200"
+            ]
+          },
+          {
+            "descrizione": "Incremento Spese trasporti, biglietti ferroviari e aerei (giugno-novembre 2025)",
+            "valore": "1200.00 EUR",
+            "fonti": [
+              "FATT-P-2025-0182",
+              "FATT-P-2025-0197",
+              "FATT-P-2025-0198",
+              "FATT-P-2025-0199",
+              "FATT-P-2025-0200"
+            ]
+          },
+          {
+            "descrizione": "Costo Spese ristorazione e pasti dipendenti/trasferte a giugno 2025 (Conto 64.03)",
+            "valore": "450.00 EUR",
+            "fonti": [
+              "FATT-P-2025-0184"
+            ]
+          },
+          {
+            "descrizione": "Costo Spese ristorazione e pasti dipendenti/trasferte a novembre 2025 (Conto 64.03)",
+            "valore": "1650.00 EUR",
+            "fonti": [
+              "FATT-P-2025-0206",
+              "FATT-P-2025-0207",
+              "FATT-P-2025-0208"
+            ]
+          },
+          {
+            "descrizione": "Incremento Spese ristorazione e pasti dipendenti/trasferte (giugno-novembre 2025)",
+            "valore": "1200.00 EUR",
+            "fonti": [
+              "FATT-P-2025-0184",
+              "FATT-P-2025-0206",
+              "FATT-P-2025-0207",
+              "FATT-P-2025-0208"
+            ]
+          }
+        ],
+        "fonti": [
+          "FATT-P-2025-0182",
+          "FATT-P-2025-0183",
+          "FATT-P-2025-0184",
+          "FATT-P-2025-0197",
+          "FATT-P-2025-0198",
+          "FATT-P-2025-0199",
+          "FATT-P-2025-0200",
+          "FATT-P-2025-0201",
+          "FATT-P-2025-0202",
+          "FATT-P-2025-0203",
+          "FATT-P-2025-0204",
+          "FATT-P-2025-0205",
+          "FATT-P-2025-0206",
+          "FATT-P-2025-0207",
+          "FATT-P-2025-0208"
+        ]
+      },
+      "metriche": {
+        "fonti_id": null,
+        "tabelle": "3/3",
+        "numeri": null,
+        "numeri_na": "più di 25 valori attesi",
+        "fonti_extra": 15,
+        "citate_non_viste": 0,
+        "comportamento_ok": null,
+        "giudice": null
+      }
+    }
+  ]
+}

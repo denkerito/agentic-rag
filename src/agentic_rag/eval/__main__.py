@@ -5,14 +5,16 @@ eval/reports/private/ ed è ignorato da git: non va condiviso con l'assistente d
 """
 
 import argparse
+import os
 from datetime import datetime
 from pathlib import Path
 
 from agentic_rag.agent import config as agent_config
 from agentic_rag.eval import report
+from agentic_rag.eval.ambiente import controlla_ambiente
 from agentic_rag.eval.groundtruth import GROUND_TRUTH_DIR, GroundTruth, Modalita, carica
 from agentic_rag.eval.numeri import esegui_query_attesa
-from agentic_rag.eval.runner import RisultatoDomanda, esegui
+from agentic_rag.eval.runner import TIMEOUT_DOMANDA_S, RisultatoDomanda, esegui
 
 
 def _filtra(gt: GroundTruth, args: argparse.Namespace) -> list:
@@ -53,6 +55,7 @@ def dry_run(gt: GroundTruth, domande: list) -> None:
 
 
 def main() -> None:
+    os.environ.setdefault("PYDANTIC_AI_NO_BANNER", "1")  # niente banner a ogni agente creato
     p = argparse.ArgumentParser(prog="python -m agentic_rag.eval", description=__doc__)
     p.add_argument(
         "--dry-run", action="store_true", help="valida il ground truth, senza chiamare il modello"
@@ -63,6 +66,12 @@ def main() -> None:
     p.add_argument("--model", help=f"modello dell'agente (default {agent_config.AGENT_MODEL})")
     p.add_argument(
         "--pause", type=float, default=8.0, help="secondi tra una domanda e la successiva"
+    )
+    p.add_argument(
+        "--timeout",
+        type=float,
+        default=TIMEOUT_DOMANDA_S,
+        help="secondi massimi per domanda (poi la domanda risulta in errore)",
     )
     p.add_argument("--judge", action="store_true", help="giudice LLM sulla correttezza della causa")
     p.add_argument("--judge-model", help="modello del giudice (default: lo stesso dell'agente)")
@@ -77,28 +86,48 @@ def main() -> None:
     if args.dry_run:
         dry_run(gt, domande)
         return
+    problemi = controlla_ambiente()
+    if problemi:
+        raise SystemExit("Ambiente non pronto:\n- " + "\n- ".join(problemi))
+
+    def inizio(d) -> None:
+        print(f"#{d.id:>2} in corso… (max {args.timeout:.0f} s)", flush=True)
 
     def progresso(r: RisultatoDomanda) -> None:
-        print(
-            f"#{r.domanda.id:>2} {r.esito} ({r.richieste} richieste, {r.durata_s:.0f} s)",
-            flush=True,
+        dettaglio = (
+            f"{r.errore}, {r.passi_tool} chiamate a tool, {r.durata_s:.0f} s"
+            if r.esito == "errore"
+            else f"{r.richieste} richieste, {r.passi_tool} chiamate a tool, {r.durata_s:.0f} s"
         )
+        print(f"#{r.domanda.id:>2} {r.esito} ({dettaglio})", flush=True)
 
-    risultati = esegui(
-        domande,
-        model=args.model,
-        judge=args.judge,
-        judge_model=args.judge_model,
-        pausa=args.pause,
-        progresso=progresso,
-    )
+    risultati: list[RisultatoDomanda] = []
+    interrotta = False
+    try:
+        esegui(
+            domande,
+            model=args.model,
+            judge=args.judge,
+            judge_model=args.judge_model,
+            pausa=args.pause,
+            timeout=args.timeout,
+            inizio=inizio,
+            progresso=progresso,
+            risultati=risultati,
+        )
+    except KeyboardInterrupt:
+        interrotta = True
+        print("\nInterrotto: salvo il report delle domande già completate.")
+    if not risultati:
+        raise SystemExit("Nessuna domanda completata: nessun report scritto.")
     meta = {
         "data": datetime.now().astimezone().isoformat(timespec="seconds"),
         "modello": args.model or agent_config.AGENT_MODEL,
         "giudice": (args.judge_model or args.model or agent_config.AGENT_MODEL)
         if args.judge
         else "spento",
-        "domande": len(domande),
+        "domande": f"{len(risultati)} di {len(domande)}" if interrotta else len(domande),
+        "interrotta": interrotta,
     }
     percorsi, righe = report.scrivi(risultati, meta, args.out)
     print()

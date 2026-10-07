@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "data": "2026-10-07T16:47:38+02:00",
+    "modello": "google:gemini-3.5-flash-lite",
+    "giudice": "spento",
+    "domande": "1 di 12",
+    "interrotta": true
+  },
+  "aggregati": {
+    "totale": {
+      "domande": 1,
+      "ok": 0,
+      "ko": 0,
+      "errore": 1,
+      "nd": 0,
+      "richieste_medie": null
+    },
+    "per_storia": {
+      "ST-01": {
+        "domande": 1,
+        "ok": 0,
+        "ko": 0,
+        "errore": 1,
+        "nd": 0,
+        "richieste_medie": null
+      }
+    },
+    "per_modalita": {
+      "normale": {
+        "domande": 1,
+        "ok": 0,
+        "ko": 0,
+        "errore": 1,
+        "nd": 0,
+        "richieste_medie": null
+      }
+    }
+  },
+  "domande": [
+    {
+      "id": 1,
+      "storia": "ST-01",
+      "modalita": "normale",
+      "esito": "errore",
+      "richieste": 0,
+      "durata_s": 300.6,
+      "sql_agente": [],
+      "tabelle_lette": [],
+      "errore": "TimeoutError"
+    }
+  ]
+}
