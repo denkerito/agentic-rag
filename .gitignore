@@ -34,3 +34,6 @@ Thumbs.db
 
 # Packaging
 *.egg-info/
+
+# Report privati dell'eval: contengono il ground truth
+eval/reports/private/
