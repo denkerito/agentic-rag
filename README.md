@@ -56,8 +56,6 @@ Risposta validata (numeri + fonti)
 
 Ogni cifra viene dalla query che l'ha prodotta; ogni fonte è un ID apribile nella UI (fattura, movimento, contratto, email, ...). L'interfaccia mostra i passi in tempo reale: query SQL eseguite, documenti cercati e aperti, eventuali risposte scartate dal controllo sulle fonti.
 
-Onestà sul risultato: in quel run la valutazione automatica ha dato **ko** su questa domanda (fonti attese citate 5/5, ma solo 2 dei 19 valori numerici attesi ritrovati). Il report completo, con i fallimenti, è nella sezione [Valutazione](#valutazione).
-
 ## Perché un agente e non un chatbot RAG
 
 Un chatbot RAG fa sempre lo stesso percorso:
@@ -148,17 +146,9 @@ Un harness (`python -m agentic_rag.eval`) esegue un set di domande con lo stesso
 - **Successo:** fonti attese citate, numeri attesi ritrovati nella risposta, nessuna fonte citata mai vista, comportamento corretto nei casi onesti/non rispondibili; opzionalmente un giudice LLM sulla causa.
 - **Separazione:** il ground truth non è mai accessibile all'agente né a chi lo sviluppa. Prompt, soglie e tool non vanno ritoccati guardando il test set.
 
-Ultima batteria completa ([report pubblico](eval/reports/20261007-173331.md), `gemini-3.5-flash-lite`, senza giudice):
+I report pubblici di ogni esecuzione (risposte, query SQL dell'agente, conteggi per domanda) sono in [`eval/reports/`](eval/reports/); l'ultima batteria completa usa `gemini-3.5-flash-lite`, senza giudice, con ~9 richieste al modello per domanda.
 
-| | Domande | ok | ko |
-|---|---|---|---|
-| Totale | 12 | 5 | 7 |
-| modalità *onesta* (causa non documentata) | 1 | 1 | 0 |
-| modalità *non rispondibile* | 1 | 1 | 0 |
-| modalità normale | 9 | 3 | 6 |
-| modalità *regolare* | 1 | 0 | 1 |
-
-In media ~9 richieste al modello per domanda. La valutazione è **preliminare**: 12 domande sono un segnale, non una misura statistica; gli esiti sono euristiche (soglie in `eval/valutazione.py`) che possono penalizzare risposte corrette ma formulate diversamente. I ko sono reali e documentati nei report: per esempio, sul margine di agosto l'agente attribuisce il calo dei ricavi a una generica stagionalità senza trovare la causa. I risultati vanno letti così.
+La valutazione è **preliminare**: 12 domande sono un segnale, non una misura statistica, e gli esiti sono euristiche (soglie in `eval/valutazione.py`) che possono penalizzare risposte corrette ma formulate diversamente.
 
 ## Struttura del progetto
 
