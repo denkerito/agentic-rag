@@ -1,3 +1,15 @@
+<p align="center">
+  <img alt="Python 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white">
+  <img alt="Pydantic AI" src="https://img.shields.io/badge/Pydantic_AI-E92063?logo=pydantic&logoColor=white">
+  <img alt="PostgreSQL 17" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
+  <img alt="pgvector" src="https://img.shields.io/badge/pgvector-336791?logo=postgresql&logoColor=white">
+  <img alt="Gemini" src="https://img.shields.io/badge/Gemini-8E75B2?logo=googlegemini&logoColor=white">
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white">
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white">
+</p>
+
 # Agentic Financial Investigation
 
 Un agente AI che indaga i dati economici di un'azienda combinando **analisi SQL deterministica** e **ricerca nei documenti** per individuare e spiegare le variazioni rilevanti, citando le fonti e dichiarando quando una causa non è documentata.
@@ -147,19 +159,6 @@ Ultima batteria completa ([report pubblico](eval/reports/20261007-173331.md), `g
 | modalità *regolare* | 1 | 0 | 1 |
 
 In media ~9 richieste al modello per domanda. La valutazione è **preliminare**: 12 domande sono un segnale, non una misura statistica; gli esiti sono euristiche (soglie in `eval/valutazione.py`) che possono penalizzare risposte corrette ma formulate diversamente. I ko sono reali e documentati nei report: per esempio, sul margine di agosto l'agente attribuisce il calo dei ricavi a una generica stagionalità senza trovare la causa. I risultati vanno letti così.
-
-## Stack
-
-| | |
-|---|---|
-| Backend | Python 3.13, FastAPI, Pydantic AI |
-| Database | PostgreSQL 17 |
-| Vettori | pgvector (embedding Gemini) |
-| LLM | Gemini (`gemini-3.5-flash-lite` di default, configurabile) |
-| SQL validation | sqlglot |
-| Frontend | React 19, TypeScript, Vite |
-| Osservabilità | Logfire (opzionale) |
-| Deploy locale | Docker Compose |
 
 ## Struttura del progetto
 
