@@ -416,16 +416,17 @@
 
 /* ---------- livello 2: puntatore, scrittura, rivelazione ---------- */
 .home {
-  --mx: 50%;
-  --my: 24%;
+  --sx: 50vw;
+  --sy: 24vh;
 }
 @media (hover: hover) and (pointer: fine) {
-  /* griglia di puntini che compare solo attorno al cursore, e un alone che lo segue */
+  /* griglia di puntini che compare solo attorno al cursore, e un alone che lo segue:
+     strato fisso a tutta la finestra, posizionato da useSpotlight (--sx/--sy, coordinate viewport) */
   .home::before,
   .home::after {
     content: '';
-    position: absolute;
-    inset: -80px -12vw 0;
+    position: fixed;
+    inset: 0;
     pointer-events: none;
     z-index: -1;
   }
@@ -436,12 +437,12 @@
       transparent 1.4px
     );
     background-size: 24px 24px;
-    -webkit-mask-image: radial-gradient(240px circle at calc(var(--mx) + 12vw) calc(var(--my) + 80px), #000, transparent 72%);
-    mask-image: radial-gradient(240px circle at calc(var(--mx) + 12vw) calc(var(--my) + 80px), #000, transparent 72%);
+    -webkit-mask-image: radial-gradient(260px circle at var(--sx) var(--sy), #000, transparent 72%);
+    mask-image: radial-gradient(260px circle at var(--sx) var(--sy), #000, transparent 72%);
   }
   .home::after {
     background: radial-gradient(
-      380px circle at calc(var(--mx) + 12vw) calc(var(--my) + 80px),
+      400px circle at var(--sx) var(--sy),
       color-mix(in srgb, var(--accent) 11%, transparent),
       transparent 62%
     );

@@ -1,6 +1,6 @@
-import type { CSSProperties } from 'react'
+import { useRef, type CSSProperties } from 'react'
 import { Composer } from './Composer'
-import { seguiPuntatore } from '../lib/spotlight'
+import { seguiPuntatore, useSpotlight } from '../lib/spotlight'
 import { Icona, type NomeIcona } from './Icone'
 
 const PRINCIPI: { icona: NomeIcona; titolo: string; testo: string }[] = [
@@ -22,8 +22,10 @@ const PRINCIPI: { icona: NomeIcona; titolo: string; testo: string }[] = [
 ]
 
 export default function Home() {
+  const radice = useRef<HTMLDivElement>(null)
+  useSpotlight(radice)
   return (
-    <div className="pagina home" onPointerMove={seguiPuntatore}>
+    <div className="pagina home" ref={radice}>
       <div className="aurora" aria-hidden="true">
         <i />
         <i />
