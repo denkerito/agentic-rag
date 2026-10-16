@@ -3,6 +3,8 @@ from typing import Any
 
 import psycopg
 
+DOCUMENTI_SOLO_TOOL = frozenset({"documenti", "documenti_chunks"})
+
 
 @dataclass
 class AgentDeps:
@@ -19,4 +21,6 @@ def list_relations(conn: psycopg.Connection) -> set[str]:
     rows = conn.execute(
         "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
     ).fetchall()
-    return {r[0] for r in rows} - {"documenti_chunks"}  # i chunk si cercano col tool dedicato
+    # i documenti si leggono solo con i tool dedicati (elenco, ricerche, apertura): ogni accesso
+    # resta tracciato e il testo non finisce in blocco nel contesto
+    return {r[0] for r in rows} - DOCUMENTI_SOLO_TOOL

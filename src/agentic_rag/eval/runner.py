@@ -17,6 +17,10 @@ from agentic_rag.eval.numeri import esegui_query_attesa
 from agentic_rag.eval.valutazione import Esito, Giudizio, Valutazione, valuta
 
 TIMEOUT_DOMANDA_S = 300.0
+# Errori del provider o della rete: la domanda si riesegue una volta. Superare il limite di richieste
+# (UsageLimitExceeded) è invece un fallimento della strategia dell'agente e conta come tale.
+ERRORI_RIESEGUIBILI = frozenset({"ModelHTTPError", "ModelAPIError", "TimeoutError"})
+TENTATIVI_GIUDICE = 2
 
 
 @dataclass
@@ -32,6 +36,7 @@ class RisultatoDomanda:
     passi_tool: int = 0  # chiamate a tool eseguite: dice se l'agente stava avanzando o era fermo
     durata_s: float = 0.0
     errore_giudice: str | None = None
+    rieseguita: bool = False  # primo tentativo fallito per un errore del provider o un timeout
 
 
 def esegui_domanda(
@@ -40,11 +45,12 @@ def esegui_domanda(
     judge: bool = False,
     judge_model: str | None = None,
     timeout: float | None = TIMEOUT_DOMANDA_S,
+    ricerca_semantica: bool = True,
 ) -> RisultatoDomanda:
     inizio = time.monotonic()
     query_attesa = esegui_query_attesa(domanda.query_sql)
     try:
-        agent, deps = open_session(model)
+        agent, deps = open_session(model, ricerca_semantica)
     except SystemExit as e:  # configurazione mancante (DATABASE_URL_AGENT)
         return RisultatoDomanda(domanda, "errore", errore=f"configurazione: {e}")
     except psycopg.Error as e:
@@ -76,10 +82,13 @@ def esegui_domanda(
     giudizio: Giudizio | None = None
     errore_giudice: str | None = None
     if judge and domanda.risposta_attesa:
-        try:
-            giudizio = giudica(domanda.domanda, domanda.risposta_attesa, risposta, judge_model)
-        except Exception as e:  # noqa: BLE001 - il giudice non deve far perdere la domanda
-            errore_giudice = type(e).__name__
+        for _ in range(TENTATIVI_GIUDICE):
+            try:
+                giudizio = giudica(domanda.domanda, domanda.risposta_attesa, risposta, judge_model)
+                errore_giudice = None
+                break
+            except Exception as e:  # noqa: BLE001 - il giudice non deve far perdere la domanda
+                errore_giudice = type(e).__name__
 
     val = valuta(domanda, risposta, trace, seen_ids, query_attesa, giudizio)
     return RisultatoDomanda(
@@ -107,6 +116,7 @@ def esegui(
     progresso: Callable[[RisultatoDomanda], None] | None = None,
     dormi: Callable[[float], None] = time.sleep,
     risultati: list[RisultatoDomanda] | None = None,
+    ricerca_semantica: bool = True,
 ) -> list[RisultatoDomanda]:
     """Esegue le domande in sequenza. `risultati` è un accumulatore opzionale: se la batteria viene
     interrotta (Ctrl+C) chi chiama ha comunque le domande già completate."""
@@ -114,7 +124,12 @@ def esegui(
     for i, d in enumerate(domande):
         if inizio:
             inizio(d)
-        r = esegui_domanda(d, model, judge, judge_model, timeout)
+        r = esegui_domanda(d, model, judge, judge_model, timeout, ricerca_semantica)
+        if r.esito == "errore" and r.errore in ERRORI_RIESEGUIBILI:
+            if pausa:
+                dormi(pausa)
+            r = esegui_domanda(d, model, judge, judge_model, timeout, ricerca_semantica)
+            r.rieseguita = True
         risultati.append(r)
         if progresso:
             progresso(r)

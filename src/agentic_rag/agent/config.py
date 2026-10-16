@@ -15,3 +15,12 @@ SEARCH_MAX_K: int = 8
 # Distanza coseno oltre la quale un chunk è considerato non pertinente. Calibrata a mano:
 # query pertinenti ≤ 0.37, query fuori tema ≥ 0.41. Da riverificare con l'eval.
 SEARCH_MAX_DISTANCE: float = float(os.getenv("SEARCH_MAX_DISTANCE", "0.38"))
+# Ricerca semantica (tool `cerca_semantica`): spegnibile per l'ablazione (RICERCA_SEMANTICA=0).
+RICERCA_SEMANTICA: bool = os.getenv("RICERCA_SEMANTICA", "1").strip().lower() not in (
+    "0",
+    "false",
+    "no",
+    "off",
+)
+ELENCO_PER_PAGINA: int = 30  # documenti per pagina di `elenca_documenti`
+TESTO_MAX_K: int = 8  # risultati massimi di `cerca_testo`

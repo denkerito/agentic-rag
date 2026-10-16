@@ -47,6 +47,9 @@ export interface ToolResult {
   ids: string[]
   n_righe: number | null
   n_pertinenti: number | null
+  totale?: number | null
+  pagina?: number | null
+  pagine?: number | null
   troncato: boolean | null
   offset: number | null
 }

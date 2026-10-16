@@ -220,3 +220,37 @@ def test_database_giu_non_blocca_la_batteria(tmp_path, monkeypatch, dati) -> Non
     monkeypatch.setattr(app_config, "DATABASE_URL_AGENT", "postgresql://u:p@127.0.0.1:1/db")
     risultati = esegui(gt.domande[:1], pausa=0)
     assert risultati[0].esito == "errore" and risultati[0].errore.startswith("database:")
+
+
+def test_errore_del_provider_si_riesegue_una_volta(tmp_path, monkeypatch, dati) -> None:
+    gt = _gt(tmp_path, dati)
+    sano = _modello(dati).function
+    chiamate = {"n": 0}
+
+    def instabile(messages, info):
+        chiamate["n"] += 1
+        if chiamate["n"] == 1:
+            raise TimeoutError
+        return sano(messages, info)
+
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(instabile))
+    pause: list[float] = []
+    risultati = esegui(gt.domande[:1], pausa=2, dormi=pause.append)
+    assert risultati[0].esito == "ok" and risultati[0].rieseguita
+    assert pause == [2]  # pausa prima del secondo tentativo
+
+
+def test_limite_di_richieste_non_si_riesegue(tmp_path, monkeypatch, dati) -> None:
+    from pydantic_ai.exceptions import UsageLimitExceeded
+
+    gt = _gt(tmp_path, dati)
+    chiamate = {"n": 0}
+
+    def esaurito(messages, info):
+        chiamate["n"] += 1
+        raise UsageLimitExceeded("limite")
+
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(esaurito))
+    risultati = esegui(gt.domande[:1], pausa=0)
+    assert risultati[0].esito == "errore" and not risultati[0].rieseguita
+    assert chiamate["n"] == 1

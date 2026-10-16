@@ -53,7 +53,10 @@ class ToolResult(BaseModel):
     tool: str
     ids: list[str] = Field(default_factory=list, description="ID fonte comparsi nel risultato")
     n_righe: int | None = None  # query_sql
-    n_pertinenti: int | None = None  # cerca_documenti
+    n_pertinenti: int | None = None  # cerca_testo, cerca_semantica (e il vecchio cerca_documenti)
+    totale: int | None = None  # elenca_documenti, cerca_testo: documenti che corrispondono
+    pagina: int | None = None  # elenca_documenti
+    pagine: int | None = None  # elenca_documenti
     troncato: bool | None = None  # query_sql, apri_documento
     offset: int | None = None  # apri_documento
 

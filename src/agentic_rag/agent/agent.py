@@ -5,7 +5,13 @@ from agentic_rag.agent.deps import AgentDeps
 from agentic_rag.agent.model import build_model
 from agentic_rag.agent.output import Risposta
 from agentic_rag.agent.prompt import SYSTEM_PROMPT
-from agentic_rag.agent.tools import apri_documento, cerca_documenti, query_sql
+from agentic_rag.agent.tools import (
+    apri_documento,
+    cerca_semantica,
+    cerca_testo,
+    elenca_documenti,
+    query_sql,
+)
 
 DOC_PREFIXES = ("DOC-", "CTR-")
 
@@ -28,14 +34,21 @@ def check_risposta(risposta: Risposta, seen_ids: set[str]) -> None:
         )
 
 
-def build_agent(model: Model | str | None = None, schema: str = "") -> Agent[AgentDeps, Risposta]:
+def build_agent(
+    model: Model | str | None = None, schema: str = "", ricerca_semantica: bool = True
+) -> Agent[AgentDeps, Risposta]:
+    # senza ricerca semantica (ablazione) cambia solo l'elenco dei tool: il prompt non li nomina
+    funzioni = [query_sql, elenca_documenti, cerca_testo]
+    if ricerca_semantica:
+        funzioni.append(cerca_semantica)
+    funzioni.append(apri_documento)
     agent = Agent(
         model or build_model(),
         deps_type=AgentDeps,
         output_type=Risposta,
         instructions=SYSTEM_PROMPT.format(schema=schema),
         # sequential: i tool condividono una connessione psycopg e non devono sovrapporsi
-        tools=[Tool(f, sequential=True) for f in (query_sql, cerca_documenti, apri_documento)],
+        tools=[Tool(f, sequential=True) for f in funzioni],
         retries=3,
     )
 

@@ -108,3 +108,32 @@ def test_validator_accepts_seen_sources() -> None:
         causa_documentata=True,
     )
     check_risposta(r, {"FATT-P-2025-0001", "CTR-001"})
+
+
+def _tool_registrati(agent) -> list[str]:
+    return list(agent._function_toolset.tools)
+
+
+def test_agent_tools_with_and_without_semantic_search() -> None:
+    from pydantic_ai.models.test import TestModel
+
+    from agentic_rag.agent.agent import build_agent
+
+    con = _tool_registrati(build_agent(TestModel()))
+    senza = _tool_registrati(build_agent(TestModel(), ricerca_semantica=False))
+    assert con == [
+        "query_sql",
+        "elenca_documenti",
+        "cerca_testo",
+        "cerca_semantica",
+        "apri_documento",
+    ]
+    assert senza == [t for t in con if t != "cerca_semantica"]
+
+
+def test_prompt_does_not_name_document_search_tools() -> None:
+    # l'ablazione cambia solo l'elenco dei tool: il prompt deve restare identico e valido in entrambe
+    from agentic_rag.agent.prompt import SYSTEM_PROMPT
+
+    for nome in ("cerca_", "elenca_"):
+        assert nome not in SYSTEM_PROMPT

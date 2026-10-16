@@ -1,4 +1,4 @@
-"""Ricerca semantica sui chunk dei documenti (base del futuro tool `cerca_documenti`)."""
+"""Ricerca semantica sui chunk dei documenti (tool `cerca_semantica`)."""
 
 from dataclasses import dataclass
 from datetime import date
