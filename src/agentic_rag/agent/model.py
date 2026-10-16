@@ -1,4 +1,4 @@
-"""Costruzione del modello: per Gemini i 429 si ritentano nel client, senza far ripartire la run."""
+"""Costruzione del modello: per Gemini 429 e 5xx si ritentano nel client, senza far ripartire la run."""
 
 from google.genai.types import HttpRetryOptions
 from pydantic_ai.models import Model
@@ -9,8 +9,11 @@ from agentic_rag import config as app_config
 from agentic_rag.agent import config
 
 GOOGLE_PREFIX = "google:"
-# Stessa cadenza del vecchio loop: 10, 20, 40, 60 s.
-RETRY_429 = HttpRetryOptions(attempts=5, initial_delay=10, max_delay=60, http_status_codes=[429])
+# Stessa cadenza del vecchio loop: 10, 20, 40, 60 s. Oltre ai 429 (quota) si ritentano gli errori
+# temporanei del servizio (500/502/503/504, es. modello sovraccarico).
+RETRY_429 = HttpRetryOptions(
+    attempts=5, initial_delay=10, max_delay=60, http_status_codes=[429, 500, 502, 503, 504]
+)
 
 
 def build_model(name: str | None = None) -> Model | str:

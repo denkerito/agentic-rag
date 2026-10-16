@@ -27,3 +27,10 @@ def test_errori_di_rete_e_provider_si_rieseguono(errore) -> None:
 )
 def test_errori_dell_agente_o_della_richiesta_non_si_rieseguono(errore) -> None:
     assert not errore_di_infrastruttura(errore)
+
+
+def test_il_nome_dell_errore_include_il_codice_http() -> None:
+    from agentic_rag.eval.runner import nome_errore
+
+    assert nome_errore(ModelHTTPError(503, "google:m")) == "ModelHTTPError 503"
+    assert nome_errore(TimeoutError()) == "TimeoutError"

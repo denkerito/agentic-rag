@@ -34,6 +34,13 @@ def errore_di_infrastruttura(e: BaseException) -> bool:
     return isinstance(e, (ModelAPIError, *ERRORI_RETE))
 
 
+def nome_errore(e: BaseException) -> str:
+    """Nome dell'eccezione, con il codice HTTP per gli errori del modello (es. `ModelHTTPError 503`)."""
+    if isinstance(e, ModelHTTPError):
+        return f"{type(e).__name__} {e.status_code}"
+    return type(e).__name__
+
+
 TENTATIVI_GIUDICE = 2
 
 
@@ -85,7 +92,7 @@ def esegui_domanda(
         return RisultatoDomanda(
             domanda,
             "errore",
-            errore=type(e).__name__,
+            errore=nome_errore(e),
             infrastruttura=errore_di_infrastruttura(e),
             sql_agente=sql_dell_agente(deps.trace),
             tabelle_lette=sorted(tabelle_lette(deps.trace)),
