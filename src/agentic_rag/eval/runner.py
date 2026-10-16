@@ -6,7 +6,10 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
+import httpx
 import psycopg
+from google.genai import errors as genai_errors
+from pydantic_ai.exceptions import ModelAPIError, ModelHTTPError
 
 from agentic_rag.agent.output import Risposta
 from agentic_rag.agent.run import open_session, usage_limits
@@ -19,7 +22,18 @@ from agentic_rag.eval.valutazione import Esito, Giudizio, Valutazione, valuta
 TIMEOUT_DOMANDA_S = 300.0
 # Errori del provider o della rete: la domanda si riesegue una volta. Superare il limite di richieste
 # (UsageLimitExceeded) è invece un fallimento della strategia dell'agente e conta come tale.
-ERRORI_RIESEGUIBILI = frozenset({"ModelHTTPError", "ModelAPIError", "TimeoutError"})
+ERRORI_RETE = (httpx.TransportError, ConnectionError, TimeoutError)
+
+
+def errore_di_infrastruttura(e: BaseException) -> bool:
+    """Rete, timeout, 429 o 5xx del provider: non dicono nulla sulla qualità dell'agente."""
+    if isinstance(e, ModelHTTPError):
+        return e.status_code == 429 or e.status_code >= 500
+    if isinstance(e, genai_errors.APIError):
+        return e.code == 429 or e.code >= 500
+    return isinstance(e, (ModelAPIError, *ERRORI_RETE))
+
+
 TENTATIVI_GIUDICE = 2
 
 
@@ -37,6 +51,7 @@ class RisultatoDomanda:
     durata_s: float = 0.0
     errore_giudice: str | None = None
     rieseguita: bool = False  # primo tentativo fallito per un errore del provider o un timeout
+    infrastruttura: bool = False  # errore di rete o del provider (vedi errore_di_infrastruttura)
 
 
 def esegui_domanda(
@@ -71,6 +86,7 @@ def esegui_domanda(
             domanda,
             "errore",
             errore=type(e).__name__,
+            infrastruttura=errore_di_infrastruttura(e),
             sql_agente=sql_dell_agente(deps.trace),
             tabelle_lette=sorted(tabelle_lette(deps.trace)),
             passi_tool=len(deps.trace),
@@ -125,7 +141,7 @@ def esegui(
         if inizio:
             inizio(d)
         r = esegui_domanda(d, model, judge, judge_model, timeout, ricerca_semantica)
-        if r.esito == "errore" and r.errore in ERRORI_RIESEGUIBILI:
+        if r.esito == "errore" and r.infrastruttura:
             if pausa:
                 dormi(pausa)
             r = esegui_domanda(d, model, judge, judge_model, timeout, ricerca_semantica)
