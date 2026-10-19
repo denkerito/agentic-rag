@@ -130,6 +130,10 @@ iterativa HNSW di pgvector (`hnsw.iterative_scan`) se la versione installata la 
 
 ### Protocollo dell'esperimento (fissato prima di eseguirlo)
 
+> Aggiornamento 2026-10-19: l'esperimento si esegue con l'harness descritto in
+> `2026-10-19-harness-esperimenti-design.md` (ripresa, esclusioni appaiate, soglie di validità). Il criterio
+> dei 10 punti di Task Success Rate resta; il modello sarà quello scelto come definitivo.
+
 - Due varianti: **A completa** (con `cerca_semantica`) e **A senza semantica**. Stesso modello, stesso prompt,
   stessa versione del codice.
 - Modello: `google:gemini-3.5-flash-lite` per tutte le esecuzioni (modelli più grandi solo per prove isolate,

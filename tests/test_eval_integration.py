@@ -1,5 +1,7 @@
 """Batteria completa su ground truth sintetico, DB reale e modello finto (nessuna chiamata a Gemini)."""
 
+import json
+
 import psycopg
 import pytest
 import yaml
@@ -182,7 +184,9 @@ def test_una_domanda_bloccata_va_in_timeout_e_la_batteria_prosegue(
     monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(lenta))
     risultati = esegui(gt.domande[:2], pausa=0, timeout=0.3)
     assert [r.esito for r in risultati] == ["errore", "errore"]
-    assert [r.errore for r in risultati] == ["TimeoutError", "TimeoutError"]
+    assert [r.errore for r in risultati] == ["TempoScaduto", "TempoScaduto"]
+    assert [r.stato for r in risultati] == ["fallita_agente", "fallita_agente"]
+    assert not any(r.rieseguita for r in risultati)  # lentezza dell'agente, non infrastruttura
     assert [r.passi_tool for r in risultati] == [0, 0]
 
 
@@ -254,3 +258,56 @@ def test_limite_di_richieste_non_si_riesegue(tmp_path, monkeypatch, dati) -> Non
     risultati = esegui(gt.domande[:1], pausa=0)
     assert risultati[0].esito == "errore" and not risultati[0].rieseguita
     assert chiamate["n"] == 1
+
+
+def test_esperimento_reale_con_modello_finto(tmp_path, monkeypatch, dati) -> None:
+    from agentic_rag.eval.esperimento import (
+        analizza_variante,
+        crea_manifesto,
+        esegui_esperimento,
+        leggi_jsonl,
+    )
+    from agentic_rag.eval.riepilogo import riepiloga
+
+    gt = _gt(tmp_path, dati)
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: _modello(dati))
+    varianti = [analizza_variante("con:semantica=1"), analizza_variante("senza:semantica=0")]
+    stato = {"src": "s", "ground_truth": "g", "domande": [1, 3], "limiti": {"timeout_lavoro_s": 60}}
+    m = crea_manifesto("esp", varianti, 1, None, None, stato)
+    domande = [d for d in gt.domande if d.id in (1, 3)]
+    esegui_esperimento(m, domande, tmp_path / "pub", tmp_path / "priv", pausa=0)
+    righe = leggi_jsonl(tmp_path / "pub" / "esecuzioni.jsonl")
+    assert [(r["variante"], r["id"], r["stato"]) for r in righe] == [
+        ("con", 1, "completata"),
+        ("con", 3, "completata"),
+        ("senza", 1, "completata"),
+        ("senza", 3, "completata"),
+    ]
+    assert all(r["token_input"] > 0 and r["lavoro_s"] >= 0 for r in righe)
+    assert righe[1]["conteggi"]["causa_attesa"] == "non_documentata"
+    assert "risposta_attesa" not in json.dumps(righe)  # il pubblico non contiene il ground truth
+    riep = riepiloga(m, righe)
+    assert (
+        riep["valido"] and riep["varianti"]["con"]["metriche"]["task_success_rate"]["valore"] == 1.0
+    )
+
+
+def test_i_rifiuti_del_validatore_si_contano_per_motivo(tmp_path, monkeypatch, dati) -> None:
+    gt = _gt(tmp_path, dati)
+    sano = _modello(dati).function
+    finali = {"n": 0}
+
+    def cita_inventato(messages, info):
+        risposta = sano(messages, info)
+        parte = risposta.parts[0]
+        if isinstance(parte, ToolCallPart) and parte.tool_name == info.output_tools[0].name:
+            finali["n"] += 1
+            if finali["n"] == 1:  # la prima risposta finale cita una fonte mai vista
+                args = dict(parte.args_as_dict())
+                args["fonti"] = [*args.get("fonti", []), dati["mai_visto"]]
+                return ModelResponse(parts=[ToolCallPart(parte.tool_name, args)])
+        return risposta
+
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(cita_inventato))
+    r = esegui(gt.domande[:1], pausa=0)[0]
+    assert r.stato == "completata" and r.rifiuti == {"fonti_non_viste": 1}

@@ -14,6 +14,15 @@ from agentic_rag.agent.tools import (
 )
 
 DOC_PREFIXES = ("DOC-", "CTR-")
+# Inizio dei messaggi di rifiuto del validatore: l'eval li usa per contare i rifiuti per motivo.
+RIFIUTO_FONTI_NON_VISTE = "Fonti mai ricevute dai tool"
+RIFIUTO_NUMERI_SENZA_FONTI = "Numeri senza fonti"
+RIFIUTO_CAUSA_SENZA_DOCUMENTO = "causa_documentata=true richiede"
+MOTIVI_RIFIUTO: dict[str, str] = {
+    "fonti_non_viste": RIFIUTO_FONTI_NON_VISTE,
+    "numeri_senza_fonti": RIFIUTO_NUMERI_SENZA_FONTI,
+    "causa_senza_documento": RIFIUTO_CAUSA_SENZA_DOCUMENTO,
+}
 
 
 def check_risposta(risposta: Risposta, seen_ids: set[str]) -> None:
@@ -22,15 +31,15 @@ def check_risposta(risposta: Risposta, seen_ids: set[str]) -> None:
     unseen = sorted(cited - seen_ids)
     if unseen:
         raise ModelRetry(
-            f"Fonti mai ricevute dai tool: {', '.join(unseen)}. "
+            f"{RIFIUTO_FONTI_NON_VISTE}: {', '.join(unseen)}. "
             "Cita solo ID comparsi nei risultati dei tool."
         )
     senza_fonti = [n.descrizione for n in risposta.numeri if not n.fonti]
     if senza_fonti:
-        raise ModelRetry(f"Numeri senza fonti: {'; '.join(senza_fonti)}.")
+        raise ModelRetry(f"{RIFIUTO_NUMERI_SENZA_FONTI}: {'; '.join(senza_fonti)}.")
     if risposta.causa_documentata and not any(f.startswith(DOC_PREFIXES) for f in cited):
         raise ModelRetry(
-            "causa_documentata=true richiede almeno una fonte documentale (DOC-* o CTR-*)."
+            f"{RIFIUTO_CAUSA_SENZA_DOCUMENTO} almeno una fonte documentale (DOC-* o CTR-*)."
         )
 
 

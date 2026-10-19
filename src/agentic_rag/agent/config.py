@@ -24,3 +24,16 @@ RICERCA_SEMANTICA: bool = os.getenv("RICERCA_SEMANTICA", "1").strip().lower() no
 )
 ELENCO_PER_PAGINA: int = 30  # documenti per pagina di `elenca_documenti`
 TESTO_MAX_K: int = 8  # risultati massimi di `cerca_testo`
+
+
+def _intero(nome: str) -> int | None:
+    valore = os.getenv(nome, "").strip()
+    return int(valore) if valore else None
+
+
+# Limiti di richieste/minuto e token/minuto per agente e giudice (opzionali): non impostati = nessun
+# limite. I 429 e 5xx restano gestiti dai tentativi del client del provider.
+LIMITI: dict[str, tuple[int | None, int | None]] = {
+    "agente": (_intero("AGENT_RPM"), _intero("AGENT_TPM")),
+    "giudice": (_intero("JUDGE_RPM"), _intero("JUDGE_TPM")),
+}

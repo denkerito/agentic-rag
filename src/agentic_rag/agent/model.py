@@ -7,6 +7,7 @@ from pydantic_ai.providers.google import GoogleProvider
 
 from agentic_rag import config as app_config
 from agentic_rag.agent import config
+from agentic_rag.agent.limiti import ModelloLimitato, limitatore_per
 
 GOOGLE_PREFIX = "google:"
 # Stessa cadenza del vecchio loop: 10, 20, 40, 60 s. Oltre ai 429 (quota) si ritentano gli errori
@@ -16,9 +17,15 @@ RETRY_429 = HttpRetryOptions(
 )
 
 
-def build_model(name: str | None = None) -> Model | str:
+def build_model(name: str | None = None, ruolo: str = "agente") -> Model | str:
+    """Modello per nome. `ruolo` ("agente" o "giudice") sceglie i limiti RPM/TPM configurati."""
     name = name or config.AGENT_MODEL
-    if not name.startswith(GOOGLE_PREFIX):
-        return name
-    provider = GoogleProvider(api_key=app_config.GOOGLE_API_KEY or None, retry_options=RETRY_429)
-    return GoogleModel(name.removeprefix(GOOGLE_PREFIX), provider=provider)
+    model: Model | str = name
+    if name.startswith(GOOGLE_PREFIX):
+        provider = GoogleProvider(
+            api_key=app_config.GOOGLE_API_KEY or None, retry_options=RETRY_429
+        )
+        model = GoogleModel(name.removeprefix(GOOGLE_PREFIX), provider=provider)
+    rpm, tpm = config.LIMITI.get(ruolo, (None, None))
+    limitatore = limitatore_per(ruolo, name, rpm, tpm)
+    return ModelloLimitato(model, limitatore) if limitatore else model

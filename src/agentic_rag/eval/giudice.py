@@ -22,7 +22,7 @@ def giudica(
     domanda: str, risposta_attesa: str, risposta: Risposta, model: str | None = None
 ) -> Giudizio:
     agent = Agent(
-        build_model(model),
+        build_model(model, ruolo="giudice"),
         output_type=Giudizio,
         instructions=ISTRUZIONI,
         retries=2,
