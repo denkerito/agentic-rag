@@ -1,6 +1,6 @@
 import asyncio
 
-from agentic_rag.agent.limiti import Limitatore, limitatore_per, misura_attese
+from agentic_rag.agent.limiti import Limitatore, dormi_misurato, limitatore_per, misura_attese
 
 
 class Orologio:
@@ -48,3 +48,17 @@ def test_senza_limiti_nessun_limitatore_e_istanza_condivisa_per_modello() -> Non
     a = limitatore_per("agente", "m-condiviso", 10, None)
     assert a is limitatore_per("agente", "m-condiviso", 10, None)
     assert a is not limitatore_per("giudice", "m-condiviso", 10, None)
+
+
+def test_dormi_misurato_somma_a_passi() -> None:
+    o = Orologio()
+    visti: list[float] = []
+
+    async def dormi(s: float) -> None:
+        visti.append(m.secondi)  # misura vista dal watchdog durante la pausa
+        await o.dormi(s)
+
+    with misura_attese() as m:
+        asyncio.run(dormi_misurato(2.5, dormi))
+    assert m.secondi == 2.5
+    assert visti == [0.0, 1.0, 2.0]  # cresce passo per passo, non tutta alla fine

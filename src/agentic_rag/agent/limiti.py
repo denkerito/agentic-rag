@@ -26,6 +26,7 @@ PASSO_ATTESA_S = 1.0  # l'attesa si accumula a passi: il watchdog del timeout la
 @dataclass
 class MisuraAttese:
     secondi: float = 0.0
+    tentativi_falliti: int = 0  # richieste al provider fallite e ritentate (429, 5xx, rete)
 
 
 _misura: ContextVar[MisuraAttese | None] = ContextVar("misura_attese", default=None)
@@ -40,6 +41,31 @@ def misura_attese() -> Iterator[MisuraAttese]:
         yield misura
     finally:
         _misura.reset(token)
+
+
+def aggiungi_attesa(secondi: float) -> None:
+    """Somma secondi alla misura attiva, se c'è (nell'API non ce n'è: non fa nulla)."""
+    misura = _misura.get()
+    if misura is not None:
+        misura.secondi += secondi
+
+
+def conta_tentativo_fallito() -> None:
+    misura = _misura.get()
+    if misura is not None:
+        misura.tentativi_falliti += 1
+
+
+async def dormi_misurato(
+    secondi: float, dormi: Callable[[float], Awaitable[None]] = asyncio.sleep
+) -> None:
+    """Dorme a passi di PASSO_ATTESA_S sommandoli alla misura: il watchdog la vede crescere."""
+    resto = secondi
+    while resto > 0:
+        passo = min(resto, PASSO_ATTESA_S)
+        await dormi(passo)
+        aggiungi_attesa(passo)
+        resto -= passo
 
 
 class Limitatore:
@@ -86,9 +112,7 @@ class Limitatore:
             passo = min(attesa, PASSO_ATTESA_S)
             await self._dormi(passo)
             totale += passo
-            misura = _misura.get()
-            if misura is not None:
-                misura.secondi += passo
+            aggiungi_attesa(passo)
 
     def registra_token(self, n: int) -> None:
         if n > 0:
