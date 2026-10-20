@@ -18,15 +18,22 @@ DOC_PREFIXES = ("DOC-", "CTR-")
 RIFIUTO_FONTI_NON_VISTE = "Fonti mai ricevute dai tool"
 RIFIUTO_NUMERI_SENZA_FONTI = "Numeri senza fonti"
 RIFIUTO_CAUSA_SENZA_DOCUMENTO = "causa_documentata=true richiede"
+RIFIUTO_CAUSA_NON_LETTA = "Causa documentata senza documenti aperti"
+# Nessun prefisso deve iniziare con un altro: ogni rifiuto si conta per un solo motivo.
 MOTIVI_RIFIUTO: dict[str, str] = {
     "fonti_non_viste": RIFIUTO_FONTI_NON_VISTE,
     "numeri_senza_fonti": RIFIUTO_NUMERI_SENZA_FONTI,
     "causa_senza_documento": RIFIUTO_CAUSA_SENZA_DOCUMENTO,
+    "causa_non_letta": RIFIUTO_CAUSA_NON_LETTA,
 }
 
 
-def check_risposta(risposta: Risposta, seen_ids: set[str]) -> None:
-    """Solleva ModelRetry se la risposta viola i vincoli sulle fonti."""
+def check_risposta(risposta: Risposta, seen_ids: set[str], aperti: set[str]) -> None:
+    """Solleva ModelRetry se la risposta viola i vincoli sulle fonti.
+
+    Un documento trovato da una ricerca è citabile, ma come causa conta solo se aperto: i frammenti
+    di una ricerca dicono dove guardare, non provano la causa.
+    """
     cited = set(risposta.fonti) | {f for n in risposta.numeri for f in n.fonti}
     unseen = sorted(cited - seen_ids)
     if unseen:
@@ -40,6 +47,13 @@ def check_risposta(risposta: Risposta, seen_ids: set[str]) -> None:
     if risposta.causa_documentata and not any(f.startswith(DOC_PREFIXES) for f in cited):
         raise ModelRetry(
             f"{RIFIUTO_CAUSA_SENZA_DOCUMENTO} almeno una fonte documentale (DOC-* o CTR-*)."
+        )
+    documenti = sorted(f for f in cited if f.startswith(DOC_PREFIXES))
+    if risposta.causa_documentata and not aperti.intersection(documenti):
+        raise ModelRetry(
+            f"{RIFIUTO_CAUSA_NON_LETTA}: apri con apri_documento almeno uno tra "
+            f"{', '.join(documenti)} prima di dichiarare la causa documentata, "
+            "oppure usa causa_documentata=false."
         )
 
 
@@ -63,7 +77,7 @@ def build_agent(
 
     @agent.output_validator
     def _validate(ctx: RunContext[AgentDeps], output: Risposta) -> Risposta:
-        check_risposta(output, ctx.deps.seen_ids)
+        check_risposta(output, ctx.deps.seen_ids, ctx.deps.aperti)
         return output
 
     return agent

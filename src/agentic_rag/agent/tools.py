@@ -261,6 +261,8 @@ def cerca_testo(
     devono esserci tutte; `or` tra alternative (es. `trasferta or viaggio or treno`); "frase
     esatta" tra virgolette; `-parola` per escludere. Adatta a nomi, controparti, oggetti precisi.
     `totale` = documenti con corrispondenza; i frammenti mostrano i termini «evidenziati».
+    I frammenti servono a scegliere cosa aprire: per indicare un documento come causa aprilo con
+    apri_documento.
     """
     return run_testo(ctx.deps, query, k, tipo, data_da, data_a, fornitore_id, cliente_id)
 
@@ -327,6 +329,8 @@ def cerca_semantica(
     descrivi in una frase il fatto che cerchi. Meno adatta a nomi, codici e importi esatti.
     Restituisce solo passaggi pertinenti; se non c'è nulla lo dichiara. Usa i filtri (periodo,
     fornitore FOR-*, cliente CLI-*, tipo) per restringere. Distanza più bassa = più pertinente.
+    I passaggi servono a scegliere cosa aprire: per indicare un documento come causa aprilo con
+    apri_documento.
     """
     return run_semantica(ctx.deps, query, k, tipo, data_da, data_a, fornitore_id, cliente_id)
 
@@ -344,6 +348,7 @@ def run_open(deps: AgentDeps, doc_id: str, offset: int) -> dict[str, Any]:
     parte = contenuto[offset : offset + config.DOC_MAX_CHARS]
     truncated = offset + len(parte) < len(contenuto)
     deps.seen_ids.add(row[0])
+    deps.aperti.add(row[0])
     deps.record("apri_documento", doc_id=doc_id, offset=offset, troncato=truncated)
     return {
         "doc_id": row[0],

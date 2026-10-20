@@ -3,13 +3,24 @@ import asyncio
 import httpx
 import pytest
 from pydantic_ai.exceptions import ModelAPIError, ModelHTTPError, UsageLimitExceeded
-from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, TextPart
+from pydantic_ai.messages import (
+    ModelMessage,
+    ModelRequest,
+    ModelResponse,
+    RetryPromptPart,
+    TextPart,
+)
 from pydantic_ai.models import ModelRequestParameters
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 
+from agentic_rag.agent.agent import RIFIUTO_CAUSA_NON_LETTA
 from agentic_rag.agent.limiti import misura_attese
 from agentic_rag.agent.tentativi import ModelloGestito, PoliticaTentativi
-from agentic_rag.eval.runner import entro_il_tempo, errore_di_infrastruttura
+from agentic_rag.eval.runner import (
+    entro_il_tempo,
+    errore_di_infrastruttura,
+    rifiuti_del_validatore,
+)
 
 
 @pytest.mark.parametrize(
@@ -75,3 +86,8 @@ def test_tentativi_del_provider_non_consumano_il_tempo_di_lavoro() -> None:
         risposta = asyncio.run(entro_il_tempo(richiesta, 4.0, m, orologio=lambda: t[0]))
     assert risposta.parts[0].content == "ok"  # type: ignore[union-attr]
     assert m.secondi == 5.0 and m.tentativi_falliti == 1
+
+
+def test_rifiuto_per_causa_non_letta_si_conta_una_volta() -> None:
+    parte = RetryPromptPart(content=f"{RIFIUTO_CAUSA_NON_LETTA}: apri DOC-EML-001")
+    assert rifiuti_del_validatore([ModelRequest(parts=[parte])]) == {"causa_non_letta": 1}

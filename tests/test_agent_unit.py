@@ -4,7 +4,7 @@ import pytest
 from pydantic_ai import ModelRetry
 
 from agentic_rag import config as app_config
-from agentic_rag.agent.agent import check_risposta
+from agentic_rag.agent.agent import MOTIVI_RIFIUTO, RIFIUTO_CAUSA_NON_LETTA, check_risposta
 from agentic_rag.agent.ids import ID_PATTERN, extract_ids
 from agentic_rag.agent.model import build_model
 from agentic_rag.agent.output import Numero, Risposta
@@ -89,19 +89,19 @@ def _risposta(**kw) -> Risposta:
 
 def test_validator_rejects_unseen_sources() -> None:
     with pytest.raises(ModelRetry, match="FATT-P-2025-9999"):
-        check_risposta(_risposta(fonti=["FATT-P-2025-9999"]), {"FATT-P-2025-0001"})
+        check_risposta(_risposta(fonti=["FATT-P-2025-9999"]), {"FATT-P-2025-0001"}, set())
 
 
 def test_validator_rejects_number_without_sources() -> None:
     r = _risposta(numeri=[Numero(descrizione="costi", valore="10", fonti=[])])
     with pytest.raises(ModelRetry, match="senza fonti"):
-        check_risposta(r, set())
+        check_risposta(r, set(), set())
 
 
 def test_validator_requires_document_for_documented_cause() -> None:
     r = _risposta(fonti=["FATT-P-2025-0001"], causa_documentata=True)
     with pytest.raises(ModelRetry, match="documentale"):
-        check_risposta(r, {"FATT-P-2025-0001"})
+        check_risposta(r, {"FATT-P-2025-0001"}, set())
 
 
 def test_validator_accepts_seen_sources() -> None:
@@ -110,7 +110,26 @@ def test_validator_accepts_seen_sources() -> None:
         fonti=["FATT-P-2025-0001", "CTR-001"],
         causa_documentata=True,
     )
-    check_risposta(r, {"FATT-P-2025-0001", "CTR-001"})
+    check_risposta(r, {"FATT-P-2025-0001", "CTR-001"}, {"CTR-001"})
+
+
+def test_validator_requires_opened_document_for_documented_cause() -> None:
+    # trovato da una ricerca (visto) ma mai aperto: citabile, non basta come causa
+    r = _risposta(fonti=["FATT-P-2025-0001", "DOC-EML-001"], causa_documentata=True)
+    with pytest.raises(ModelRetry, match=RIFIUTO_CAUSA_NON_LETTA) as e:
+        check_risposta(r, {"FATT-P-2025-0001", "DOC-EML-001"}, set())
+    assert "DOC-EML-001" in str(e.value)
+
+
+def test_validator_accepts_unopened_document_without_documented_cause() -> None:
+    r = _risposta(fonti=["DOC-EML-001"], causa_documentata=False)
+    check_risposta(r, {"DOC-EML-001"}, set())
+
+
+def test_motivi_di_rifiuto_non_si_sovrappongono() -> None:
+    # l'eval conta i rifiuti per prefisso: un prefisso dentro un altro conterebbe due volte
+    prefissi = list(MOTIVI_RIFIUTO.values())
+    assert not [(a, b) for a in prefissi for b in prefissi if a != b and b.startswith(a)]
 
 
 def _tool_registrati(agent) -> list[str]:

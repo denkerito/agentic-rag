@@ -11,6 +11,7 @@ class AgentDeps:
     conn: psycopg.Connection  # connessione con il ruolo agent_ro
     relations: set[str]  # tabelle e viste interrogabili
     seen_ids: set[str] = field(default_factory=set)
+    aperti: set[str] = field(default_factory=set)  # letti con apri_documento: base per la causa
     trace: list[dict[str, Any]] = field(default_factory=list)
 
     def record(self, kind: str, **data: Any) -> None:

@@ -89,7 +89,7 @@ flowchart TD
     API["API FastAPI<br/>indagini in background, SSE, storico"]
     AG["Agente (Pydantic AI)"]
     LLM["LLM (Gemini)<br/>pianifica, interpreta, scrive la risposta"]
-    GUARD["Validazione risposta<br/>fonti viste, numeri con fonti"]
+    GUARD["Validazione risposta<br/>fonti viste, numeri con fonti,<br/>cause su documenti aperti"]
     SQL["query_sql<br/>validator sqlglot + ruolo agent_ro"]
     RAG["elenca_documenti / cerca_testo<br/>cerca_semantica / apri_documento"]
     PG[("PostgreSQL<br/>fatture, movimenti, scritture, viste v_*")]
@@ -118,7 +118,7 @@ flowchart TD
 
 **Sola lettura, a più livelli.** La barriera vera è il database: ruolo `agent_ro` con `statement_timeout` di 10 s e `SET TRANSACTION READ ONLY` per ogni query. Sopra c'è un validator con sqlglot (una sola SELECT, niente scritture, funzioni pericolose bloccate, solo relazioni note) che dà al modello errori chiari invece di errori del database. Investigare e modificare i dati sono responsabilità separate.
 
-**Prove verificabili.** Le conclusioni sono tracciabili a ID di fonti (`FATT-*`, `MOV-*`, `SCR-*`, `CTR-*`, `DOC-*`, ...). L'obiettivo non è «l'AI dice X» ma «l'AI ha trovato X, ed ecco cosa ha usato». Il vincolo non è solo nel prompt: un *output validator* rifiuta la risposta (e fa riprovare il modello) se cita un ID mai comparso nei risultati dei tool, se un numero non ha fonti, o se dichiara `causa_documentata=true` senza almeno un `DOC-*`/`CTR-*`.
+**Prove verificabili.** Le conclusioni sono tracciabili a ID di fonti (`FATT-*`, `MOV-*`, `SCR-*`, `CTR-*`, `DOC-*`, ...). L'obiettivo non è «l'AI dice X» ma «l'AI ha trovato X, ed ecco cosa ha usato». Il vincolo non è solo nel prompt: un *output validator* rifiuta la risposta (e fa riprovare il modello) se cita un ID mai comparso nei risultati dei tool, se un numero non ha fonti, o se dichiara `causa_documentata=true` senza citare almeno un `DOC-*`/`CTR-*` aperto con `apri_documento` (un frammento di ricerca non basta).
 
 **Ricerca nei documenti: decide l'agente.** Tre strumenti semplici invece di una pipeline di retrieval: l'elenco per metadati e la ricerca full-text sono deterministici (un documento c'è o non c'è, senza soglie), la ricerca semantica copre le parafrasi. È l'agente a scegliere quale usare, come sceglie quale query SQL scrivere. Una ricerca ibrida in un solo tool (fusione RRF di full-text e vettori) sarebbe più robusta con un modello piccolo, ma nasconderebbe la strategia dentro lo strumento; la scelta e i trade-off sono nel [documento di design](docs/superpowers/specs/2026-10-16-ricerca-documenti-opzione-a-design.md). Se la ricerca semantica serva davvero lo decide un esperimento (vedi [Valutazione](#valutazione)).
 
@@ -139,7 +139,7 @@ Variazione rilevata → elenco per controparte/periodo e ricerca testuale con si
 
 Esempio reale (stesso report): picco dei costi di trasferta a novembre 2025. L'agente trova nei dati l'origine contabile (quattro fatture di biglietti ferroviari sul conto 64.02, € 1.750 contro una media di € 550), poi risponde che **non esiste alcun documento che motivi le trasferte** e imposta `causa_documentata=false`, con la spiegazione in `limiti`.
 
-I meccanismi: un risultato negativo viene da ricerche riproducibili (l'elenco dei documenti di una controparte in un periodo, una ricerca full-text con le parole usate, visibili nei passi), che il commercialista può rifare; quando una ricerca non trova nulla lo dice esplicitamente e suggerisce di riformulare prima di concludere; la ricerca semantica restituisce solo chunk entro una soglia di distanza coseno; il prompt tratta la causa non documentata come una risposta legittima; il validator impedisce di dichiararla documentata senza un documento. Non è una garanzia di assenza di allucinazioni: riduce il rischio e rende gli errori controllabili.
+I meccanismi: un risultato negativo viene da ricerche riproducibili (l'elenco dei documenti di una controparte in un periodo, una ricerca full-text con le parole usate, visibili nei passi), che il commercialista può rifare; quando una ricerca non trova nulla lo dice esplicitamente e suggerisce di riformulare prima di concludere; la ricerca semantica restituisce solo chunk entro una soglia di distanza coseno; il prompt tratta la causa non documentata come una risposta legittima; il validator impedisce di dichiararla documentata senza aver aperto un documento citato. Non è una garanzia di assenza di allucinazioni: riduce il rischio e rende gli errori controllabili.
 
 ## Valutazione
 

@@ -90,7 +90,7 @@ def test_database_blocks_writes_even_without_guard(deps) -> None:
 def test_apri_documento(deps) -> None:
     doc = run_open(deps, "CTR-001", 0)
     assert doc["doc_id"] == "CTR-001" and doc["contenuto"]
-    assert "CTR-001" in deps.seen_ids
+    assert "CTR-001" in deps.seen_ids and deps.aperti == {"CTR-001"}
     with pytest.raises(ModelRetry):
         run_open(deps, "DOC-XXX-999", 0)
 
@@ -150,6 +150,7 @@ def test_cerca_testo_riconosce_le_forme_flesse(deps) -> None:
     r = singolare["risultati"][0]
     assert set(r) == {"doc_id", "titolo", "tipo", "data", "frammenti"} and "«" in r["frammenti"]
     assert {x["doc_id"] for x in singolare["risultati"]} <= deps.seen_ids
+    assert deps.aperti == set()  # trovato da una ricerca: citabile, non letto
 
 
 def test_cerca_testo_or_e_filtri(deps) -> None:
@@ -181,7 +182,7 @@ def test_elenca_documenti_pagina_e_non_rende_citabile(deps) -> None:
     assert len(ultima["documenti"]) == totale - per_pagina * (prima["pagine"] - 1)
     oltre = _elenco(deps, pagina=prima["pagine"] + 1)
     assert oltre["documenti"] == [] and "nota" in oltre
-    assert deps.seen_ids == set()  # visto solo per titolo: per citarlo va aperto
+    assert deps.seen_ids == set() and deps.aperti == set()  # visto solo per titolo: va aperto
 
 
 def test_elenca_documenti_filtra_per_controparte(deps) -> None:

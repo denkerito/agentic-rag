@@ -70,7 +70,10 @@ canale per le parafrasi; un esperimento successivo decide se tenerla.
   `cliente_id`/`fornitore_id` con la denominazione della controparte. Nessun testo.
 - 30 documenti per pagina, ordinati per data (poi `doc_id`).
 - **Non** aggiunge gli ID a `seen_ids`: un documento visto solo per titolo non è citabile. Diventa citabile quando
-  viene aperto o compare in una ricerca con il suo testo.
+  viene aperto o compare in una ricerca con il suo testo. Come **causa** (`causa_documentata=true`) conta invece
+  solo un documento citato e **aperto** con `apri_documento`: un frammento trovato per parole (o per vicinanza
+  semantica) dice dove guardare, non prova la causa. La regola è la stessa per le due ricerche, così l'ablazione
+  con e senza semantica non dà una scorciatoia a una sola variante (motivo di rifiuto `causa_non_letta`).
 
 **`cerca_testo(query, tipo?, data_da?, data_a?, cliente_id?, fornitore_id?, k=5)`**
 - `websearch_to_tsquery('italian', query)`: il modello può usare `or`, frasi tra virgolette e `-escludi`. La
@@ -83,7 +86,7 @@ canale per le parafrasi; un esperimento successivo decide se tenerla.
 - **Pertinente = contiene i termini**: nessuna soglia.
 - Zero risultati → nota esplicita: provare sinonimi o togliere filtri prima di concludere che non è documentato.
 - Query che dopo l'analisi non contiene termini utili (solo stopword) → `ModelRetry` con messaggio chiaro.
-- I `doc_id` restituiti entrano in `seen_ids` (come oggi per la ricerca semantica).
+- I `doc_id` restituiti entrano in `seen_ids` (come oggi per la ricerca semantica), non tra i documenti aperti.
 
 **`cerca_semantica`**: il `cerca_documenti` di oggi, con il nuovo nome e la docstring che ne chiarisce il ruolo
 (concetti e parafrasi, non nomi o codici). Inoltre, per la credibilità con filtri a scala, abilitare la scansione
