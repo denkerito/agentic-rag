@@ -11,8 +11,10 @@ from typing import Any, Literal
 import httpx
 import psycopg
 from google.genai import errors as genai_errors
+from pydantic_ai import capture_run_messages
 from pydantic_ai.exceptions import ModelAPIError, ModelHTTPError
 from pydantic_ai.messages import ModelMessage, RetryPromptPart
+from pydantic_ai.usage import RunUsage
 
 from agentic_rag.agent.agent import MOTIVI_RIFIUTO
 from agentic_rag.agent.limiti import MisuraAttese, misura_attese
@@ -154,11 +156,14 @@ def esegui_domanda(
         return RisultatoDomanda(
             domanda, "errore", errore=errore, infrastruttura=True, stato="errore_infrastruttura"
         )
-    with misura_attese() as misura:
+    # uso e messaggi si leggono anche se la run fallisce: una run interrotta dal validatore o dal
+    # limite di richieste ha comunque consumato token e accumulato rifiuti
+    usage = RunUsage()
+    with misura_attese() as misura, capture_run_messages() as messaggi:
         try:
             result = asyncio.run(
                 entro_il_tempo(
-                    agent.run(domanda.domanda, deps=deps, usage_limits=usage_limits()),
+                    agent.run(domanda.domanda, deps=deps, usage_limits=usage_limits(), usage=usage),
                     timeout,
                     misura,
                 )
@@ -177,10 +182,14 @@ def esegui_domanda(
                 stato="errore_infrastruttura" if infra else "fallita_agente",
                 sql_agente=sql_dell_agente(deps.trace),
                 tabelle_lette=sorted(tabelle_lette(deps.trace)),
+                richieste=usage.requests,
                 passi_tool=len(deps.trace),
                 durata_s=time.monotonic() - inizio,
+                token_input=usage.input_tokens or 0,
+                token_output=usage.output_tokens or 0,
                 attesa_s=misura.secondi,
                 tentativi_provider=misura.tentativi_falliti,
+                rifiuti=rifiuti_del_validatore(messaggi),
                 doc_recuperati=documenti_recuperati(deps.trace),
             )
         finally:
@@ -205,15 +214,15 @@ def esegui_domanda(
         valutazione=val,
         sql_agente=sql_dell_agente(trace),
         tabelle_lette=sorted(tabelle_lette(trace)),
-        richieste=result.usage.requests,
+        richieste=usage.requests,
         passi_tool=len(trace),
         durata_s=durata,
         errore_giudice=errore_giudice,
-        token_input=result.usage.input_tokens or 0,
-        token_output=result.usage.output_tokens or 0,
+        token_input=usage.input_tokens or 0,
+        token_output=usage.output_tokens or 0,
         attesa_s=misura.secondi,
         tentativi_provider=misura.tentativi_falliti,
-        rifiuti=rifiuti_del_validatore(result.all_messages()),
+        rifiuti=rifiuti_del_validatore(messaggi),
         doc_recuperati=documenti_recuperati(trace),
     )
 

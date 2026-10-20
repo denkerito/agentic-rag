@@ -311,3 +311,25 @@ def test_i_rifiuti_del_validatore_si_contano_per_motivo(tmp_path, monkeypatch, d
     monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(cita_inventato))
     r = esegui(gt.domande[:1], pausa=0)[0]
     assert r.stato == "completata" and r.rifiuti == {"fonti_non_viste": 1}
+
+
+def test_un_esecuzione_fallita_conserva_uso_e_rifiuti(tmp_path, monkeypatch, dati) -> None:
+    gt = _gt(tmp_path, dati)
+    sano = _modello(dati).function
+
+    def cita_sempre_inventato(messages, info):
+        risposta = sano(messages, info)
+        parte = risposta.parts[0]
+        if isinstance(parte, ToolCallPart) and parte.tool_name == info.output_tools[0].name:
+            args = dict(parte.args_as_dict())
+            args["fonti"] = [*args.get("fonti", []), dati["mai_visto"]]
+            return ModelResponse(parts=[ToolCallPart(parte.tool_name, args)])
+        return risposta
+
+    monkeypatch.setattr(
+        agent_run, "build_model", lambda name=None: FunctionModel(cita_sempre_inventato)
+    )
+    r = esegui(gt.domande[:1], pausa=0)[0]
+    # il validatore rifiuta finché la run fallisce: rifiuti, richieste e token restano nella riga
+    assert r.stato == "fallita_agente" and r.rifiuti.get("fonti_non_viste", 0) > 0
+    assert r.richieste > 0 and r.token_input > 0 and r.token_output > 0

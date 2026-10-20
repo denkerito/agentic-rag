@@ -123,12 +123,17 @@ def test_esperimento_non_valido_non_da_verdetto() -> None:
     assert not riep["valido"] and riep["verdetto"]["esito"] == "non valutato"
 
 
-def test_fallita_agente_conta_solo_nel_task_success() -> None:
+def test_fallita_agente_conta_nel_task_success_e_nei_rifiuti() -> None:
     m = _manifesto(varianti=("con",), domande=(1,), ripetizioni=2)
-    righe = [_riga("con", 1, 1), _riga("con", 2, 1, stato="fallita_agente")]
-    met = riepiloga(m, righe)["varianti"]["con"]["metriche"]
+    fallita = _riga("con", 2, 1, stato="fallita_agente")
+    fallita["rifiuti"] = {"fonti_non_viste": 4}  # il validatore ha rifiutato fino al fallimento
+    riep = riepiloga(m, [_riga("con", 1, 1), fallita])["varianti"]["con"]
+    met = riep["metriche"]
     assert met["task_success_rate"]["valore"] == 0.5
     assert met["answer_accuracy"]["valore"] == 1.0 and met["answer_accuracy"]["esecuzioni"] == 1
+    gir = met["guardrail_intervention_rate"]
+    assert gir["valore"] == 0.5 and gir["esecuzioni"] == 2
+    assert riep["rifiuti_per_motivo"] == {"fonti_non_viste": 4}
 
 
 def test_efficienza_righe_senza_tentativi_provider() -> None:

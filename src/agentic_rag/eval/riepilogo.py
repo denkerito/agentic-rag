@@ -86,8 +86,9 @@ def m_false_abstention(r: Riga) -> float | None:
     return float(not c["causa_dichiarata_documentata"])
 
 
-def m_guardrail(r: Riga) -> float | None:
-    return float(sum(r["rifiuti"].values()) > 0) if _completata(r) else None
+def m_guardrail(r: Riga) -> float:
+    # anche le fallite: una run che il validatore rifiuta fino a farla fallire è un intervento
+    return float(sum(r["rifiuti"].values()) > 0)
 
 
 def m_evidence_recall(r: Riga) -> float | None:
@@ -412,8 +413,9 @@ def markdown(manifesto: dict[str, Any], riep: dict[str, Any]) -> str:
     out += [
         "",
         (
-            "Note: le metriche sulla risposta si calcolano sulle esecuzioni completate; il Task "
-            "Success Rate conta anche quelle fallite per l'agente. Pause e tentativi falliti del "
+            "Note: le metriche sulla risposta si calcolano sulle esecuzioni completate; Task "
+            "Success Rate, Guardrail Intervention Rate ed efficienza contano anche quelle fallite "
+            "per l'agente. Pause e tentativi falliti del "
             "provider (429/5xx, rete) sono esclusi dal tempo di lavoro e inclusi nell'attesa media."
         ),
     ]
