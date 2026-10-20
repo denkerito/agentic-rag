@@ -1,6 +1,12 @@
 import asyncio
 
-from agentic_rag.agent.limiti import Limitatore, dormi_misurato, limitatore_per, misura_attese
+from agentic_rag.agent.limiti import (
+    Limitatore,
+    aggiungi_attesa,
+    dormi_misurato,
+    limitatore_per,
+    misura_attese,
+)
 
 
 class Orologio:
@@ -62,3 +68,26 @@ def test_dormi_misurato_somma_a_passi() -> None:
         asyncio.run(dormi_misurato(2.5, dormi))
     assert m.secondi == 2.5
     assert visti == [0.0, 1.0, 2.0]  # cresce passo per passo, non tutta alla fine
+
+
+def test_la_misura_e_visibile_nei_tool_sincroni() -> None:
+    # i tool sincroni (es. cerca_semantica con le pause degli embedding) girano in un thread
+    from pydantic_ai import Agent
+    from pydantic_ai.messages import ModelResponse, TextPart, ToolCallPart
+    from pydantic_ai.models.function import FunctionModel
+
+    def modello(messages, info) -> ModelResponse:
+        if len(messages) == 1:
+            return ModelResponse(parts=[ToolCallPart("attende", {})])
+        return ModelResponse(parts=[TextPart("fatto")])
+
+    agent = Agent(FunctionModel(modello))
+
+    @agent.tool_plain
+    def attende() -> str:
+        aggiungi_attesa(5)
+        return "ok"
+
+    with misura_attese() as m:
+        asyncio.run(agent.run("x"))
+    assert m.secondi == 5

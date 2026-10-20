@@ -63,6 +63,16 @@ async def dormi_misurato(
         resto -= passo
 
 
+def dormi_misurato_bloccante(secondi: float, dormi: Callable[[float], None] = time.sleep) -> None:
+    """Come `dormi_misurato`, per il codice sincrono (i tool girano in un thread con il contesto)."""
+    resto = secondi
+    while resto > 0:
+        passo = min(resto, PASSO_ATTESA_S)
+        dormi(passo)
+        aggiungi_attesa(passo)
+        resto -= passo
+
+
 class Limitatore:
     """Finestra scorrevole di 60 s su richieste e token. Un'istanza per modello, nel processo."""
 

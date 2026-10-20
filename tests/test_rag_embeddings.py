@@ -3,6 +3,7 @@ from types import SimpleNamespace
 import pytest
 
 from agentic_rag import config
+from agentic_rag.agent.limiti import misura_attese
 from agentic_rag.rag import embeddings
 
 
@@ -48,3 +49,37 @@ def test_wrong_dimension_is_rejected(fake_client, monkeypatch) -> None:
     monkeypatch.setattr(embeddings.time, "sleep", lambda _s: None)
     with pytest.raises(ValueError):
         embeddings.embed_query("x")
+
+
+def test_tentativi_e_pause_si_misurano_come_attesa(fake_client, monkeypatch) -> None:
+    # dentro cerca_semantica le pause degli embedding non sono lavoro dell'agente
+    models = fake_client()
+    pause: list[float] = []
+    monkeypatch.setattr(embeddings.time, "sleep", pause.append)
+    originale = models.embed_content
+    chiamate = {"n": 0}
+
+    def instabile(**kw):
+        chiamate["n"] += 1
+        if chiamate["n"] == 1:
+            raise RuntimeError("503")
+        return originale(**kw)
+
+    monkeypatch.setattr(models, "embed_content", instabile)
+    with misura_attese() as m:
+        embeddings.embed_query("x")
+    assert sum(pause) == 5 and pause == [1.0] * 5  # a passi: il watchdog vede l'attesa crescere
+    assert m.tentativi_falliti == 1 and m.secondi >= 5
+
+
+def test_il_rate_limiter_misura_l_attesa() -> None:
+    t = [0.0]
+
+    def dormi(s: float) -> None:
+        t[0] += s
+
+    lim = embeddings.RateLimiter(1, 10**9, clock=lambda: t[0], sleep=dormi)
+    with misura_attese() as m:
+        lim.acquire(1, 1)
+        lim.acquire(1, 1)
+    assert t[0] == 60 and m.secondi == 60

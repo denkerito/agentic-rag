@@ -9,6 +9,11 @@ from google import genai
 from google.genai import types
 
 from agentic_rag import config
+from agentic_rag.agent.limiti import (
+    aggiungi_attesa,
+    conta_tentativo_fallito,
+    dormi_misurato_bloccante,
+)
 
 BATCH_SIZE = 20
 MAX_RETRIES = 5
@@ -48,7 +53,8 @@ class RateLimiter:
             if used_r + requests <= self.max_rpm and used_t + tokens <= self.max_tpm:
                 self._events.append((now, requests, tokens))
                 return
-            self._sleep(max(0.5, 60 - (now - self._events[0][0])))
+            # misurata: dentro cerca_semantica l'attesa non è lavoro dell'agente
+            dormi_misurato_bloccante(max(0.5, 60 - (now - self._events[0][0])), self._sleep)
 
 
 @cache
@@ -73,13 +79,18 @@ _limiter = RateLimiter(config.EMBEDDING_MAX_RPM, config.EMBEDDING_MAX_TPM)
 
 
 def _with_retry[T](call: Callable[[], T]) -> T:
+    """Tentativi falliti e pause finiscono nella misura delle attese, come per il modello."""
     for attempt in range(MAX_RETRIES):
+        inizio = time.monotonic()
         try:
             return call()
         except Exception:
+            aggiungi_attesa(time.monotonic() - inizio)
+            conta_tentativo_fallito()
             if attempt == MAX_RETRIES - 1:
                 raise
-            time.sleep(min(60, 5 * 2**attempt))  # un 429 sui limiti per minuto richiede attesa
+            # un 429 sui limiti per minuto richiede attesa
+            dormi_misurato_bloccante(min(60, 5 * 2**attempt), time.sleep)
     raise AssertionError("unreachable")
 
 
