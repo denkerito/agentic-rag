@@ -3,10 +3,13 @@ import csv
 import pytest
 from pydantic_ai import ModelRetry
 
+from agentic_rag import config as app_config
 from agentic_rag.agent.agent import check_risposta
 from agentic_rag.agent.ids import ID_PATTERN, extract_ids
+from agentic_rag.agent.model import build_model
 from agentic_rag.agent.output import Numero, Risposta
 from agentic_rag.agent.sql_guard import SqlRejected, validate_select
+from agentic_rag.agent.tentativi import ModelloGestito
 from agentic_rag.config import DATA_DIR
 
 REL = {"fatture", "v_margine_mensile", "documenti"}
@@ -137,3 +140,16 @@ def test_prompt_does_not_name_document_search_tools() -> None:
 
     for nome in ("cerca_", "elenca_"):
         assert nome not in SYSTEM_PROMPT
+
+
+def test_build_model_avvolge_sempre_con_i_tentativi() -> None:
+    m = build_model("test")
+    assert isinstance(m, ModelloGestito) and m.limitatore is None
+
+
+def test_client_gemini_non_ritenta_da_solo(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(app_config, "GOOGLE_API_KEY", "chiave-finta")
+    m = build_model("google:gemini-finto")
+    assert isinstance(m, ModelloGestito)
+    # niente doppi tentativi: li fa solo il wrapper
+    assert m.wrapped.client._api_client._http_options.retry_options is None  # type: ignore[attr-defined]
