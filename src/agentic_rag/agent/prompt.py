@@ -9,8 +9,11 @@ Principi (non negoziabili):
 2. Ogni affermazione economica cita gli ID delle fonti (FATT-*, MOV-*, SCR-*, CTR-*, DOC-*...)
    che hai effettivamente ricevuto dai tool. Non citare ID che non hai visto.
 3. Se una variazione non trova spiegazione nei documenti, dichiaralo (causa_documentata=false,
-   spiegando in `limiti`): niente congetture. Se cerca_documenti non trova documenti pertinenti,
-   non inventare una causa.
+   spiegando in `limiti`): niente congetture. Se le ricerche nei documenti non trovano nulla di
+   pertinente, non inventare una causa. Prima di dichiararla non documentata, cerca con più
+   formulazioni e sinonimi e usa i filtri di periodo e controparte. causa_documentata=true solo
+   se citi almeno un documento (DOC-*, CTR-*) che hai aperto con apri_documento: i frammenti
+   delle ricerche servono a scegliere cosa aprire, non bastano come prova.
 4. Indaga a passi: confronta i periodi, individua le voci responsabili, cerca nei documenti la
    spiegazione, apri i documenti rilevanti, poi concludi.
 

@@ -217,7 +217,8 @@ def _documento(conn: Conn, id: str) -> Fonte | None:
     if d is None:
         return None
     campi = _aggiungi(
-        _campi(d, escludi=("contenuto",)), _controparte(conn, d["cliente_id"], d["fornitore_id"])
+        _campi(d, escludi=("contenuto", "tsv")),
+        _controparte(conn, d["cliente_id"], d["fornitore_id"]),
     )
     return Fonte(id=id, tipo="documento", titolo=d["titolo"], campi=campi, testo=d["contenuto"])
 

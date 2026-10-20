@@ -24,6 +24,10 @@ def test_le_viste_si_espandono_nelle_tabelle_base() -> None:
 def test_i_tool_sui_documenti_contano_come_lettura_di_documenti() -> None:
     assert tabelle_lette([{"kind": "cerca_documenti"}]) == {"documenti", "documenti_chunks"}
     assert tabelle_lette([{"kind": "apri_documento"}]) == {"documenti"}
+    assert tabelle_lette([{"kind": "cerca_semantica"}]) == {"documenti", "documenti_chunks"}
+    # i tool deterministici non toccano i chunk: la variante senza vettori non legge documenti_chunks
+    assert tabelle_lette([{"kind": "cerca_testo"}]) == {"documenti"}
+    assert tabelle_lette([{"kind": "elenca_documenti"}]) == {"documenti"}
 
 
 def _risposta(fonti: list[str], numeri: list[Numero] | None = None) -> Risposta:

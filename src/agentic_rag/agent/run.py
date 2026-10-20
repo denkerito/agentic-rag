@@ -17,8 +17,15 @@ def usage_limits() -> UsageLimits:
     return UsageLimits(request_limit=config.AGENT_MAX_REQUESTS)
 
 
-def open_session(model: str | None = None) -> tuple[Agent[AgentDeps, Risposta], AgentDeps]:
-    """Apre la connessione agent_ro e prepara agente e deps. Chi chiama chiude `deps.conn`."""
+def open_session(
+    model: str | None = None, ricerca_semantica: bool | None = None
+) -> tuple[Agent[AgentDeps, Risposta], AgentDeps]:
+    """Apre la connessione agent_ro e prepara agente e deps. Chi chiama chiude `deps.conn`.
+
+    `ricerca_semantica=None` usa la configurazione (RICERCA_SEMANTICA).
+    """
+    if ricerca_semantica is None:
+        ricerca_semantica = config.RICERCA_SEMANTICA
     if not app_config.DATABASE_URL_AGENT:
         raise SystemExit("DATABASE_URL_AGENT non impostata (vedi .env.example)")
     # autocommit: agent_ro ha idle_in_transaction_session_timeout=30s, e una transazione implicita
@@ -26,15 +33,19 @@ def open_session(model: str | None = None) -> tuple[Agent[AgentDeps, Risposta], 
     conn = psycopg.connect(app_config.DATABASE_URL_AGENT, autocommit=True, connect_timeout=10)
     try:
         deps = AgentDeps(conn=conn, relations=list_relations(conn))
-        agent = build_agent(build_model(model), schema=build_schema_ddl(conn))
+        agent = build_agent(
+            build_model(model), schema=build_schema_ddl(conn), ricerca_semantica=ricerca_semantica
+        )
     except BaseException:
         conn.close()
         raise
     return agent, deps
 
 
-def investigate(domanda: str, model: str | None = None) -> tuple[Risposta, AgentDeps]:
-    agent, deps = open_session(model)
+def investigate(
+    domanda: str, model: str | None = None, ricerca_semantica: bool | None = None
+) -> tuple[Risposta, AgentDeps]:
+    agent, deps = open_session(model, ricerca_semantica)
     try:
         result = agent.run_sync(domanda, deps=deps, usage_limits=usage_limits())
         return result.output, deps

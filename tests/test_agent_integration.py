@@ -9,7 +9,7 @@ from agentic_rag import config
 from agentic_rag.agent import config as agent_config
 from agentic_rag.agent.deps import AgentDeps, list_relations
 from agentic_rag.agent.schema_prompt import build_schema_ddl
-from agentic_rag.agent.tools import run_open, run_query
+from agentic_rag.agent.tools import run_elenco, run_open, run_query, run_testo
 
 pytestmark = pytest.mark.integration
 
@@ -90,7 +90,7 @@ def test_database_blocks_writes_even_without_guard(deps) -> None:
 def test_apri_documento(deps) -> None:
     doc = run_open(deps, "CTR-001", 0)
     assert doc["doc_id"] == "CTR-001" and doc["contenuto"]
-    assert "CTR-001" in deps.seen_ids
+    assert "CTR-001" in deps.seen_ids and deps.aperti == {"CTR-001"}
     with pytest.raises(ModelRetry):
         run_open(deps, "DOC-XXX-999", 0)
 
@@ -125,3 +125,76 @@ def test_enum_comments_match_check_constraints(owner) -> None:
     for tabella, colonna, definizione, commento in rows:
         for valore in re.findall(r"'([^']+)'::text", definizione):
             assert commento and f"'{valore}'" in commento, f"{tabella}.{colonna}: manca '{valore}'"
+
+
+def _testo(deps, query: str, k: int = 5, **filtri):
+    base = dict.fromkeys(("tipo", "data_da", "data_a", "fornitore_id", "cliente_id"))
+    f = {**base, **filtri}
+    return run_testo(
+        deps, query, k, f["tipo"], f["data_da"], f["data_a"], f["fornitore_id"], f["cliente_id"]
+    )
+
+
+def _elenco(deps, pagina: int = 1, **filtri):
+    base = dict.fromkeys(("tipo", "data_da", "data_a", "fornitore_id", "cliente_id"))
+    f = {**base, **filtri}
+    return run_elenco(
+        deps, f["tipo"], f["data_da"], f["data_a"], f["fornitore_id"], f["cliente_id"], pagina
+    )
+
+
+def test_cerca_testo_riconosce_le_forme_flesse(deps) -> None:
+    singolare = _testo(deps, "canone", k=8)
+    plurale = _testo(deps, "canoni", k=8)
+    assert singolare["totale"] > 0 and plurale["totale"] == singolare["totale"]
+    r = singolare["risultati"][0]
+    assert set(r) == {"doc_id", "titolo", "tipo", "data", "frammenti"} and "«" in r["frammenti"]
+    assert {x["doc_id"] for x in singolare["risultati"]} <= deps.seen_ids
+    assert deps.aperti == set()  # trovato da una ricerca: citabile, non letto
+
+
+def test_cerca_testo_or_e_filtri(deps) -> None:
+    nimbus = _testo(deps, "Nimbus", k=8)
+    alternative = _testo(deps, "Nimbus or locazione", k=8)
+    assert alternative["totale"] > nimbus["totale"] > 0
+    filtrato = _testo(deps, "Nimbus or locazione", k=8, fornitore_id="FOR-001")
+    assert 0 < filtrato["totale"] < alternative["totale"]
+    assert len(_testo(deps, "Nimbus", k=1)["risultati"]) == 1
+
+
+def test_cerca_testo_senza_corrispondenze_lo_dichiara(deps) -> None:
+    res = _testo(deps, "zzzparolainesistente")
+    assert res["totale"] == 0 and res["risultati"] == [] and "sinonimi" in res["nota"]
+
+
+def test_cerca_testo_rifiuta_query_senza_termini(deps) -> None:
+    with pytest.raises(ModelRetry, match="termini utili"):
+        _testo(deps, "il della")
+
+
+def test_elenca_documenti_pagina_e_non_rende_citabile(deps) -> None:
+    per_pagina = agent_config.ELENCO_PER_PAGINA
+    prima = _elenco(deps)
+    totale = prima["totale"]
+    assert totale > per_pagina and len(prima["documenti"]) == per_pagina
+    assert prima["pagine"] == -(-totale // per_pagina)
+    ultima = _elenco(deps, pagina=prima["pagine"])
+    assert len(ultima["documenti"]) == totale - per_pagina * (prima["pagine"] - 1)
+    oltre = _elenco(deps, pagina=prima["pagine"] + 1)
+    assert oltre["documenti"] == [] and "nota" in oltre
+    assert deps.seen_ids == set() and deps.aperti == set()  # visto solo per titolo: va aperto
+
+
+def test_elenca_documenti_filtra_per_controparte(deps) -> None:
+    res = _elenco(deps, fornitore_id="FOR-001")
+    assert res["totale"] > 0
+    assert all(d["fornitore_id"] == "FOR-001" and d["controparte"] for d in res["documenti"])
+    date = [d["data"] for d in res["documenti"]]
+    assert date == sorted(date)
+
+
+def test_documenti_si_leggono_solo_con_i_tool(deps) -> None:
+    assert "documenti" not in deps.relations and "documenti_chunks" not in deps.relations
+    with pytest.raises(ModelRetry, match="Relazione non ammessa"):
+        run_query(deps, "SELECT contenuto FROM documenti")
+    assert "TABELLA documenti" not in build_schema_ddl(deps.conn)

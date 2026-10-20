@@ -55,7 +55,7 @@ def test_booleani_in_italiano(client) -> None:
 def test_contratto_e_documento_hanno_il_testo(client) -> None:
     assert client.get("/fonti/CTR-001").json()["testo"]
     doc = client.get("/fonti/DOC-EML-003").json()
-    assert doc["testo"] and all(c["nome"] != "contenuto" for c in doc["campi"])
+    assert doc["testo"] and all(c["nome"] not in ("contenuto", "tsv") for c in doc["campi"])
 
 
 @pytest.mark.parametrize("id", ["FATT-A-2099-0001", "RIG-9999", "pippo", "FATT-1"])

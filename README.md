@@ -45,7 +45,7 @@ SUM(ricavi) per trimestre        → totali calcolati dal database
   ↓
 fatture per cliente, Q3 vs Q4    → il calo si concentra su un cliente (CLI-001)
   ↓
-cerca_documenti                  → comunicazione del cliente + contratto CTR-008
+ricerca nei documenti            → comunicazione del cliente + contratto CTR-008
   ↓
 Risposta validata (numeri + fonti)
 ```
@@ -71,13 +71,15 @@ Domanda
    ↓
 Agente (LLM con tool)
    ├── query_sql          metriche, confronti tra periodi, analisi di fatture e movimenti
-   ├── cerca_documenti    ricerca semantica con filtri (tipo, periodo, fornitore, cliente)
+   ├── elenca_documenti   indice dei documenti per tipo, periodo, cliente, fornitore
+   ├── cerca_testo        ricerca full-text (italiano) su titolo e contenuto
+   ├── cerca_semantica    ricerca per significato (pgvector), disattivabile
    └── apri_documento     lettura del documento completo
    ↓
 Risposta strutturata: numeri + fonti + confidenza + limiti
 ```
 
-Prima confronta i periodi, poi individua la voce responsabile, poi *decide* cosa cercare nei documenti in base a ciò che ha trovato (un cliente, un fornitore, un intervallo di date). Una domanda sul contratto di un fornitore non passa dai confronti mensili; una sul margine sì. Un loop di tool con un limite di richieste per domanda (default 25) gestisce entrambi i casi.
+Prima confronta i periodi, poi individua la voce responsabile, poi *decide* cosa cercare nei documenti e come: elencare quelli di un cliente o di un periodo, cercare parole precise, cercare un concetto. Una domanda sul contratto di un fornitore non passa dai confronti mensili; una sul margine sì. Un loop di tool con un limite di richieste per domanda (default 25) gestisce entrambi i casi.
 
 ## Architettura
 
@@ -87,11 +89,11 @@ flowchart TD
     API["API FastAPI<br/>indagini in background, SSE, storico"]
     AG["Agente (Pydantic AI)"]
     LLM["LLM (Gemini)<br/>pianifica, interpreta, scrive la risposta"]
-    GUARD["Validazione risposta<br/>fonti viste, numeri con fonti"]
+    GUARD["Validazione risposta<br/>fonti viste, numeri con fonti,<br/>cause su documenti aperti"]
     SQL["query_sql<br/>validator sqlglot + ruolo agent_ro"]
-    RAG["cerca_documenti / apri_documento"]
+    RAG["elenca_documenti / cerca_testo<br/>cerca_semantica / apri_documento"]
     PG[("PostgreSQL<br/>fatture, movimenti, scritture, viste v_*")]
-    VEC[("pgvector<br/>chunk dei documenti")]
+    VEC[("documenti<br/>full-text (GIN) + chunk pgvector (HNSW)")]
     APP[("schema app<br/>storico indagini")]
 
     UI -->|REST + SSE| API
@@ -104,7 +106,7 @@ flowchart TD
 ```
 
 - I **numeri** vengono solo da PostgreSQL (tra cui le viste `v_economico`, `v_economico_mensile`, `v_margine_mensile` che definiscono ricavi, costi e margine per competenza).
-- Il **RAG** serve a recuperare documenti e contesto, non a produrre cifre.
+- La **ricerca nei documenti** serve a recuperare contesto e cause, non a produrre cifre. Ai documenti si accede solo con i tool dedicati, non con `query_sql`: ogni accesso è un passo tracciato.
 - L'**LLM** orchestra e interpreta; non calcola.
 - L'agente è **read-only**: si collega con un ruolo che non ha accesso in scrittura ai dati contabili. L'unico dato che l'applicazione scrive è lo storico delle indagini, in uno schema separato (`app`) invisibile all'agente.
 
@@ -116,7 +118,9 @@ flowchart TD
 
 **Sola lettura, a più livelli.** La barriera vera è il database: ruolo `agent_ro` con `statement_timeout` di 10 s e `SET TRANSACTION READ ONLY` per ogni query. Sopra c'è un validator con sqlglot (una sola SELECT, niente scritture, funzioni pericolose bloccate, solo relazioni note) che dà al modello errori chiari invece di errori del database. Investigare e modificare i dati sono responsabilità separate.
 
-**Prove verificabili.** Le conclusioni sono tracciabili a ID di fonti (`FATT-*`, `MOV-*`, `SCR-*`, `CTR-*`, `DOC-*`, ...). L'obiettivo non è «l'AI dice X» ma «l'AI ha trovato X, ed ecco cosa ha usato». Il vincolo non è solo nel prompt: un *output validator* rifiuta la risposta (e fa riprovare il modello) se cita un ID mai comparso nei risultati dei tool, se un numero non ha fonti, o se dichiara `causa_documentata=true` senza almeno un `DOC-*`/`CTR-*`.
+**Prove verificabili.** Le conclusioni sono tracciabili a ID di fonti (`FATT-*`, `MOV-*`, `SCR-*`, `CTR-*`, `DOC-*`, ...). L'obiettivo non è «l'AI dice X» ma «l'AI ha trovato X, ed ecco cosa ha usato». Il vincolo non è solo nel prompt: un *output validator* rifiuta la risposta (e fa riprovare il modello) se cita un ID mai comparso nei risultati dei tool, se un numero non ha fonti, o se dichiara `causa_documentata=true` senza citare almeno un `DOC-*`/`CTR-*` aperto con `apri_documento` (un frammento di ricerca non basta).
+
+**Ricerca nei documenti: decide l'agente.** Tre strumenti semplici invece di una pipeline di retrieval: l'elenco per metadati e la ricerca full-text sono deterministici (un documento c'è o non c'è, senza soglie), la ricerca semantica copre le parafrasi. È l'agente a scegliere quale usare, come sceglie quale query SQL scrivere. Una ricerca ibrida in un solo tool (fusione RRF di full-text e vettori) sarebbe più robusta con un modello piccolo, ma nasconderebbe la strategia dentro lo strumento; la scelta e i trade-off sono nel [documento di design](docs/superpowers/specs/2026-10-16-ricerca-documenti-opzione-a-design.md). Se la ricerca semantica serva davvero lo decide un esperimento (vedi [Valutazione](#valutazione)).
 
 **Trasparenza.** Query, ricerche e documenti aperti sono eventi visibili (tool call, tool result, risposte scartate), salvati e rivedibili.
 
@@ -128,14 +132,14 @@ Il sistema non assume che ogni anomalia abbia una spiegazione.
 Variazione rilevata → documento pertinente trovato → conclusione + fonte
                        (causa_documentata = true)
 
-Variazione rilevata → nessun documento sopra la soglia di pertinenza
+Variazione rilevata → elenco per controparte/periodo e ricerca testuale con sinonimi: nessun riscontro
                     → la causa viene dichiarata non documentata
                        (causa_documentata = false, spiegazione in "limiti")
 ```
 
 Esempio reale (stesso report): picco dei costi di trasferta a novembre 2025. L'agente trova nei dati l'origine contabile (quattro fatture di biglietti ferroviari sul conto 64.02, € 1.750 contro una media di € 550), poi risponde che **non esiste alcun documento che motivi le trasferte** e imposta `causa_documentata=false`, con la spiegazione in `limiti`.
 
-I meccanismi: il tool `cerca_documenti` restituisce solo chunk entro una soglia di distanza coseno e, se non ce ne sono, dice esplicitamente di non inventare una causa; il prompt tratta la causa non documentata come una risposta legittima; il validator impedisce di dichiararla documentata senza un documento. Non è una garanzia di assenza di allucinazioni: riduce il rischio e rende gli errori controllabili.
+I meccanismi: un risultato negativo viene da ricerche riproducibili (l'elenco dei documenti di una controparte in un periodo, una ricerca full-text con le parole usate, visibili nei passi), che il commercialista può rifare; quando una ricerca non trova nulla lo dice esplicitamente e suggerisce di riformulare prima di concludere; la ricerca semantica restituisce solo chunk entro una soglia di distanza coseno; il prompt tratta la causa non documentata come una risposta legittima; il validator impedisce di dichiararla documentata senza aver aperto un documento citato. Non è una garanzia di assenza di allucinazioni: riduce il rischio e rende gli errori controllabili.
 
 ## Valutazione
 
@@ -147,6 +151,12 @@ Un harness (`python -m agentic_rag.eval`) esegue un set di domande con lo stesso
 - **Separazione:** il ground truth non è mai accessibile all'agente né a chi lo sviluppa. Prompt, soglie e tool non vanno ritoccati guardando il test set.
 
 I report pubblici di ogni esecuzione (risposte, query SQL dell'agente, conteggi per domanda) sono in [`eval/reports/`](eval/reports/); l'ultima batteria completa usa `gemini-3.5-flash-lite`, senza giudice, con ~9 richieste al modello per domanda.
+
+**Esperimenti.** Oltre alla batteria singola, `python -m agentic_rag.eval.esperimento` esegue varianti × ripetizioni × domande (le varianti sono configurazioni: modello, ricerca semantica sì/no). Ogni esecuzione è salvata appena conclusa e un'interruzione si riprende rilanciando `esegui` con la sola `--etichetta` (varianti, domande, criterio e timeout vengono dal manifesto); un manifesto lega l'esperimento al codice (`src/`) e al ground truth (solo l'hash), e la ripresa rifiuta se sono cambiati. Gli errori di infrastruttura (rete, 429, 5xx) non contano come fallimenti: la combinazione si ritenta in un passaggio finale e, se resta fallita, è esclusa e riportata; il confronto tra varianti usa solo le combinazioni concluse in entrambe, e oltre il 10% di escluse (o con esclusioni sbilanciate) l'esperimento è dichiarato non valido.
+
+Metriche, ognuna con il suo denominatore e un intervallo di confidenza al 95% (bootstrap sulle domande): **Task Success Rate**, **Answer Accuracy** (LLM-as-a-judge, validato con il κ di Cohen su un campione etichettato a mano alla cieca), **pass^3** (tutte e tre le esecuzioni corrette), **Source Citation Recall**, **Numeric Exact Match Recall**, **False Acceptance Rate** (cause inventate dove non sono documentate) e **False Abstention Rate** (rinunce dove lo sono), **Guardrail Intervention Rate** (risposte bloccate dal validatore delle fonti), **Session Evidence Recall** (documenti attesi effettivamente recuperati), più token, costo e latenza p50/p95 per indagine. Definizioni nel [documento di design dell'harness](docs/superpowers/specs/2026-10-19-harness-esperimenti-design.md).
+
+**Esperimento sulla ricerca semantica.** Per decidere se tenere i vettori si confrontano le varianti con e senza `cerca_semantica`, stesso modello e stesso prompt, 5 ripetizioni, giudice acceso, con un criterio fissato prima di eseguirlo (i vettori restano solo con almeno 10 punti di Task Success Rate in più). Risultati: in attesa della scelta del modello definitivo.
 
 La valutazione è **preliminare**: 12 domande sono un segnale, non una misura statistica, e gli esiti sono euristiche (soglie in `eval/valutazione.py`) che possono penalizzare risposte corrette ma formulate diversamente.
 
@@ -189,9 +199,9 @@ python -m agentic_rag.agent "Perché il margine è diminuito ad agosto?"
 <details>
 <summary>Ruoli del database, variabili d'ambiente, API</summary>
 
-Ruoli: `postgres` (solo bootstrap), `agentic_owner` (DDL e caricamento), `agent_ro` (sola lettura, usato dall'agente), `app_rw` (scrive lo storico nello schema `app`, senza accesso a `public`). Su un database già inizializzato: `python -m agentic_rag.db.init --app-only`.
+Ruoli: `postgres` (solo bootstrap), `agentic_owner` (DDL e caricamento), `agent_ro` (sola lettura, usato dall'agente), `app_rw` (scrive lo storico nello schema `app`, senza accesso a `public`). Su un database già inizializzato: `python -m agentic_rag.db.init --app-only` (storico) e `--fulltext-only` (ricerca testuale sui documenti), senza toccare dati ed embedding.
 
-Variabili principali: `GOOGLE_API_KEY`, `AGENT_MODEL`, `AGENT_MAX_REQUESTS` (25), `DATABASE_URL*`, `CORS_ORIGINS`, `MAX_INDAGINI_CONCORRENTI` (3), `LOGFIRE_TOKEN`. Vedi `.env.example`. Con Docker l'API raggiunge il DB come `db` (`DATABASE_URL_APP_DOCKER` / `DATABASE_URL_AGENT_DOCKER`, da impostare solo se hai cambiato le password).
+Variabili principali: `GOOGLE_API_KEY`, `AGENT_MODEL`, `AGENT_MAX_REQUESTS` (25), `RICERCA_SEMANTICA` (1), `DATABASE_URL*`, `CORS_ORIGINS`, `MAX_INDAGINI_CONCORRENTI` (3), `LOGFIRE_TOKEN`. Vedi `.env.example`. Con Docker l'API raggiunge il DB come `db` (`DATABASE_URL_APP_DOCKER` / `DATABASE_URL_AGENT_DOCKER`, da impostare solo se hai cambiato le password).
 
 | Endpoint | |
 |---|---|
@@ -217,9 +227,18 @@ cd frontend && npm test && npm run build
 python -m agentic_rag.eval --dry-run            # valida il ground truth senza chiamare il modello
 python -m agentic_rag.eval --pause 10           # batteria completa
 python -m agentic_rag.eval --ids 1,4 --judge    # alcune domande, con giudice LLM sulla causa
+python -m agentic_rag.eval --senza-semantica  # batteria senza ricerca semantica
+
+# esperimento: crea
+python -m agentic_rag.eval.esperimento esegui --etichetta esp --variante con:semantica=1 --variante senza:semantica=0 --ripetizioni 5 --judge --criterio "task_success_rate:con-senza>=10"
+# ripresa dopo un'interruzione: solo l'etichetta (con --variante, --ids, --criterio o --timeout rifiuta)
+python -m agentic_rag.eval.esperimento esegui --etichetta esp
+python -m agentic_rag.eval.esperimento riepilogo --etichetta esp     # metriche, confronti, verdetto
+python -m agentic_rag.eval.esperimento etichette --etichetta esp --campione 30   # foglio privato
+python -m agentic_rag.eval.esperimento kappa --etichetta esp         # accordo umano/giudice
 ```
 
-Opzioni: `--ids`, `--storia`, `--modalita`, `--model`, `--judge-model`, `--pause`, `--timeout`, `--gt`, `--out`. Due report: pubblico in `eval/reports/` e privato (con ground truth) in `eval/reports/private/`, ignorato da git.
+Opzioni: `--ids`, `--storia`, `--modalita`, `--model`, `--judge-model`, `--pause`, `--timeout`, `--senza-semantica`, `--etichetta`, `--gt`, `--out`. Gli errori di rete e del provider si rieseguono una volta; il timeout (300 s di lavoro, attese del limitatore escluse) conta come fallimento dell'agente. Gli esperimenti scrivono in `eval/reports/esperimenti/<etichetta>/` (pubblico) e in `eval/reports/private/esperimenti/<etichetta>/`. Limiti opzionali di richieste e token al minuto: `AGENT_RPM`, `AGENT_TPM`, `JUDGE_RPM`, `JUDGE_TPM`. Due report: pubblico in `eval/reports/` e privato (con ground truth) in `eval/reports/private/`, ignorato da git.
 
 </details>
 
@@ -229,7 +248,7 @@ Opzioni: `--ids`, `--storia`, `--modalita`, `--model`, `--judge-model`, `--pause
 - **Prototipo**, non software contabile di produzione; nessuna integrazione con gestionali reali.
 - Documenti in Markdown; nessun parsing di PDF, scansioni o allegati.
 - Il ragionamento dipende dall'LLM: la stessa domanda può prendere percorsi diversi e le conclusioni non sono deterministiche (i numeri sì, perché vengono dalle query).
-- Valutazione piccola e preliminare; la soglia di pertinenza del RAG è calibrata a mano.
+- Valutazione piccola e preliminare; la soglia di pertinenza della ricerca semantica è calibrata a mano.
 - Nessuna autenticazione né isolamento tra clienti.
 
 ## Sviluppi possibili
@@ -237,7 +256,7 @@ Opzioni: `--ids`, `--storia`, `--modalita`, `--model`, `--judge-model`, `--pause
 - Connettori a gestionali/ERP reali al posto dei CSV.
 - Revisione umana (human-in-the-loop) con conferma o rifiuto delle conclusioni.
 - Valutazione più ampia, con più esecuzioni per domanda per misurarne la varianza.
-- Ranking delle prove migliore (re-ranking, ricerca ibrida lessicale + vettoriale) e soglie di pertinenza apprese.
+- Ranking delle prove migliore (re-ranking) e soglie di pertinenza apprese.
 - Autenticazione e isolamento per tenant.
 - Altri formati di documento (PDF, scansioni con OCR).
 

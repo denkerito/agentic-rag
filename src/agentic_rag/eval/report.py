@@ -40,6 +40,8 @@ def riga_pubblica(r: RisultatoDomanda) -> dict[str, Any]:
         out["errore"] = r.errore
     if r.errore_giudice:
         out["errore_giudice"] = r.errore_giudice
+    if r.rieseguita:
+        out["rieseguita"] = True
     if r.risposta:
         out["risposta"] = {
             "conclusione": r.risposta.conclusione,

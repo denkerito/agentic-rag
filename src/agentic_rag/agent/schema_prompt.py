@@ -8,7 +8,7 @@ SELECT c.relname, c.relkind, a.attname, format_type(a.atttypid, a.atttypmod),
 FROM pg_class c
 JOIN pg_namespace n ON n.oid = c.relnamespace AND n.nspname = 'public'
 JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum > 0 AND NOT a.attisdropped
-WHERE c.relkind IN ('r', 'v') AND c.relname <> 'documenti_chunks'
+WHERE c.relkind IN ('r', 'v') AND c.relname NOT IN ('documenti', 'documenti_chunks')
 ORDER BY c.relkind, c.relname, a.attnum
 """
 

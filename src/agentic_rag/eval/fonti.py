@@ -22,7 +22,10 @@ VISTE: dict[str, frozenset[str]] = {
 }
 # I tool sui documenti leggono queste tabelle senza passare da una SQL.
 TABELLE_PER_TOOL: dict[str, frozenset[str]] = {
-    "cerca_documenti": frozenset({"documenti", "documenti_chunks"}),
+    "elenca_documenti": frozenset({"documenti"}),
+    "cerca_testo": frozenset({"documenti"}),
+    "cerca_semantica": frozenset({"documenti", "documenti_chunks"}),
+    "cerca_documenti": frozenset({"documenti", "documenti_chunks"}),  # nome prima della rinomina
     "apri_documento": frozenset({"documenti"}),
 }
 

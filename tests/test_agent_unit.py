@@ -3,10 +3,13 @@ import csv
 import pytest
 from pydantic_ai import ModelRetry
 
-from agentic_rag.agent.agent import check_risposta
+from agentic_rag import config as app_config
+from agentic_rag.agent.agent import MOTIVI_RIFIUTO, RIFIUTO_CAUSA_NON_LETTA, check_risposta
 from agentic_rag.agent.ids import ID_PATTERN, extract_ids
+from agentic_rag.agent.model import build_model
 from agentic_rag.agent.output import Numero, Risposta
 from agentic_rag.agent.sql_guard import SqlRejected, validate_select
+from agentic_rag.agent.tentativi import ModelloGestito
 from agentic_rag.config import DATA_DIR
 
 REL = {"fatture", "v_margine_mensile", "documenti"}
@@ -86,19 +89,19 @@ def _risposta(**kw) -> Risposta:
 
 def test_validator_rejects_unseen_sources() -> None:
     with pytest.raises(ModelRetry, match="FATT-P-2025-9999"):
-        check_risposta(_risposta(fonti=["FATT-P-2025-9999"]), {"FATT-P-2025-0001"})
+        check_risposta(_risposta(fonti=["FATT-P-2025-9999"]), {"FATT-P-2025-0001"}, set())
 
 
 def test_validator_rejects_number_without_sources() -> None:
     r = _risposta(numeri=[Numero(descrizione="costi", valore="10", fonti=[])])
     with pytest.raises(ModelRetry, match="senza fonti"):
-        check_risposta(r, set())
+        check_risposta(r, set(), set())
 
 
 def test_validator_requires_document_for_documented_cause() -> None:
     r = _risposta(fonti=["FATT-P-2025-0001"], causa_documentata=True)
     with pytest.raises(ModelRetry, match="documentale"):
-        check_risposta(r, {"FATT-P-2025-0001"})
+        check_risposta(r, {"FATT-P-2025-0001"}, set())
 
 
 def test_validator_accepts_seen_sources() -> None:
@@ -107,4 +110,65 @@ def test_validator_accepts_seen_sources() -> None:
         fonti=["FATT-P-2025-0001", "CTR-001"],
         causa_documentata=True,
     )
-    check_risposta(r, {"FATT-P-2025-0001", "CTR-001"})
+    check_risposta(r, {"FATT-P-2025-0001", "CTR-001"}, {"CTR-001"})
+
+
+def test_validator_requires_opened_document_for_documented_cause() -> None:
+    # trovato da una ricerca (visto) ma mai aperto: citabile, non basta come causa
+    r = _risposta(fonti=["FATT-P-2025-0001", "DOC-EML-001"], causa_documentata=True)
+    with pytest.raises(ModelRetry, match=RIFIUTO_CAUSA_NON_LETTA) as e:
+        check_risposta(r, {"FATT-P-2025-0001", "DOC-EML-001"}, set())
+    assert "DOC-EML-001" in str(e.value)
+
+
+def test_validator_accepts_unopened_document_without_documented_cause() -> None:
+    r = _risposta(fonti=["DOC-EML-001"], causa_documentata=False)
+    check_risposta(r, {"DOC-EML-001"}, set())
+
+
+def test_motivi_di_rifiuto_non_si_sovrappongono() -> None:
+    # l'eval conta i rifiuti per prefisso: un prefisso dentro un altro conterebbe due volte
+    prefissi = list(MOTIVI_RIFIUTO.values())
+    assert not [(a, b) for a in prefissi for b in prefissi if a != b and b.startswith(a)]
+
+
+def _tool_registrati(agent) -> list[str]:
+    return list(agent._function_toolset.tools)
+
+
+def test_agent_tools_with_and_without_semantic_search() -> None:
+    from pydantic_ai.models.test import TestModel
+
+    from agentic_rag.agent.agent import build_agent
+
+    con = _tool_registrati(build_agent(TestModel()))
+    senza = _tool_registrati(build_agent(TestModel(), ricerca_semantica=False))
+    assert con == [
+        "query_sql",
+        "elenca_documenti",
+        "cerca_testo",
+        "cerca_semantica",
+        "apri_documento",
+    ]
+    assert senza == [t for t in con if t != "cerca_semantica"]
+
+
+def test_prompt_does_not_name_document_search_tools() -> None:
+    # l'ablazione cambia solo l'elenco dei tool: il prompt deve restare identico e valido in entrambe
+    from agentic_rag.agent.prompt import SYSTEM_PROMPT
+
+    for nome in ("cerca_", "elenca_"):
+        assert nome not in SYSTEM_PROMPT
+
+
+def test_build_model_avvolge_sempre_con_i_tentativi() -> None:
+    m = build_model("test")
+    assert isinstance(m, ModelloGestito) and m.limitatore is None
+
+
+def test_client_gemini_non_ritenta_da_solo(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(app_config, "GOOGLE_API_KEY", "chiave-finta")
+    m = build_model("google:gemini-finto")
+    assert isinstance(m, ModelloGestito)
+    # niente doppi tentativi: li fa solo il wrapper
+    assert m.wrapped.client._api_client._http_options.retry_options is None  # type: ignore[attr-defined]

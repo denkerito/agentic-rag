@@ -1,28 +1,8 @@
 import { useState, type CSSProperties } from 'react'
-import type { ToolResult } from '../api/types'
 import type { Passo, PassoTool } from '../state/passi'
+import { riepilogo, TOOL } from '../lib/strumenti'
 import { IdChips } from './FonteChip'
 import { Icona, type NomeIcona } from './Icone'
-
-const TOOL: Record<string, { titolo: string; icona: NomeIcona }> = {
-  query_sql: { titolo: 'Query SQL', icona: 'database' },
-  cerca_documenti: { titolo: 'Ricerca nei documenti', icona: 'search' },
-  apri_documento: { titolo: 'Apertura documento', icona: 'file' },
-}
-
-const plurale = (n: number, uno: string, molti: string) => `${n} ${n === 1 ? uno : molti}`
-
-function riepilogo(tool: string, esito: ToolResult): string {
-  if (tool === 'query_sql') {
-    return `${plurale(esito.n_righe ?? 0, 'riga', 'righe')}${esito.troncato ? ' (risultato troncato)' : ''}`
-  }
-  if (tool === 'cerca_documenti') {
-    return esito.n_pertinenti
-      ? plurale(esito.n_pertinenti, 'risultato pertinente', 'risultati pertinenti')
-      : 'Nessun documento pertinente'
-  }
-  return esito.troncato ? 'Documento aperto (parte troncata)' : 'Documento aperto'
-}
 
 function Argomenti({ passo }: { passo: PassoTool }) {
   const { tool, args } = passo
@@ -46,7 +26,7 @@ function Argomenti({ passo }: { passo: PassoTool }) {
   const filtri = Object.entries(args).filter(([k, v]) => k !== 'query' && v != null)
   return (
     <p className="passo-dettaglio">
-      “{String(args.query ?? '')}”
+      {args.query != null ? `“${String(args.query)}”` : filtri.length ? 'Filtri' : 'Tutti i documenti'}
       {filtri.map(([k, v]) => (
         <span key={k}> · {k.replaceAll('_', ' ')}: {String(v)}</span>
       ))}
