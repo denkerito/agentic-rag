@@ -161,3 +161,46 @@ def test_la_riga_registra_i_tentativi_del_provider() -> None:
     r = _ok(_domande()[0])
     r.tentativi_provider = 3
     assert riga_esecuzione_pubblica(r, "con", 1, 1)["tentativi_provider"] == 3
+
+
+def test_la_ripresa_usa_il_timeout_del_manifesto(tmp_path, monkeypatch) -> None:
+    import argparse
+    from types import SimpleNamespace
+
+    from agentic_rag.eval import esperimento
+
+    domande = _domande()
+    monkeypatch.setattr(esperimento, "cartelle", lambda _e: (tmp_path / "pub", tmp_path / "priv"))
+    monkeypatch.setattr(esperimento, "carica", lambda _gt: SimpleNamespace(domande=domande))
+    monkeypatch.setattr(esperimento, "hash_src", lambda: "s")
+    monkeypatch.setattr(esperimento, "hash_ground_truth", lambda _gt: "g")
+    monkeypatch.setattr(esperimento, "controlla_ambiente", list)
+    eseguiti: list[float] = []
+    monkeypatch.setattr(
+        esperimento,
+        "esegui_esperimento",
+        lambda m, *_a, **_k: eseguiti.append(m["limiti"]["timeout_lavoro_s"]),
+    )
+    monkeypatch.setattr(esperimento, "scrivi_riepilogo", lambda _e: None)
+
+    def args(**campi) -> argparse.Namespace:
+        base = {
+            "etichetta": "esp",
+            "variante": None,
+            "ids": None,
+            "criterio": None,
+            "ripetizioni": 1,
+            "judge": False,
+            "judge_model": None,
+            "pausa": 0,
+            "tentativi_finali": 0,
+            "timeout": None,
+            "gt": tmp_path,
+        }
+        return argparse.Namespace(**(base | campi))
+
+    esperimento.cmd_esegui(args(variante=["con:"], timeout=600.0))
+    esperimento.cmd_esegui(args())  # ripresa senza --timeout: vale quello del manifesto
+    assert eseguiti == [600.0, 600.0]
+    with pytest.raises(ErroreEsperimento, match="--timeout"):
+        esperimento.cmd_esegui(args(timeout=600.0))  # in ripresa i parametri sono del manifesto

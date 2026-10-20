@@ -265,7 +265,8 @@ def cmd_esegui(args: argparse.Namespace) -> None:
         if not args.variante:
             raise ErroreEsperimento("nuovo esperimento: indica almeno una --variante")
         ids = [int(x) for x in args.ids.split(",")] if args.ids else sorted(tutte)
-        stato = stato_corrente(args.gt, ids, args.timeout)
+        timeout = TIMEOUT_DOMANDA_S if args.timeout is None else args.timeout
+        stato = stato_corrente(args.gt, ids, timeout)
         giudice = (args.judge_model or agent_config.AGENT_MODEL) if args.judge else None
         manifesto = crea_manifesto(
             args.etichetta,
@@ -281,12 +282,13 @@ def cmd_esegui(args: argparse.Namespace) -> None:
         )
         print(f"Nuovo esperimento {args.etichetta}: manifesto in {pub / 'manifest.json'}")
     else:
-        if args.variante or args.ids or args.criterio:
+        if args.variante or args.ids or args.criterio or args.timeout is not None:
             raise ErroreEsperimento(
                 "esperimento esistente: la ripresa usa i parametri del manifesto (togli --variante, "
-                "--ids, --criterio)"
+                "--ids, --criterio, --timeout)"
             )
-        verifica_ripresa(manifesto, stato_corrente(args.gt, manifesto["domande"], args.timeout))
+        timeout = manifesto["limiti"]["timeout_lavoro_s"]
+        verifica_ripresa(manifesto, stato_corrente(args.gt, manifesto["domande"], timeout))
         print(f"Ripresa di {args.etichetta}")
     mancanti = [i for i in manifesto["domande"] if i not in tutte]
     if mancanti:
@@ -343,7 +345,11 @@ def main() -> None:
         "--pausa", type=float, default=PAUSA_S, help="secondi tra un'esecuzione e l'altra"
     )
     e.add_argument("--tentativi-finali", type=int, default=TENTATIVI_FINALI)
-    e.add_argument("--timeout", type=float, default=TIMEOUT_DOMANDA_S, help="secondi di lavoro")
+    e.add_argument(
+        "--timeout",
+        type=float,
+        help=f"secondi di lavoro per domanda (default {TIMEOUT_DOMANDA_S:.0f}; solo alla creazione)",
+    )
     e.add_argument("--gt", type=Path, default=GROUND_TRUTH_DIR)
 
     r = sub.add_parser("riepilogo", help="ricalcola il riepilogo dalle esecuzioni salvate")
