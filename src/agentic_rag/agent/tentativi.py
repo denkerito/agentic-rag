@@ -29,6 +29,9 @@ from agentic_rag.agent.limiti import (
 
 # Stessi codici ritentati prima dal client Gemini (RETRY_429).
 CODICI_TEMPORANEI: tuple[int, ...] = (429, 500, 502, 503, 504)
+# Errori di rete: anche le disconnessioni a metà risposta (ReadError, RemoteProtocolError), che
+# google-genai lascia passare come errori httpx. L'eval usa la stessa definizione.
+ERRORI_RETE: tuple[type[BaseException], ...] = (httpx.TransportError, ConnectionError, TimeoutError)
 
 
 @dataclass(frozen=True)
@@ -58,7 +61,7 @@ def da_ritentare(e: BaseException) -> bool:
         return e.status_code in CODICI_TEMPORANEI
     if isinstance(e, genai_errors.APIError):
         return e.code in CODICI_TEMPORANEI
-    return isinstance(e, (httpx.TimeoutException, httpx.ConnectError, TimeoutError))
+    return isinstance(e, ERRORI_RETE)
 
 
 class ModelloGestito(WrapperModel):

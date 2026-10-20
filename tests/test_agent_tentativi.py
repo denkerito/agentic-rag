@@ -30,6 +30,9 @@ def test_da_ritentare() -> None:
     assert da_ritentare(genai_errors.APIError(503, {}))
     assert da_ritentare(httpx.ConnectError("giù"))
     assert da_ritentare(httpx.ReadTimeout("lento"))
+    # disconnessione a metà risposta: google-genai non la avvolge in APIError
+    assert da_ritentare(httpx.ReadError("connessione chiusa"))
+    assert da_ritentare(httpx.RemoteProtocolError("Server disconnected"))
     assert da_ritentare(TimeoutError())  # timeout del singolo tentativo
     assert not da_ritentare(ModelHTTPError(status_code=400, model_name="m"))
     assert not da_ritentare(ModelHTTPError(status_code=404, model_name="m"))

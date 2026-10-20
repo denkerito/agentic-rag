@@ -8,7 +8,6 @@ from contextlib import suppress
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-import httpx
 import psycopg
 from google.genai import errors as genai_errors
 from pydantic_ai import capture_run_messages
@@ -20,6 +19,7 @@ from agentic_rag.agent.agent import MOTIVI_RIFIUTO
 from agentic_rag.agent.limiti import MisuraAttese, misura_attese
 from agentic_rag.agent.output import Risposta
 from agentic_rag.agent.run import open_session, usage_limits
+from agentic_rag.agent.tentativi import ERRORI_RETE
 from agentic_rag.eval.fonti import sql_dell_agente, tabelle_lette
 from agentic_rag.eval.giudice import giudica
 from agentic_rag.eval.groundtruth import Domanda
@@ -29,9 +29,9 @@ from agentic_rag.eval.valutazione import Esito, Giudizio, Valutazione, valuta
 TIMEOUT_DOMANDA_S = 300.0  # secondi di lavoro dell'agente, attese del limitatore escluse
 INTERVALLO_CONTROLLO_S = 0.2
 TENTATIVI_GIUDICE = 2
-# Errori del provider o della rete: la domanda si riesegue. Superare il limite di richieste
-# (UsageLimitExceeded) o il tempo di lavoro (TempoScaduto) è invece un fallimento dell'agente.
-ERRORI_RETE = (httpx.TransportError, ConnectionError, TimeoutError)
+# Errori del provider o della rete (ERRORI_RETE, la stessa definizione dei tentativi del modello):
+# la domanda si riesegue. Superare il limite di richieste (UsageLimitExceeded) o il tempo di lavoro
+# (TempoScaduto) è invece un fallimento dell'agente.
 
 # Stato di un'esecuzione: `completata` ha un esito; `fallita_agente` è un insuccesso dell'agente
 # (limite di richieste, risposta non valida, tempo di lavoro scaduto); `errore_infrastruttura`
