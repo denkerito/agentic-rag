@@ -15,6 +15,7 @@ from agentic_rag.eval.esperimento import (
     verifica_ripresa,
 )
 from agentic_rag.eval.groundtruth import Domanda
+from agentic_rag.eval.metriche import riga_esecuzione_pubblica
 from agentic_rag.eval.runner import RisultatoDomanda
 
 STATO = {"src": "s", "ground_truth": "g", "domande": [1, 2], "limiti": {"timeout_lavoro_s": 300}}
@@ -154,3 +155,9 @@ def test_foglio_alla_cieca_e_kappa(tmp_path) -> None:
         w.writerows(foglio)
     k = etichette.calcola_kappa(tmp_path)
     assert k["campione"] == 4 and k["accordo"] == 0.75
+
+
+def test_la_riga_registra_i_tentativi_del_provider() -> None:
+    r = _ok(_domande()[0])
+    r.tentativi_provider = 3
+    assert riga_esecuzione_pubblica(r, "con", 1, 1)["tentativi_provider"] == 3

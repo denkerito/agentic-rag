@@ -3,6 +3,7 @@ import pytest
 from agentic_rag.eval.riepilogo import (
     analizza_criterio,
     appaiate,
+    efficienza,
     esecuzioni_chiuse,
     markdown,
     riepiloga,
@@ -128,3 +129,17 @@ def test_fallita_agente_conta_solo_nel_task_success() -> None:
     met = riepiloga(m, righe)["varianti"]["con"]["metriche"]
     assert met["task_success_rate"]["valore"] == 0.5
     assert met["answer_accuracy"]["valore"] == 1.0 and met["answer_accuracy"]["esecuzioni"] == 1
+
+
+def test_efficienza_righe_senza_tentativi_provider() -> None:
+    # righe salvate prima di questo campo: il riepilogo non si rompe e conta 0
+    e = efficienza([_riga("con", 1, 1)], None)
+    assert e["tentativi_provider_medi"] == 0 and "attesa_media_s" in e
+
+
+def test_efficienza_media_dei_tentativi_provider() -> None:
+    righe = [
+        _riga("con", 1, 1) | {"tentativi_provider": 2},
+        _riga("con", 1, 2) | {"tentativi_provider": 0},
+    ]
+    assert efficienza(righe, None)["tentativi_provider_medi"] == 1.0

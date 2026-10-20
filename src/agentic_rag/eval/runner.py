@@ -79,7 +79,8 @@ class RisultatoDomanda:
     stato: Stato = "completata"
     token_input: int = 0
     token_output: int = 0
-    attesa_s: float = 0.0  # secondi attesi nel limitatore di richieste
+    attesa_s: float = 0.0  # secondi attesi: limitatore, pause e tentativi falliti del provider
+    tentativi_provider: int = 0  # richieste al provider fallite e ritentate (429, 5xx, rete)
     rifiuti: dict[str, int] = field(default_factory=dict)  # risposte scartate dal validatore
     doc_recuperati: list[str] = field(default_factory=list)  # da ricerche e aperture
 
@@ -179,6 +180,7 @@ def esegui_domanda(
                 passi_tool=len(deps.trace),
                 durata_s=time.monotonic() - inizio,
                 attesa_s=misura.secondi,
+                tentativi_provider=misura.tentativi_falliti,
                 doc_recuperati=documenti_recuperati(deps.trace),
             )
         finally:
@@ -210,6 +212,7 @@ def esegui_domanda(
         token_input=result.usage.input_tokens or 0,
         token_output=result.usage.output_tokens or 0,
         attesa_s=misura.secondi,
+        tentativi_provider=misura.tentativi_falliti,
         rifiuti=rifiuti_del_validatore(result.all_messages()),
         doc_recuperati=documenti_recuperati(trace),
     )

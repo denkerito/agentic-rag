@@ -58,6 +58,7 @@ def _base(r: RisultatoDomanda, variante: str, ripetizione: int, tentativo: int) 
         "token_input": r.token_input,
         "token_output": r.token_output,
         "attesa_s": round(r.attesa_s, 1),
+        "tentativi_provider": r.tentativi_provider,
         "lavoro_s": round(r.lavoro_s, 1),
         "rifiuti": r.rifiuti,
         "conteggi": conteggi(r),

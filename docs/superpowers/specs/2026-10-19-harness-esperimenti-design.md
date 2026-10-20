@@ -112,7 +112,7 @@ Se alla ripresa qualcosa non coincide, il comando si ferma e indica *quali chiav
 - **Funzionamento:** finestra scorrevole di 60 s.
   - Prima di una richiesta attende se si supererebbe l'RPM, o se i token usati nella finestra hanno raggiunto il TPM (conteggiati dall'utilizzo reale delle risposte).
 - **Stato:** un'istanza per nome di modello, a livello di processo. `build_model` viene chiamato a ogni domanda e la finestra non deve ripartire da zero.
-- **Riletture del provider:** i 429 e 5xx restano gestiti dal client (`RETRY_429` per Google; i `max_retries` degli SDK per gli altri provider). Le loro attese restano dentro la latenza: è un limite noto e dichiarato nel riepilogo.
+- **Riletture del provider:** 429, 5xx (500, 502, 503, 504) ed errori di rete li ritenta `ModelloGestito` (`src/agentic_rag/agent/tentativi.py`), non il client del provider: 5 tentativi, pause di 10, 20, 40, 60 s più un jitter fino a 1 s, timeout di 120 s per tentativo. Ogni tentativo passa dal limitatore. La durata dei tentativi falliti e le pause entrano in `attesa_s` (escluse dal tempo di lavoro); `tentativi_provider` conta i tentativi falliti per esecuzione. Limite noto: un tentativo in corso conta come lavoro finché non fallisce, al massimo 120 s. Gli altri provider mantengono anche i `max_retries` del proprio SDK.
 
 ## Metriche
 

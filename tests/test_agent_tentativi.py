@@ -97,7 +97,8 @@ def test_esauriti_i_tentativi_rilancia_l_ultimo_errore() -> None:
     with misura_attese() as m, pytest.raises(ModelHTTPError) as e:
         asyncio.run(richiedi(gestito(o, p)))
     assert e.value.status_code == 503 and p.chiamate == 5
-    assert m.secondi == 130 + 25 and m.tentativi_falliti == 5  # pause 10+20+40+60, 5 tentativi da 5 s
+    # pause 10+20+40+60, 5 tentativi da 5 s
+    assert m.secondi == 130 + 25 and m.tentativi_falliti == 5
 
 
 def test_errore_non_temporaneo_non_si_ritenta() -> None:

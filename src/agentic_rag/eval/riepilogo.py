@@ -158,7 +158,9 @@ def efficienza(righe: list[Riga], modello: str | None) -> dict[str, Any]:
         "chiamate_tool_medie": round(sum(r["passi_tool"] for r in righe) / n, 1),
         "lavoro_p50_s": percentile(lavoro, 0.5),
         "lavoro_p95_s": percentile(lavoro, 0.95),
-        "attesa_limitatore_media_s": round(sum(r["attesa_s"] for r in righe) / n, 1),
+        "attesa_media_s": round(sum(r["attesa_s"] for r in righe) / n, 1),
+        # .get: righe di esperimenti salvati prima di questo campo
+        "tentativi_provider_medi": round(sum(r.get("tentativi_provider", 0) for r in righe) / n, 1),
         "costo_medio_usd": (tin * prezzo[0] + tout * prezzo[1]) / 1e6 if prezzo else None,
     }
 
@@ -411,8 +413,8 @@ def markdown(manifesto: dict[str, Any], riep: dict[str, Any]) -> str:
         "",
         (
             "Note: le metriche sulla risposta si calcolano sulle esecuzioni completate; il Task "
-            "Success Rate conta anche quelle fallite per l'agente. Le attese dei tentativi interni "
-            "del client del provider (429/5xx) restano nella latenza."
+            "Success Rate conta anche quelle fallite per l'agente. Pause e tentativi falliti del "
+            "provider (429/5xx, rete) sono esclusi dal tempo di lavoro e inclusi nell'attesa media."
         ),
     ]
     return "\n".join(out) + "\n"
