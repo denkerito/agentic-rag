@@ -333,3 +333,9 @@ def test_un_esecuzione_fallita_conserva_uso_e_rifiuti(tmp_path, monkeypatch, dat
     # il validatore rifiuta finché la run fallisce: rifiuti, richieste e token restano nella riga
     assert r.stato == "fallita_agente" and r.rifiuti.get("fonti_non_viste", 0) > 0
     assert r.richieste > 0 and r.token_input > 0 and r.token_output > 0
+
+
+def test_ambiente_pronto_sul_database_reale(dati) -> None:
+    from agentic_rag.eval.ambiente import controlla_ambiente
+
+    assert controlla_ambiente(api_key="k") == []  # compresa la colonna full-text dei documenti

@@ -1,6 +1,7 @@
 import asyncio
 
 import httpx
+import psycopg
 import pytest
 from pydantic_ai.exceptions import ModelAPIError, ModelHTTPError, UsageLimitExceeded
 from pydantic_ai.messages import (
@@ -33,6 +34,7 @@ from agentic_rag.eval.runner import (
         ModelHTTPError(429, "google:m"),
         ModelHTTPError(503, "google:m"),
         ModelAPIError("google:m", "rete"),
+        psycopg.OperationalError("server closed the connection"),  # DB giù durante la run
     ],
 )
 def test_errori_di_rete_e_provider_si_rieseguono(errore) -> None:

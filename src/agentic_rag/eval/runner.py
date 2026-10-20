@@ -44,9 +44,15 @@ class TempoScaduto(Exception):
 
 
 def errore_di_infrastruttura(e: BaseException) -> bool:
-    """Rete, 429 o 5xx del provider: non dicono nulla sulla qualità dell'agente."""
+    """Rete, 429 o 5xx del provider, database: non dicono nulla sulla qualità dell'agente.
+
+    Gli errori SQL dell'agente non arrivano qui: `query_sql` li restituisce al modello. Un errore
+    psycopg che interrompe la run viene dal database (connessione persa, schema non pronto).
+    """
     if isinstance(e, TempoScaduto):
         return False
+    if isinstance(e, psycopg.Error):
+        return True
     if isinstance(e, ModelHTTPError):
         return e.status_code == 429 or e.status_code >= 500
     if isinstance(e, genai_errors.APIError):
