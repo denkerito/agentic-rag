@@ -149,7 +149,7 @@ def esegui_domanda(
     judge: bool = False,
     judge_model: str | None = None,
     timeout: float | None = TIMEOUT_DOMANDA_S,
-    ricerca_semantica: bool = True,
+    ricerca_semantica: bool | None = None,  # None: RICERCA_SEMANTICA della configurazione
 ) -> RisultatoDomanda:
     inizio = time.monotonic()
     query_attesa = esegui_query_attesa(domanda.query_sql)
@@ -244,7 +244,7 @@ def esegui(
     progresso: Callable[[RisultatoDomanda], None] | None = None,
     dormi: Callable[[float], None] = time.sleep,
     risultati: list[RisultatoDomanda] | None = None,
-    ricerca_semantica: bool = True,
+    ricerca_semantica: bool | None = None,
 ) -> list[RisultatoDomanda]:
     """Esegue le domande in sequenza. `risultati` è un accumulatore opzionale: se la batteria viene
     interrotta (Ctrl+C) chi chiama ha comunque le domande già completate."""

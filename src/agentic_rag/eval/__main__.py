@@ -109,6 +109,8 @@ def main() -> None:
         )
         print(f"#{r.domanda.id:>2} {r.esito} ({dettaglio})", flush=True)
 
+    # --senza-semantica oppure RICERCA_SEMANTICA=0 nel .env: il meta registra il valore effettivo
+    semantica = agent_config.RICERCA_SEMANTICA and not args.senza_semantica
     risultati: list[RisultatoDomanda] = []
     interrotta = False
     try:
@@ -122,7 +124,7 @@ def main() -> None:
             inizio=inizio,
             progresso=progresso,
             risultati=risultati,
-            ricerca_semantica=not args.senza_semantica,
+            ricerca_semantica=semantica,
         )
     except KeyboardInterrupt:
         interrotta = True
@@ -135,7 +137,7 @@ def main() -> None:
         "giudice": (args.judge_model or args.model or agent_config.AGENT_MODEL)
         if args.judge
         else "spento",
-        "ricerca_semantica": not args.senza_semantica,
+        "ricerca_semantica": semantica,
         "etichetta": args.etichetta,
         "domande": f"{len(risultati)} di {len(domande)}" if interrotta else len(domande),
         "interrotta": interrotta,

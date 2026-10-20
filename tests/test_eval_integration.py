@@ -339,3 +339,20 @@ def test_ambiente_pronto_sul_database_reale(dati) -> None:
     from agentic_rag.eval.ambiente import controlla_ambiente
 
     assert controlla_ambiente(api_key="k") == []  # compresa la colonna full-text dei documenti
+
+
+def test_la_batteria_rispetta_ricerca_semantica_spenta(tmp_path, monkeypatch, dati) -> None:
+    from agentic_rag.agent import config as agent_config
+
+    gt = _gt(tmp_path, dati)
+    sano = _modello(dati).function
+    offerti: set[str] = set()
+
+    def registra(messages, info):
+        offerti.update(t.name for t in info.function_tools)
+        return sano(messages, info)
+
+    monkeypatch.setattr(agent_config, "RICERCA_SEMANTICA", False)  # RICERCA_SEMANTICA=0 nel .env
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(registra))
+    esegui(gt.domande[:1], pausa=0)
+    assert "cerca_testo" in offerti and "cerca_semantica" not in offerti
