@@ -1,23 +1,18 @@
-"""Limitatore di richieste (opzionale) per qualsiasi modello Pydantic AI, e misura delle attese.
+"""Limitatore di richieste (opzionale) e misura delle attese.
 
-Senza limiti configurati il modello non viene avvolto. Con limiti, prima di ogni richiesta si attende
-finché nell'ultimo minuto restano richieste (RPM) e token (TPM) disponibili. Il tempo atteso si somma
-nella `MisuraAttese` attiva, così l'eval può tenerlo fuori dalla latenza e dal timeout.
+Con limiti configurati, prima di ogni richiesta si attende finché nell'ultimo minuto restano richieste
+(RPM) e token (TPM) disponibili. Il tempo atteso (e quello dei tentativi del provider, vedi
+`tentativi.py`) si somma nella `MisuraAttese` attiva, così l'eval può tenerlo fuori dalla latenza e
+dal timeout.
 """
 
 import asyncio
 import time
 from collections import deque
-from collections.abc import AsyncIterator, Awaitable, Callable, Iterator
-from contextlib import asynccontextmanager, contextmanager
+from collections.abc import Awaitable, Callable, Iterator
+from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
-from typing import Any
-
-from pydantic_ai.messages import ModelMessage, ModelResponse
-from pydantic_ai.models import KnownModelName, Model, ModelRequestParameters, StreamedResponse
-from pydantic_ai.models.wrapper import WrapperModel
-from pydantic_ai.settings import ModelSettings
 
 FINESTRA_S = 60.0
 PASSO_ATTESA_S = 1.0  # l'attesa si accumula a passi: il watchdog del timeout la vede crescere
@@ -117,39 +112,6 @@ class Limitatore:
     def registra_token(self, n: int) -> None:
         if n > 0:
             self._token.append((self._orologio(), n))
-
-
-class ModelloLimitato(WrapperModel):
-    def __init__(self, wrapped: Model | KnownModelName, limitatore: Limitatore) -> None:
-        super().__init__(wrapped)
-        self.limitatore = limitatore
-
-    async def request(
-        self,
-        messages: list[ModelMessage],
-        model_settings: ModelSettings | None,
-        model_request_parameters: ModelRequestParameters,
-    ) -> ModelResponse:
-        await self.limitatore.attendi()
-        risposta = await super().request(messages, model_settings, model_request_parameters)
-        self.limitatore.registra_token(risposta.usage.input_tokens + risposta.usage.output_tokens)
-        return risposta
-
-    @asynccontextmanager
-    async def request_stream(
-        self,
-        messages: list[ModelMessage],
-        model_settings: ModelSettings | None,
-        model_request_parameters: ModelRequestParameters,
-        run_context: Any = None,
-    ) -> AsyncIterator[StreamedResponse]:
-        await self.limitatore.attendi()
-        async with super().request_stream(
-            messages, model_settings, model_request_parameters, run_context
-        ) as stream:
-            yield stream
-        u = stream.usage()
-        self.limitatore.registra_token(u.input_tokens + u.output_tokens)
 
 
 _limitatori: dict[tuple[str, str], Limitatore] = {}

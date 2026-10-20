@@ -7,7 +7,8 @@ from pydantic_ai.providers.google import GoogleProvider
 
 from agentic_rag import config as app_config
 from agentic_rag.agent import config
-from agentic_rag.agent.limiti import ModelloLimitato, limitatore_per
+from agentic_rag.agent.limiti import limitatore_per
+from agentic_rag.agent.tentativi import ModelloGestito
 
 GOOGLE_PREFIX = "google:"
 # Stessa cadenza del vecchio loop: 10, 20, 40, 60 s. Oltre ai 429 (quota) si ritentano gli errori
@@ -28,4 +29,4 @@ def build_model(name: str | None = None, ruolo: str = "agente") -> Model | str:
         model = GoogleModel(name.removeprefix(GOOGLE_PREFIX), provider=provider)
     rpm, tpm = config.LIMITI.get(ruolo, (None, None))
     limitatore = limitatore_per(ruolo, name, rpm, tpm)
-    return ModelloLimitato(model, limitatore) if limitatore else model
+    return ModelloGestito(model, limitatore) if limitatore else model
