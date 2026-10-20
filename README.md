@@ -152,7 +152,7 @@ Un harness (`python -m agentic_rag.eval`) esegue un set di domande con lo stesso
 
 I report pubblici di ogni esecuzione (risposte, query SQL dell'agente, conteggi per domanda) sono in [`eval/reports/`](eval/reports/); l'ultima batteria completa usa `gemini-3.5-flash-lite`, senza giudice, con ~9 richieste al modello per domanda.
 
-**Esperimenti.** Oltre alla batteria singola, `python -m agentic_rag.eval.esperimento` esegue varianti × ripetizioni × domande (le varianti sono configurazioni: modello, ricerca semantica sì/no). Ogni esecuzione è salvata appena conclusa e un'interruzione si riprende rilanciando lo stesso comando; un manifesto lega l'esperimento al codice (`src/`) e al ground truth (solo l'hash), e la ripresa rifiuta se sono cambiati. Gli errori di infrastruttura (rete, 429, 5xx) non contano come fallimenti: la combinazione si ritenta in un passaggio finale e, se resta fallita, è esclusa e riportata; il confronto tra varianti usa solo le combinazioni concluse in entrambe, e oltre il 10% di escluse (o con esclusioni sbilanciate) l'esperimento è dichiarato non valido.
+**Esperimenti.** Oltre alla batteria singola, `python -m agentic_rag.eval.esperimento` esegue varianti × ripetizioni × domande (le varianti sono configurazioni: modello, ricerca semantica sì/no). Ogni esecuzione è salvata appena conclusa e un'interruzione si riprende rilanciando `esegui` con la sola `--etichetta` (varianti, domande, criterio e timeout vengono dal manifesto); un manifesto lega l'esperimento al codice (`src/`) e al ground truth (solo l'hash), e la ripresa rifiuta se sono cambiati. Gli errori di infrastruttura (rete, 429, 5xx) non contano come fallimenti: la combinazione si ritenta in un passaggio finale e, se resta fallita, è esclusa e riportata; il confronto tra varianti usa solo le combinazioni concluse in entrambe, e oltre il 10% di escluse (o con esclusioni sbilanciate) l'esperimento è dichiarato non valido.
 
 Metriche, ognuna con il suo denominatore e un intervallo di confidenza al 95% (bootstrap sulle domande): **Task Success Rate**, **Answer Accuracy** (LLM-as-a-judge, validato con il κ di Cohen su un campione etichettato a mano alla cieca), **pass^3** (tutte e tre le esecuzioni corrette), **Source Citation Recall**, **Numeric Exact Match Recall**, **False Acceptance Rate** (cause inventate dove non sono documentate) e **False Abstention Rate** (rinunce dove lo sono), **Guardrail Intervention Rate** (risposte bloccate dal validatore delle fonti), **Session Evidence Recall** (documenti attesi effettivamente recuperati), più token, costo e latenza p50/p95 per indagine. Definizioni nel [documento di design dell'harness](docs/superpowers/specs/2026-10-19-harness-esperimenti-design.md).
 
@@ -229,8 +229,10 @@ python -m agentic_rag.eval --pause 10           # batteria completa
 python -m agentic_rag.eval --ids 1,4 --judge    # alcune domande, con giudice LLM sulla causa
 python -m agentic_rag.eval --senza-semantica  # batteria senza ricerca semantica
 
-# esperimento: crea o riprende (rilanciare lo stesso comando dopo un'interruzione)
-python -m agentic_rag.eval.esperimento esegui --etichetta esp --variante con:semantica=1     --variante senza:semantica=0 --ripetizioni 5 --judge --criterio "task_success_rate:con-senza>=10"
+# esperimento: crea
+python -m agentic_rag.eval.esperimento esegui --etichetta esp --variante con:semantica=1 --variante senza:semantica=0 --ripetizioni 5 --judge --criterio "task_success_rate:con-senza>=10"
+# ripresa dopo un'interruzione: solo l'etichetta (con --variante, --ids, --criterio o --timeout rifiuta)
+python -m agentic_rag.eval.esperimento esegui --etichetta esp
 python -m agentic_rag.eval.esperimento riepilogo --etichetta esp     # metriche, confronti, verdetto
 python -m agentic_rag.eval.esperimento etichette --etichetta esp --campione 30   # foglio privato
 python -m agentic_rag.eval.esperimento kappa --etichetta esp         # accordo umano/giudice

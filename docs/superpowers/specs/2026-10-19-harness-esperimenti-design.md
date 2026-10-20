@@ -54,11 +54,14 @@ L'harness di valutazione oggi esegue **una batteria alla volta** (`python -m age
 ## Interfaccia (CLI)
 
 ```bash
-# crea l'esperimento, oppure lo riprende se la cartella esiste (parametri presi dal manifesto)
+# crea l'esperimento
 python -m agentic_rag.eval.esperimento esegui --etichetta esp-ricerca-a \
     --variante con:semantica=1 --variante senza:semantica=0 \
     --ripetizioni 5 --judge [--judge-model M] [--pausa 5] [--tentativi-finali 2] \
     [--criterio "task_success_rate:con-senza>=10"]
+
+# lo riprende (parametri presi dal manifesto: con --variante, --ids, --criterio o --timeout rifiuta)
+python -m agentic_rag.eval.esperimento esegui --etichetta esp-ricerca-a [--pausa 5] [--tentativi-finali 2]
 
 python -m agentic_rag.eval.esperimento riepilogo --etichetta esp-ricerca-a
 python -m agentic_rag.eval.esperimento etichette --etichetta esp-ricerca-a --campione 30
