@@ -148,3 +148,18 @@ def test_efficienza_media_dei_tentativi_provider() -> None:
         _riga("con", 1, 2) | {"tentativi_provider": 0},
     ]
     assert efficienza(righe, None)["tentativi_provider_medi"] == 1.0
+
+
+def test_errore_giudice_non_chiude_e_si_conta() -> None:
+    righe = [
+        _riga("con", 1, 1, stato="errore_giudice"),
+        _riga("con", 1, 2),
+        _riga("senza", 1, 1),
+        _riga("senza", 1, 2),
+    ]
+    assert ("con", 1, 1) not in esecuzioni_chiuse(righe)
+    riep = riepiloga(_manifesto(), righe)
+    assert riep["varianti"]["con"]["errori_giudice"] == 1
+    assert riep["varianti"]["senza"]["errori_giudice"] == 0
+    assert not riep["valido"]  # 50% di escluse per "con"
+    assert "1 senza verdetto del giudice" in markdown(_manifesto(), riep)

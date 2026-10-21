@@ -35,8 +35,10 @@ TENTATIVI_GIUDICE = 2
 
 # Stato di un'esecuzione: `completata` ha un esito; `fallita_agente` è un insuccesso dell'agente
 # (limite di richieste, risposta non valida, tempo di lavoro scaduto); `errore_infrastruttura`
-# (rete, provider, database) non dice nulla sull'agente e lascia la combinazione da rifare.
-Stato = Literal["completata", "fallita_agente", "errore_infrastruttura"]
+# (rete, provider, database) non dice nulla sull'agente e lascia la combinazione da rifare;
+# `errore_giudice` (giudice acceso ma nessun verdetto) la lascia da rifare anch'essa: senza verdetto
+# l'esito ignorerebbe il giudice.
+Stato = Literal["completata", "fallita_agente", "errore_infrastruttura", "errore_giudice"]
 
 
 # Credito esaurito, chiave non valida o non autorizzata: ogni domanda successiva fallirebbe allo stesso
@@ -230,9 +232,11 @@ def esegui_domanda(
                 errore_giudice = type(e).__name__
 
     val = valuta(domanda, risposta, trace, seen_ids, query_attesa, giudizio)
+    senza_verdetto = judge and bool(domanda.risposta_attesa) and giudizio is None
     return RisultatoDomanda(
         domanda=domanda,
-        esito=val.esito,
+        esito="errore" if senza_verdetto else val.esito,
+        stato="errore_giudice" if senza_verdetto else "completata",
         risposta=risposta,
         valutazione=val,
         sql_agente=sql_dell_agente(trace),

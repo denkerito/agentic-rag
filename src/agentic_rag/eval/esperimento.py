@@ -238,7 +238,9 @@ def esegui_esperimento(
         tentativi[c] = tentativo
         if r.stato in riepilogo.STATI_CHIUSI:
             chiuse.add(c)
-        dettaglio = r.esito if r.stato == "completata" else f"{r.stato}: {r.errore}"
+        dettaglio = (
+            r.esito if r.stato == "completata" else f"{r.stato}: {r.errore or r.errore_giudice}"
+        )
         avviso(f"[{nome} · rip {rip} · #{d.id}] {dettaglio} ({r.richieste} richieste)")
 
     for nome, rip, d in ordine:

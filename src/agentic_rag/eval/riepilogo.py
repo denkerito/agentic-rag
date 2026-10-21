@@ -268,9 +268,12 @@ def riepiloga(manifesto: dict[str, Any], righe: list[Riga], kappa: dict | None =
         "kappa": kappa,
     }
     errori_infra: dict[str, int] = defaultdict(int)
+    errori_giudice: dict[str, int] = defaultdict(int)
     for r in righe:
         if r["stato"] == "errore_infrastruttura":
             errori_infra[r["variante"]] += 1
+        elif r["stato"] == "errore_giudice":
+            errori_giudice[r["variante"]] += 1
     for v in varianti:
         nome = v["nome"]
         rv = [r for c, r in chiuse.items() if c[0] == nome]
@@ -288,6 +291,7 @@ def riepiloga(manifesto: dict[str, Any], righe: list[Riga], kappa: dict | None =
             "chiuse": len(rv),
             "fallite_agente": sum(r["stato"] == "fallita_agente" for r in rv),
             "errori_infrastruttura": errori_infra[nome],
+            "errori_giudice": errori_giudice[nome],
             "metriche": metriche,
             "per_modalita": per_modalita,
             "rifiuti_per_motivo": rifiuti_per_motivo(rv),
@@ -374,6 +378,7 @@ def markdown(manifesto: dict[str, Any], riep: dict[str, Any]) -> str:
         out.append(
             f"- `{n}`: {v['chiuse']} chiuse ({v['fallite_agente']} fallite per l'agente), "
             f"{v['errori_infrastruttura']} errori di infrastruttura registrati, "
+            f"{v.get('errori_giudice', 0)} senza verdetto del giudice, "
             f"rifiuti del validatore {v['rifiuti_per_motivo'] or 'nessuno'}"
         )
     escluse = riep["validita"]["escluse"]

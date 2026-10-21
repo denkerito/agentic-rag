@@ -390,3 +390,25 @@ def test_credito_esaurito_del_giudice_e_fatale(tmp_path, monkeypatch, dati) -> N
     )
     with pytest.raises(ErroreFatale, match="402"):
         esegui_domanda(gt.domande[0], judge=True)
+
+
+def test_giudice_senza_verdetto_lascia_aperta_la_combinazione(tmp_path, monkeypatch, dati) -> None:
+    from pydantic_ai.exceptions import ModelHTTPError
+
+    from agentic_rag.eval import giudice
+    from agentic_rag.eval.runner import esegui_domanda
+
+    gt = _gt(tmp_path, dati)
+
+    def rifiuta(messages, info):
+        raise ModelHTTPError(400, "m")  # es. un parametro non supportato: fallisce sempre
+
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: _modello(dati))
+    monkeypatch.setattr(
+        giudice, "build_model", lambda name=None, ruolo=None: FunctionModel(rifiuta)
+    )
+    r = esegui_domanda(gt.domande[0], judge=True)
+    assert r.stato == "errore_giudice" and r.esito == "errore"
+    assert r.errore_giudice == "ModelHTTPError"
+    # l'esecuzione dell'agente resta registrata: risposta, uso
+    assert r.risposta is not None and r.richieste > 0 and r.token_input > 0

@@ -225,3 +225,26 @@ def test_errore_fatale_ferma_e_la_ripresa_riesegue_la_combinazione(tmp_path) -> 
     chiavi = [(r["variante"], r["id"]) for r in righe]
     assert len(chiavi) == len(set(chiavi)) == 4  # tutte chiuse, nessun duplicato
     assert all(r["tentativo"] == 1 for r in righe)
+
+
+def test_giudice_senza_verdetto_resta_aperto_e_si_recupera_alla_fine(tmp_path) -> None:
+    m = _manifesto(ripetizioni=1, giudice="openrouter:anthropic/claude-sonnet-5.5")
+    tentativi = {"n": 0}
+
+    def giudice_instabile(d, variante, *_):
+        if variante["nome"] == "con" and d.id == 1:
+            tentativi["n"] += 1
+            if tentativi["n"] < 3:
+                return RisultatoDomanda(
+                    d, "errore", errore_giudice="ModelHTTPError", stato="errore_giudice"
+                )
+        return _ok(d)
+
+    esegui_esperimento(m, _domande(), tmp_path, tmp_path / "p", giudice_instabile, pausa=0)
+    righe = [r for r in leggi_jsonl(tmp_path / "esecuzioni.jsonl") if r["variante"] == "con"]
+    assert [(r["id"], r["tentativo"], r["stato"]) for r in righe] == [
+        (1, 1, "errore_giudice"),
+        (2, 1, "completata"),
+        (1, 2, "errore_giudice"),  # primo passaggio finale
+        (1, 3, "completata"),  # secondo passaggio finale
+    ]
