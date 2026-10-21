@@ -34,7 +34,7 @@ L'agente passa a **Claude Haiku 5.5**, il giudice a **Claude Sonnet 5.5**, entra
 
 ## Scelte già fatte (mie, da confermare leggendo)
 
-- **Embedding restano su Gemini** (`gemini-embedding-001`, chiave `GOOGLE_API_KEY`). Cambiarli vorrebbe dire reindicizzare e ricalibrare a mano `SEARCH_MAX_DISTANCE` (0,38). Il volume è minimo.
+- **Embedding restano su Gemini**, passati a `gemini-embedding-2` (chiave `GOOGLE_API_KEY`): documenti reindicizzati e `SEARCH_MAX_DISTANCE` ricalibrata a mano a 0,30 con query non del test set (pertinenti 0,20-0,24, aziendali assenti ≥ 0,32, fuori tema ≥ 0,43).
 - **Provider fissato ad Anthropic** su OpenRouter (`order: ["anthropic"]`, `allow_fallbacks: false`). Serve per la riproducibilità e per le letture dalla cache. Se Anthropic è giù, gli errori sono di infrastruttura e li ritentano `ModelloGestito` e il passaggio finale.
 - **Effort:** Haiku al suo default (`medium`), giudice Sonnet a `medium`. Il giudice è la voce più cara.
 - **Cache accesa** su istruzioni, definizioni dei tool e ultimo messaggio.

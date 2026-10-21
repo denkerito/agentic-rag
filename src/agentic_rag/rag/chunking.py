@@ -52,8 +52,11 @@ def chunk_documento(tipo: str, contenuto: str) -> list[str]:
 
 
 def testo_per_embedding(doc: Documento, testo: str) -> str:
-    """Testo da embeddare: intestazione di contesto + chunk. Non viene salvato nel DB."""
-    lines = [f"Documento: {doc.titolo} ({doc.tipo}, {doc.data})"]
+    """Testo da embeddare: intestazione di contesto + chunk. Non viene salvato nel DB.
+
+    Formato documento di gemini-embedding-2: `title: {titolo} | text: {contenuto}`.
+    """
+    lines = [f"title: {doc.titolo} | text: {doc.tipo}, {doc.data}"]
     if doc.controparte:
         lines.append(doc.controparte)
     return "\n".join(lines) + f"\n\n{testo}"

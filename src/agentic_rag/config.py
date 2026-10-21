@@ -19,7 +19,7 @@ CORS_ORIGINS: list[str] = [
 MAX_INDAGINI_CONCORRENTI: int = int(os.getenv("MAX_INDAGINI_CONCORRENTI", "3"))
 DATA_DIR: Path = ROOT_DIR / "data"
 EMBEDDING_DIM: int = 768
-EMBEDDING_MODEL: str = "models/gemini-embedding-001"
+EMBEDDING_MODEL: str = "models/gemini-embedding-2"
 # Limiti del piano (identici per gemini-embedding-001 e -2): 100 richieste/min, 30k token/min.
 # Si resta sotto con margine; i token sono stimati (~3 caratteri per token, per eccesso).
 EMBEDDING_MAX_RPM: int = 80
