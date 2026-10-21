@@ -412,3 +412,25 @@ def test_giudice_senza_verdetto_lascia_aperta_la_combinazione(tmp_path, monkeypa
     assert r.errore_giudice == "ModelHTTPError"
     # l'esecuzione dell'agente resta registrata: risposta, uso
     assert r.risposta is not None and r.richieste > 0 and r.token_input > 0
+
+
+def test_il_costo_di_openrouter_arriva_nella_riga(tmp_path, monkeypatch, dati) -> None:
+    from agentic_rag.eval.metriche import riga_esecuzione_pubblica
+    from agentic_rag.eval.runner import esegui_domanda
+
+    gt = _gt(tmp_path, dati)
+    sano = _modello(dati).function
+    risposte = {"n": 0}
+
+    def con_costo(messages, info):
+        risposte["n"] += 1
+        r = sano(messages, info)
+        r.provider_details = {"cost": 0.001}
+        return r
+
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(con_costo))
+    r = esegui_domanda(gt.domande[0])
+    riga = riga_esecuzione_pubblica(r, "con", 1, 1)
+    assert riga["costo_usd"] == pytest.approx(0.001 * risposte["n"])
+    assert riga["costo_giudice_usd"] is None  # giudice spento
+    assert riga["token_cache_lettura"] == 0

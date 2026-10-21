@@ -138,7 +138,7 @@ def test_fallita_agente_conta_nel_task_success_e_nei_rifiuti() -> None:
 
 def test_efficienza_righe_senza_tentativi_provider() -> None:
     # righe salvate prima di questo campo: il riepilogo non si rompe e conta 0
-    e = efficienza([_riga("con", 1, 1)], None)
+    e = efficienza([_riga("con", 1, 1)])
     assert e["tentativi_provider_medi"] == 0 and "attesa_media_s" in e
 
 
@@ -147,7 +147,7 @@ def test_efficienza_media_dei_tentativi_provider() -> None:
         _riga("con", 1, 1) | {"tentativi_provider": 2},
         _riga("con", 1, 2) | {"tentativi_provider": 0},
     ]
-    assert efficienza(righe, None)["tentativi_provider_medi"] == 1.0
+    assert efficienza(righe)["tentativi_provider_medi"] == 1.0
 
 
 def test_errore_giudice_non_chiude_e_si_conta() -> None:
@@ -163,3 +163,34 @@ def test_errore_giudice_non_chiude_e_si_conta() -> None:
     assert riep["varianti"]["senza"]["errori_giudice"] == 0
     assert not riep["valido"]  # 50% di escluse per "con"
     assert "1 senza verdetto del giudice" in markdown(_manifesto(), riep)
+
+
+def test_costo_reale_e_quota_di_cache() -> None:
+    righe = [
+        _riga("con", 1, 1)
+        | {"costo_usd": 0.01, "costo_giudice_usd": 0.02, "token_cache_lettura": 500},
+        _riga("con", 1, 2)
+        | {"costo_usd": 0.03, "costo_giudice_usd": None, "token_cache_lettura": 500},
+        # un tentativo fallito si paga comunque: entra nel totale, non nelle medie
+        _riga("con", 1, 2, stato="errore_infrastruttura") | {"costo_usd": 0.005},
+        _riga("senza", 1, 1),
+        _riga("senza", 1, 2),
+    ]
+    riep = riepiloga(_manifesto(), righe)
+    con = riep["varianti"]["con"]
+    assert con["efficienza"]["costo_medio_usd"] == pytest.approx(0.02)
+    assert con["efficienza"]["costo_giudice_medio_usd"] == pytest.approx(0.02)
+    assert con["efficienza"]["quota_input_da_cache"] == pytest.approx(0.5)
+    assert con["costo_totale_usd"] == pytest.approx(0.065)
+    assert riep["costo_totale_usd"] == pytest.approx(0.065)
+    assert "costo:" in markdown(_manifesto(), riep)
+
+
+def test_righe_senza_costo_danno_nd() -> None:
+    # esperimenti salvati prima di questi campi (Gemini): niente eccezioni, costo non noto
+    righe = [_riga("con", 1, 1), _riga("con", 1, 2), _riga("senza", 1, 1), _riga("senza", 1, 2)]
+    riep = riepiloga(_manifesto(), righe)
+    assert riep["varianti"]["con"]["efficienza"]["costo_medio_usd"] is None
+    assert riep["varianti"]["con"]["costo_totale_usd"] is None
+    assert riep["costo_totale_usd"] is None
+    assert "costo: n/d" in markdown(_manifesto(), riep)

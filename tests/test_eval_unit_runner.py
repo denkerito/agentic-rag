@@ -18,6 +18,7 @@ from agentic_rag.agent.agent import RIFIUTO_CAUSA_NON_LETTA
 from agentic_rag.agent.limiti import misura_attese
 from agentic_rag.agent.tentativi import ModelloGestito, PoliticaTentativi
 from agentic_rag.eval.runner import (
+    costo_risposte,
     entro_il_tempo,
     errore_di_infrastruttura,
     errore_fatale,
@@ -106,3 +107,14 @@ def test_credito_o_chiave_sono_errori_fatali(codice) -> None:
 @pytest.mark.parametrize("codice", [400, 429, 503])
 def test_altri_codici_non_sono_fatali(codice) -> None:
     assert not errore_fatale(ModelHTTPError(codice, "openrouter:m"))
+
+
+def test_costo_risposte_somma_il_costo_di_openrouter() -> None:
+    messaggi = [
+        ModelRequest.user_text_prompt("q"),
+        ModelResponse(parts=[TextPart("a")], provider_details={"cost": 0.001}),
+        ModelResponse(parts=[TextPart("b")], provider_details={"cost": 0.002}),
+    ]
+    assert costo_risposte(messaggi) == pytest.approx(0.003)
+    # senza costo nelle risposte (Gemini, modelli finti): non si sa, non zero
+    assert costo_risposte([ModelResponse(parts=[TextPart("a")])]) is None
