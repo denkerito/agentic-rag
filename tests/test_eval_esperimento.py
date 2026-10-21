@@ -174,7 +174,7 @@ def test_la_ripresa_usa_il_timeout_del_manifesto(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(esperimento, "carica", lambda _gt: SimpleNamespace(domande=domande))
     monkeypatch.setattr(esperimento, "hash_src", lambda: "s")
     monkeypatch.setattr(esperimento, "hash_ground_truth", lambda _gt: "g")
-    monkeypatch.setattr(esperimento, "controlla_ambiente", list)
+    monkeypatch.setattr(esperimento, "controlla_ambiente", lambda *a, **k: [])
     eseguiti: list[float] = []
     monkeypatch.setattr(
         esperimento,

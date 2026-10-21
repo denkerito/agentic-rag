@@ -96,7 +96,10 @@ def main() -> None:
     if args.dry_run:
         dry_run(gt, domande)
         return
-    problemi = controlla_ambiente()
+    modelli = [args.model or agent_config.AGENT_MODEL]
+    if args.judge:
+        modelli.append(args.judge_model or agent_config.JUDGE_MODEL)
+    problemi = controlla_ambiente(modelli)
     if problemi:
         raise SystemExit("Ambiente non pronto:\n- " + "\n- ".join(problemi))
 

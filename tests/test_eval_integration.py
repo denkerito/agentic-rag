@@ -338,7 +338,7 @@ def test_un_esecuzione_fallita_conserva_uso_e_rifiuti(tmp_path, monkeypatch, dat
 def test_ambiente_pronto_sul_database_reale(dati) -> None:
     from agentic_rag.eval.ambiente import controlla_ambiente
 
-    assert controlla_ambiente(api_key="k") == []  # compresa la colonna full-text dei documenti
+    assert controlla_ambiente(google_key="k") == []  # compresa la colonna full-text dei documenti
 
 
 def test_la_batteria_rispetta_ricerca_semantica_spenta(tmp_path, monkeypatch, dati) -> None:

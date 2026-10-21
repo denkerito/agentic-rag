@@ -293,7 +293,10 @@ def cmd_esegui(args: argparse.Namespace) -> None:
     mancanti = [i for i in manifesto["domande"] if i not in tutte]
     if mancanti:
         raise ErroreEsperimento(f"domande del manifesto assenti dal ground truth: {mancanti}")
-    problemi = controlla_ambiente()
+    modelli = [v["modello"] for v in manifesto["varianti"]]
+    problemi = controlla_ambiente(
+        modelli + ([manifesto["giudice"]] if manifesto["giudice"] else [])
+    )
     if problemi:
         raise ErroreEsperimento("Ambiente non pronto:\n- " + "\n- ".join(problemi))
     domande = [tutte[i] for i in manifesto["domande"]]
