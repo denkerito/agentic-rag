@@ -199,3 +199,16 @@ def test_sessione_agente_non_resta_in_transazione(monkeypatch) -> None:
         assert deps.conn.info.transaction_status == TransactionStatus.IDLE
     finally:
         deps.conn.close()
+
+
+def test_chiave_mancante_diventa_evento_errore_e_il_server_resta_su(monkeypatch) -> None:
+    # build_model senza OPENROUTER_API_KEY solleva SystemExit: non deve fermare il server
+    from agentic_rag.agent import config as agent_config
+
+    monkeypatch.setattr(config, "OPENROUTER_API_KEY", "")
+    monkeypatch.setattr(agent_config, "AGENT_MODEL", "openrouter:anthropic/claude-haiku-5.5")
+    with TestClient(create_app()) as client:
+        id = client.post("/indagini", json={"domanda": PREFIX + "chiave"}).json()["id"]
+        d = _attendi_stato(client, id, {"fallita"})
+        assert "OPENROUTER_API_KEY" in d["errore"]
+        assert client.get(f"/indagini/{id}").status_code == 200  # il server risponde ancora
