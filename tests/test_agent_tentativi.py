@@ -4,7 +4,12 @@ from collections.abc import AsyncIterator
 import httpx
 import pytest
 from google.genai import errors as genai_errors
-from pydantic_ai.exceptions import ModelHTTPError, UnexpectedModelBehavior, UsageLimitExceeded
+from pydantic_ai.exceptions import (
+    ModelAPIError,
+    ModelHTTPError,
+    UnexpectedModelBehavior,
+    UsageLimitExceeded,
+)
 from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse, TextPart
 from pydantic_ai.models import ModelRequestParameters
 from pydantic_ai.models.function import AgentInfo, FunctionModel
@@ -34,6 +39,9 @@ def test_da_ritentare() -> None:
     assert da_ritentare(httpx.ReadError("connessione chiusa"))
     assert da_ritentare(httpx.RemoteProtocolError("Server disconnected"))
     assert da_ritentare(TimeoutError())  # timeout del singolo tentativo
+    # client OpenAI (OpenRouter): connessione persa o corpo senza completamento
+    assert da_ritentare(ModelAPIError("openrouter:m", "Connection error."))
+    assert not da_ritentare(ModelHTTPError(status_code=402, model_name="m"))  # credito esaurito
     assert not da_ritentare(ModelHTTPError(status_code=400, model_name="m"))
     assert not da_ritentare(ModelHTTPError(status_code=404, model_name="m"))
     assert not da_ritentare(genai_errors.APIError(400, {}))
