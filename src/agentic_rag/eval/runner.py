@@ -3,7 +3,7 @@
 import asyncio
 import time
 from collections import Counter
-from collections.abc import Callable, Coroutine
+from collections.abc import Callable, Coroutine, Sequence
 from contextlib import suppress
 from dataclasses import dataclass, field
 from typing import Any, Literal
@@ -12,7 +12,7 @@ import psycopg
 from google.genai import errors as genai_errors
 from pydantic_ai import capture_run_messages
 from pydantic_ai.exceptions import ModelAPIError, ModelHTTPError
-from pydantic_ai.messages import ModelMessage, RetryPromptPart
+from pydantic_ai.messages import ModelMessage, ModelResponse, RetryPromptPart
 from pydantic_ai.usage import RunUsage
 
 from agentic_rag.agent.agent import MOTIVI_RIFIUTO
@@ -35,8 +35,23 @@ TENTATIVI_GIUDICE = 2
 
 # Stato di un'esecuzione: `completata` ha un esito; `fallita_agente` è un insuccesso dell'agente
 # (limite di richieste, risposta non valida, tempo di lavoro scaduto); `errore_infrastruttura`
-# (rete, provider, database) non dice nulla sull'agente e lascia la combinazione da rifare.
-Stato = Literal["completata", "fallita_agente", "errore_infrastruttura"]
+# (rete, provider, database) non dice nulla sull'agente e lascia la combinazione da rifare;
+# `errore_giudice` (giudice acceso ma nessun verdetto) la lascia da rifare anch'essa: senza verdetto
+# l'esito ignorerebbe il giudice.
+Stato = Literal["completata", "fallita_agente", "errore_infrastruttura", "errore_giudice"]
+
+
+# Credito esaurito, chiave non valida o non autorizzata: ogni domanda successiva fallirebbe allo stesso
+# modo, e contarle come insuccessi dell'agente falserebbe l'esperimento. Si ferma tutto.
+CODICI_FATALI: tuple[int, ...] = (401, 402, 403)
+
+
+class ErroreFatale(Exception):
+    """Errore che rende inutile proseguire (credito, chiave): ferma batteria ed esperimento."""
+
+
+def errore_fatale(e: BaseException) -> bool:
+    return isinstance(e, ModelHTTPError) and e.status_code in CODICI_FATALI
 
 
 class TempoScaduto(Exception):
@@ -91,6 +106,11 @@ class RisultatoDomanda:
     tentativi_provider: int = 0  # richieste al provider fallite e ritentate (429, 5xx, rete)
     rifiuti: dict[str, int] = field(default_factory=dict)  # risposte scartate dal validatore
     doc_recuperati: list[str] = field(default_factory=list)  # da ricerche e aperture
+    # costo reale dichiarato dal provider (OpenRouter); None se il provider non lo dichiara
+    costo_usd: float | None = None
+    costo_giudice_usd: float | None = None
+    token_cache_lettura: int = 0
+    token_cache_scrittura: int = 0
 
     @property
     def lavoro_s(self) -> float:
@@ -130,6 +150,16 @@ def rifiuti_del_validatore(messaggi: list[ModelMessage]) -> dict[str, int]:
                     if part.content.startswith(prefisso):
                         conteggi[motivo] += 1
     return dict(conteggi)
+
+
+def costo_risposte(messaggi: Sequence[ModelMessage]) -> float | None:
+    """Somma del costo che OpenRouter dichiara per ogni risposta; None se nessuna lo dichiara."""
+    costi = [
+        m.provider_details["cost"]
+        for m in messaggi
+        if isinstance(m, ModelResponse) and m.provider_details and "cost" in m.provider_details
+    ]
+    return sum(costi) if costi else None
 
 
 def documenti_recuperati(trace: list[dict[str, Any]]) -> list[str]:
@@ -178,7 +208,9 @@ def esegui_domanda(
             risposta = result.output
             trace: list[dict[str, Any]] = list(deps.trace)
             seen_ids = set(deps.seen_ids)
-        except Exception as e:  # noqa: BLE001 - la batteria deve proseguire con le domande successive
+        except Exception as e:  # la batteria deve proseguire con le domande successive
+            if errore_fatale(e):
+                raise ErroreFatale(nome_errore(e)) from e
             infra = errore_di_infrastruttura(e)
             return RisultatoDomanda(
                 domanda,
@@ -197,25 +229,40 @@ def esegui_domanda(
                 tentativi_provider=misura.tentativi_falliti,
                 rifiuti=rifiuti_del_validatore(messaggi),
                 doc_recuperati=documenti_recuperati(deps.trace),
+                costo_usd=costo_risposte(messaggi),
+                token_cache_lettura=usage.cache_read_tokens,
+                token_cache_scrittura=usage.cache_write_tokens,
             )
         finally:
             deps.conn.close()
 
     giudizio: Giudizio | None = None
     errore_giudice: str | None = None
+    costi_giudice: list[float] = []
     if judge and domanda.risposta_attesa:
         for _ in range(TENTATIVI_GIUDICE):
-            try:
-                giudizio = giudica(domanda.domanda, domanda.risposta_attesa, risposta, judge_model)
-                errore_giudice = None
+            # ogni tentativo si paga, anche quello fallito
+            with capture_run_messages() as messaggi_giudice:
+                try:
+                    giudizio = giudica(
+                        domanda.domanda, domanda.risposta_attesa, risposta, judge_model
+                    )
+                    errore_giudice = None
+                except Exception as e:  # il giudice non deve far perdere la domanda
+                    if errore_fatale(e):
+                        raise ErroreFatale(nome_errore(e)) from e
+                    errore_giudice = type(e).__name__
+            if (costo := costo_risposte(messaggi_giudice)) is not None:
+                costi_giudice.append(costo)
+            if giudizio is not None:
                 break
-            except Exception as e:  # noqa: BLE001 - il giudice non deve far perdere la domanda
-                errore_giudice = type(e).__name__
 
     val = valuta(domanda, risposta, trace, seen_ids, query_attesa, giudizio)
+    senza_verdetto = judge and bool(domanda.risposta_attesa) and giudizio is None
     return RisultatoDomanda(
         domanda=domanda,
-        esito=val.esito,
+        esito="errore" if senza_verdetto else val.esito,
+        stato="errore_giudice" if senza_verdetto else "completata",
         risposta=risposta,
         valutazione=val,
         sql_agente=sql_dell_agente(trace),
@@ -230,6 +277,10 @@ def esegui_domanda(
         tentativi_provider=misura.tentativi_falliti,
         rifiuti=rifiuti_del_validatore(messaggi),
         doc_recuperati=documenti_recuperati(trace),
+        costo_usd=costo_risposte(messaggi),
+        costo_giudice_usd=sum(costi_giudice) if costi_giudice else None,
+        token_cache_lettura=usage.cache_read_tokens,
+        token_cache_scrittura=usage.cache_write_tokens,
     )
 
 

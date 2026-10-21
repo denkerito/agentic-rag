@@ -338,7 +338,7 @@ def test_un_esecuzione_fallita_conserva_uso_e_rifiuti(tmp_path, monkeypatch, dat
 def test_ambiente_pronto_sul_database_reale(dati) -> None:
     from agentic_rag.eval.ambiente import controlla_ambiente
 
-    assert controlla_ambiente(api_key="k") == []  # compresa la colonna full-text dei documenti
+    assert controlla_ambiente(google_key="k") == []  # compresa la colonna full-text dei documenti
 
 
 def test_la_batteria_rispetta_ricerca_semantica_spenta(tmp_path, monkeypatch, dati) -> None:
@@ -356,3 +356,81 @@ def test_la_batteria_rispetta_ricerca_semantica_spenta(tmp_path, monkeypatch, da
     monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(registra))
     esegui(gt.domande[:1], pausa=0)
     assert "cerca_testo" in offerti and "cerca_semantica" not in offerti
+
+
+def test_credito_esaurito_dell_agente_e_fatale(tmp_path, monkeypatch, dati) -> None:
+    from pydantic_ai.exceptions import ModelHTTPError
+
+    from agentic_rag.eval.runner import ErroreFatale, esegui_domanda
+
+    gt = _gt(tmp_path, dati)
+
+    def senza_credito(messages, info):
+        raise ModelHTTPError(402, "m")
+
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(senza_credito))
+    with pytest.raises(ErroreFatale, match="402"):
+        esegui_domanda(gt.domande[0])
+
+
+def test_credito_esaurito_del_giudice_e_fatale(tmp_path, monkeypatch, dati) -> None:
+    from pydantic_ai.exceptions import ModelHTTPError
+
+    from agentic_rag.eval import giudice
+    from agentic_rag.eval.runner import ErroreFatale, esegui_domanda
+
+    gt = _gt(tmp_path, dati)
+
+    def senza_credito(messages, info):
+        raise ModelHTTPError(402, "m")
+
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: _modello(dati))
+    monkeypatch.setattr(
+        giudice, "build_model", lambda name=None, ruolo=None: FunctionModel(senza_credito)
+    )
+    with pytest.raises(ErroreFatale, match="402"):
+        esegui_domanda(gt.domande[0], judge=True)
+
+
+def test_giudice_senza_verdetto_lascia_aperta_la_combinazione(tmp_path, monkeypatch, dati) -> None:
+    from pydantic_ai.exceptions import ModelHTTPError
+
+    from agentic_rag.eval import giudice
+    from agentic_rag.eval.runner import esegui_domanda
+
+    gt = _gt(tmp_path, dati)
+
+    def rifiuta(messages, info):
+        raise ModelHTTPError(400, "m")  # es. un parametro non supportato: fallisce sempre
+
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: _modello(dati))
+    monkeypatch.setattr(
+        giudice, "build_model", lambda name=None, ruolo=None: FunctionModel(rifiuta)
+    )
+    r = esegui_domanda(gt.domande[0], judge=True)
+    assert r.stato == "errore_giudice" and r.esito == "errore"
+    assert r.errore_giudice == "ModelHTTPError"
+    # l'esecuzione dell'agente resta registrata: risposta, uso
+    assert r.risposta is not None and r.richieste > 0 and r.token_input > 0
+
+
+def test_il_costo_di_openrouter_arriva_nella_riga(tmp_path, monkeypatch, dati) -> None:
+    from agentic_rag.eval.metriche import riga_esecuzione_pubblica
+    from agentic_rag.eval.runner import esegui_domanda
+
+    gt = _gt(tmp_path, dati)
+    sano = _modello(dati).function
+    risposte = {"n": 0}
+
+    def con_costo(messages, info):
+        risposte["n"] += 1
+        r = sano(messages, info)
+        r.provider_details = {"cost": 0.001}
+        return r
+
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(con_costo))
+    r = esegui_domanda(gt.domande[0])
+    riga = riga_esecuzione_pubblica(r, "con", 1, 1)
+    assert riga["costo_usd"] == pytest.approx(0.001 * risposte["n"])
+    assert riga["costo_giudice_usd"] is None  # giudice spento
+    assert riga["token_cache_lettura"] == 0

@@ -19,9 +19,6 @@ STATI_CHIUSI = ("completata", "fallita_agente")
 K_PASS = 3
 SOGLIA_ESCLUSE = 0.10  # oltre il 10% di combinazioni escluse la variante invalida l'esperimento
 SOGLIA_SBILANCIAMENTO = 0.05  # differenza massima tra varianti nella quota di escluse
-# Prezzi in USD per milione di token (ingresso, uscita), per nome di modello. Vuota finché non si
-# sceglie il modello: senza prezzo il costo è n/d.
-PREZZI: dict[str, tuple[float, float]] = {}
 
 
 def combo(r: Riga) -> Combo:
@@ -143,13 +140,32 @@ def pass_k(righe: list[Riga], k: int = K_PASS) -> tuple[Stima, int]:
     return bootstrap(valori), sum(len(v) < k for v in per_id.values())
 
 
-def efficienza(righe: list[Riga], modello: str | None) -> dict[str, Any]:
+def _costi(righe: list[Riga], chiave: str) -> list[float]:
+    # .get: righe di esperimenti salvati prima del costo reale
+    return [r[chiave] for r in righe if r.get(chiave) is not None]
+
+
+def _media(valori: list[float]) -> float | None:
+    return sum(valori) / len(valori) if valori else None
+
+
+def _somma(valori: list[float]) -> float | None:
+    return sum(valori) if valori else None
+
+
+def costo_totale(righe: list[Riga]) -> float | None:
+    """Agente più giudice sulle righe date; None se nessuna dichiara un costo."""
+    return _somma(_costi(righe, "costo_usd") + _costi(righe, "costo_giudice_usd"))
+
+
+def efficienza(righe: list[Riga]) -> dict[str, Any]:
     if not righe:
         return {}
     n = len(righe)
     tin = sum(r["token_input"] for r in righe) / n
     tout = sum(r["token_output"] for r in righe) / n
-    prezzo = PREZZI.get(modello or "")
+    input_totale = sum(r["token_input"] for r in righe)
+    da_cache = sum(r.get("token_cache_lettura", 0) for r in righe)
     lavoro = [r["lavoro_s"] for r in righe]
     return {
         "esecuzioni": n,
@@ -162,7 +178,9 @@ def efficienza(righe: list[Riga], modello: str | None) -> dict[str, Any]:
         "attesa_media_s": round(sum(r["attesa_s"] for r in righe) / n, 1),
         # .get: righe di esperimenti salvati prima di questo campo
         "tentativi_provider_medi": round(sum(r.get("tentativi_provider", 0) for r in righe) / n, 1),
-        "costo_medio_usd": (tin * prezzo[0] + tout * prezzo[1]) / 1e6 if prezzo else None,
+        "quota_input_da_cache": da_cache / input_totale if input_totale else None,
+        "costo_medio_usd": _media(_costi(righe, "costo_usd")),
+        "costo_giudice_medio_usd": _media(_costi(righe, "costo_giudice_usd")),
     }
 
 
@@ -268,9 +286,12 @@ def riepiloga(manifesto: dict[str, Any], righe: list[Riga], kappa: dict | None =
         "kappa": kappa,
     }
     errori_infra: dict[str, int] = defaultdict(int)
+    errori_giudice: dict[str, int] = defaultdict(int)
     for r in righe:
         if r["stato"] == "errore_infrastruttura":
             errori_infra[r["variante"]] += 1
+        elif r["stato"] == "errore_giudice":
+            errori_giudice[r["variante"]] += 1
     for v in varianti:
         nome = v["nome"]
         rv = [r for c, r in chiuse.items() if c[0] == nome]
@@ -288,10 +309,13 @@ def riepiloga(manifesto: dict[str, Any], righe: list[Riga], kappa: dict | None =
             "chiuse": len(rv),
             "fallite_agente": sum(r["stato"] == "fallita_agente" for r in rv),
             "errori_infrastruttura": errori_infra[nome],
+            "errori_giudice": errori_giudice[nome],
             "metriche": metriche,
             "per_modalita": per_modalita,
             "rifiuti_per_motivo": rifiuti_per_motivo(rv),
-            "efficienza": efficienza(rv, v.get("modello")),
+            "efficienza": efficienza(rv),
+            # tutte le righe: anche i tentativi falliti e gli errori di infrastruttura si pagano
+            "costo_totale_usd": costo_totale([r for r in righe if r["variante"] == nome]),
         }
     riferimento = varianti[0]["nome"]
     for v in varianti[1:]:
@@ -299,6 +323,10 @@ def riepiloga(manifesto: dict[str, Any], righe: list[Riga], kappa: dict | None =
             m.chiave: asdict(differenza(chiuse, v["nome"], riferimento, m.funzione))
             for m in METRICHE
         }
+    out["costo_totale_usd"] = costo_totale(righe)
+    out["costo_agente_usd"] = _somma(_costi(righe, "costo_usd"))
+    out["costo_giudice_usd"] = _somma(_costi(righe, "costo_giudice_usd"))
+    out["esecuzioni_registrate"] = len(righe)
     if manifesto.get("criterio"):
         out["verdetto"] = verdetto(manifesto["criterio"], chiuse, valido)
     return out
@@ -319,6 +347,14 @@ def markdown(manifesto: dict[str, Any], riep: dict[str, Any]) -> str:
     out.append(f"- creato: {manifesto['creato_il']} · codice `src` {manifesto['src'][:10]}")
     out.append(f"- ripetizioni: {manifesto['ripetizioni']} · domande: {len(manifesto['domande'])}")
     out.append(f"- giudice: {manifesto['giudice'] or 'spento'}")
+    if riep.get("costo_totale_usd") is None:
+        out.append("- costo: n/d")
+    else:
+        agente, giudice = riep["costo_agente_usd"] or 0.0, riep["costo_giudice_usd"] or 0.0
+        out.append(
+            f"- costo: {riep['costo_totale_usd']:.4f} $ (agente {agente:.4f} $, "
+            f"giudice {giudice:.4f} $) su {riep['esecuzioni_registrate']} esecuzioni"
+        )
     for v in manifesto["varianti"]:
         out.append(f"- variante `{v['nome']}`: modello {v['modello']}, semantica {v['semantica']}")
     stato = (
@@ -374,6 +410,7 @@ def markdown(manifesto: dict[str, Any], riep: dict[str, Any]) -> str:
         out.append(
             f"- `{n}`: {v['chiuse']} chiuse ({v['fallite_agente']} fallite per l'agente), "
             f"{v['errori_infrastruttura']} errori di infrastruttura registrati, "
+            f"{v.get('errori_giudice', 0)} senza verdetto del giudice, "
             f"rifiuti del validatore {v['rifiuti_per_motivo'] or 'nessuno'}"
         )
     escluse = riep["validita"]["escluse"]

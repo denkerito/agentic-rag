@@ -32,7 +32,12 @@ from agentic_rag.eval.ambiente import controlla_ambiente
 from agentic_rag.eval.groundtruth import GROUND_TRUTH_DIR, Domanda, carica
 from agentic_rag.eval.metriche import riga_esecuzione_privata, riga_esecuzione_pubblica
 from agentic_rag.eval.report import PRIVATE_SUBDIR, REPORTS_DIR
-from agentic_rag.eval.runner import TIMEOUT_DOMANDA_S, RisultatoDomanda, esegui_domanda
+from agentic_rag.eval.runner import (
+    TIMEOUT_DOMANDA_S,
+    ErroreFatale,
+    RisultatoDomanda,
+    esegui_domanda,
+)
 
 CHIAVI_VARIANTE = {"modello", "semantica"}
 TENTATIVI_FINALI = 2
@@ -233,7 +238,9 @@ def esegui_esperimento(
         tentativi[c] = tentativo
         if r.stato in riepilogo.STATI_CHIUSI:
             chiuse.add(c)
-        dettaglio = r.esito if r.stato == "completata" else f"{r.stato}: {r.errore}"
+        dettaglio = (
+            r.esito if r.stato == "completata" else f"{r.stato}: {r.errore or r.errore_giudice}"
+        )
         avviso(f"[{nome} · rip {rip} · #{d.id}] {dettaglio} ({r.richieste} richieste)")
 
     for nome, rip, d in ordine:
@@ -267,7 +274,7 @@ def cmd_esegui(args: argparse.Namespace) -> None:
         ids = [int(x) for x in args.ids.split(",")] if args.ids else sorted(tutte)
         timeout = TIMEOUT_DOMANDA_S if args.timeout is None else args.timeout
         stato = stato_corrente(args.gt, ids, timeout)
-        giudice = (args.judge_model or agent_config.AGENT_MODEL) if args.judge else None
+        giudice = (args.judge_model or agent_config.JUDGE_MODEL) if args.judge else None
         manifesto = crea_manifesto(
             args.etichetta,
             [analizza_variante(v) for v in args.variante],
@@ -293,7 +300,10 @@ def cmd_esegui(args: argparse.Namespace) -> None:
     mancanti = [i for i in manifesto["domande"] if i not in tutte]
     if mancanti:
         raise ErroreEsperimento(f"domande del manifesto assenti dal ground truth: {mancanti}")
-    problemi = controlla_ambiente()
+    modelli = [v["modello"] for v in manifesto["varianti"]]
+    problemi = controlla_ambiente(
+        modelli + ([manifesto["giudice"]] if manifesto["giudice"] else [])
+    )
     if problemi:
         raise ErroreEsperimento("Ambiente non pronto:\n- " + "\n- ".join(problemi))
     domande = [tutte[i] for i in manifesto["domande"]]
@@ -304,6 +314,13 @@ def cmd_esegui(args: argparse.Namespace) -> None:
     except KeyboardInterrupt:
         print(
             "\nInterrotto: le esecuzioni concluse sono salvate. Rilancia `esegui` per riprendere."
+        )
+        return
+    except ErroreFatale as e:
+        print(
+            f"\nFermato per {e}: credito esaurito o chiave non valida. Le esecuzioni concluse sono "
+            "salvate: ricarica o correggi la chiave e rilancia "
+            f"`esegui --etichetta {args.etichetta}`."
         )
         return
     scrivi_riepilogo(args.etichetta)
@@ -339,7 +356,9 @@ def main() -> None:
     e.add_argument("--ripetizioni", type=int, default=5)
     e.add_argument("--ids", help="solo queste domande (separate da virgola)")
     e.add_argument("--judge", action="store_true", help="giudice LLM sulla correttezza")
-    e.add_argument("--judge-model", help="modello del giudice (default: AGENT_MODEL)")
+    e.add_argument(
+        "--judge-model", help=f"modello del giudice (default {agent_config.JUDGE_MODEL})"
+    )
     e.add_argument("--criterio", help="es. task_success_rate:con-senza>=10")
     e.add_argument(
         "--pausa", type=float, default=PAUSA_S, help="secondi tra un'esecuzione e l'altra"

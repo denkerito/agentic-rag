@@ -1,8 +1,8 @@
 """Giudice LLM opzionale (--judge): la conclusione dell'agente coincide con la risposta attesa?"""
 
 from pydantic_ai import Agent
-from pydantic_ai.settings import ModelSettings
 
+from agentic_rag.agent import config as agent_config
 from agentic_rag.agent.model import build_model
 from agentic_rag.agent.output import Risposta
 from agentic_rag.eval.valutazione import Giudizio
@@ -21,12 +21,12 @@ la risposta è corretta solo se l'agente lo dichiara. Motiva in due frasi al mas
 def giudica(
     domanda: str, risposta_attesa: str, risposta: Risposta, model: str | None = None
 ) -> Giudizio:
+    # niente temperature: i modelli con ragionamento accettano solo quella di default
     agent = Agent(
-        build_model(model, ruolo="giudice"),
+        build_model(model or agent_config.JUDGE_MODEL, ruolo="giudice"),
         output_type=Giudizio,
         instructions=ISTRUZIONI,
         retries=2,
-        model_settings=ModelSettings(temperature=0),
     )
     prompt = (
         f"Domanda: {domanda}\n\n"

@@ -143,6 +143,10 @@ class IndagineRunner:
             await self._fallita(
                 termina, "modello", f"Errore del servizio del modello (HTTP {e.status_code})."
             )
+        except SystemExit as e:
+            # configurazione mancante (chiave del modello, DATABASE_URL_AGENT): l'indagine fallisce,
+            # il server no. Senza questo ramo il SystemExit uscirebbe dal task e fermerebbe il loop.
+            await self._fallita(termina, "configurazione", str(e))
         except Exception as e:
             logger.exception("Indagine %s fallita", id)
             await self._fallita(termina, "interno", f"{type(e).__name__}: {e}")

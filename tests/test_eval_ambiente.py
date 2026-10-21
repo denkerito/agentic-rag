@@ -6,15 +6,24 @@ from agentic_rag.eval.ambiente import controlla_ambiente, controlla_schema
 
 def test_database_irraggiungibile_e_chiave_mancante_sono_segnalati_subito() -> None:
     t = time.monotonic()
-    problemi = controlla_ambiente(db_url="postgresql://u:p@127.0.0.1:1/db", api_key="")
+    problemi = controlla_ambiente(db_url="postgresql://u:p@127.0.0.1:1/db", google_key="")
     assert time.monotonic() - t < 15  # nessuna attesa di minuti
     assert any("database non risponde" in p and "docker compose up -d db" in p for p in problemi)
     assert any("GOOGLE_API_KEY" in p for p in problemi)
 
 
 def test_configurazione_assente() -> None:
-    problemi = controlla_ambiente(db_url="", api_key="k")
+    problemi = controlla_ambiente(db_url="", google_key="k")
     assert problemi == ["DATABASE_URL_AGENT non impostata nel .env"]
+
+
+def test_chiave_openrouter_richiesta_solo_se_serve() -> None:
+    problemi = controlla_ambiente(
+        ["openrouter:anthropic/claude-haiku-5.5"], db_url="", google_key="k", openrouter_key=""
+    )
+    assert any("OPENROUTER_API_KEY" in p for p in problemi)
+    problemi = controlla_ambiente(["google:m"], db_url="", google_key="k", openrouter_key="")
+    assert not any("OPENROUTER_API_KEY" in p for p in problemi)
 
 
 def _connessione(colonna_presente: bool) -> SimpleNamespace:

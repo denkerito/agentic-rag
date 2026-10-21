@@ -4,7 +4,14 @@ import os
 
 import agentic_rag.config  # noqa: F401  (carica .env)
 
-AGENT_MODEL: str = os.getenv("AGENT_MODEL", "google:gemini-3.5-flash-lite")
+AGENT_MODEL: str = os.getenv("AGENT_MODEL", "openrouter:anthropic/claude-haiku-5.5")
+JUDGE_MODEL: str = os.getenv("JUDGE_MODEL", "openrouter:anthropic/claude-sonnet-5.5")
+# Modelli via OpenRouter: costanti (non variabili d'ambiente), così l'hash di src/ nel manifesto
+# degli esperimenti le copre. Provider fissato: riproducibilità e letture dalla cache.
+OPENROUTER_PROVIDER: dict = {"order": ["anthropic"], "allow_fallbacks": False}
+# Effort per ruolo: None lascia il default del modello.
+EFFORT: dict[str, str | None] = {"agente": None, "giudice": "medium"}
+MAX_TOKENS_RISPOSTA: int = 16_000  # tetto per risposta (ragionamento compreso): si paga l'uso
 AGENT_MAX_REQUESTS: int = int(
     os.getenv("AGENT_MAX_REQUESTS", "25")
 )  # chiamate al modello per domanda
@@ -32,7 +39,7 @@ def _intero(nome: str) -> int | None:
 
 
 # Limiti di richieste/minuto e token/minuto per agente e giudice (opzionali): non impostati = nessun
-# limite. I 429 e 5xx restano gestiti dai tentativi del client del provider.
+# limite. I 429 e 5xx li ritenta ModelloGestito (tentativi.py).
 LIMITI: dict[str, tuple[int | None, int | None]] = {
     "agente": (_intero("AGENT_RPM"), _intero("AGENT_TPM")),
     "giudice": (_intero("JUDGE_RPM"), _intero("JUDGE_TPM")),

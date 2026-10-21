@@ -14,7 +14,7 @@ from agentic_rag.eval import report
 from agentic_rag.eval.ambiente import controlla_ambiente
 from agentic_rag.eval.groundtruth import GROUND_TRUTH_DIR, GroundTruth, Modalita, carica
 from agentic_rag.eval.numeri import esegui_query_attesa
-from agentic_rag.eval.runner import TIMEOUT_DOMANDA_S, RisultatoDomanda, esegui
+from agentic_rag.eval.runner import TIMEOUT_DOMANDA_S, ErroreFatale, RisultatoDomanda, esegui
 
 
 def _filtra(gt: GroundTruth, args: argparse.Namespace) -> list:
@@ -74,7 +74,9 @@ def main() -> None:
         help="secondi massimi per domanda (poi la domanda risulta in errore)",
     )
     p.add_argument("--judge", action="store_true", help="giudice LLM sulla correttezza della causa")
-    p.add_argument("--judge-model", help="modello del giudice (default: lo stesso dell'agente)")
+    p.add_argument(
+        "--judge-model", help=f"modello del giudice (default {agent_config.JUDGE_MODEL})"
+    )
     p.add_argument(
         "--senza-semantica",
         action="store_true",
@@ -94,7 +96,10 @@ def main() -> None:
     if args.dry_run:
         dry_run(gt, domande)
         return
-    problemi = controlla_ambiente()
+    modelli = [args.model or agent_config.AGENT_MODEL]
+    if args.judge:
+        modelli.append(args.judge_model or agent_config.JUDGE_MODEL)
+    problemi = controlla_ambiente(modelli)
     if problemi:
         raise SystemExit("Ambiente non pronto:\n- " + "\n- ".join(problemi))
 
@@ -129,14 +134,15 @@ def main() -> None:
     except KeyboardInterrupt:
         interrotta = True
         print("\nInterrotto: salvo il report delle domande già completate.")
+    except ErroreFatale as e:
+        interrotta = True
+        print(f"\nFermato per {e} (credito esaurito o chiave non valida): salvo il report.")
     if not risultati:
         raise SystemExit("Nessuna domanda completata: nessun report scritto.")
     meta = {
         "data": datetime.now().astimezone().isoformat(timespec="seconds"),
         "modello": args.model or agent_config.AGENT_MODEL,
-        "giudice": (args.judge_model or args.model or agent_config.AGENT_MODEL)
-        if args.judge
-        else "spento",
+        "giudice": (args.judge_model or agent_config.JUDGE_MODEL) if args.judge else "spento",
         "ricerca_semantica": semantica,
         "etichetta": args.etichetta,
         "domande": f"{len(risultati)} di {len(domande)}" if interrotta else len(domande),

@@ -1,8 +1,11 @@
 """Controllo dell'ambiente prima della batteria: meglio un messaggio chiaro che minuti di attesa."""
 
+from collections.abc import Sequence
+
 import psycopg
 
 from agentic_rag import config
+from agentic_rag.agent.model import OPENROUTER_PREFIX
 
 CONNECT_TIMEOUT_S = 5
 COLONNA_FULLTEXT_SQL = (
@@ -24,10 +27,19 @@ def controlla_schema(conn: psycopg.Connection) -> list[str]:
     return []
 
 
-def controlla_ambiente(db_url: str | None = None, api_key: str | None = None) -> list[str]:
-    """Elenco dei problemi che impedirebbero la batteria (vuoto se tutto ok)."""
+def controlla_ambiente(
+    modelli: Sequence[str] = (),
+    db_url: str | None = None,
+    google_key: str | None = None,
+    openrouter_key: str | None = None,
+) -> list[str]:
+    """Elenco dei problemi che impedirebbero la batteria (vuoto se tutto ok).
+
+    `modelli`: agente e giudice in uso; la chiave OpenRouter serve solo se uno è `openrouter:`.
+    """
     db_url = config.DATABASE_URL_AGENT if db_url is None else db_url
-    api_key = config.GOOGLE_API_KEY if api_key is None else api_key
+    google_key = config.GOOGLE_API_KEY if google_key is None else google_key
+    openrouter_key = config.OPENROUTER_API_KEY if openrouter_key is None else openrouter_key
     problemi: list[str] = []
     if not db_url:
         problemi.append("DATABASE_URL_AGENT non impostata nel .env")
@@ -44,6 +56,13 @@ def controlla_ambiente(db_url: str | None = None, api_key: str | None = None) ->
                 problemi += controlla_schema(conn)
             finally:
                 conn.close()
-    if not api_key:
-        problemi.append("GOOGLE_API_KEY non impostata nel .env")
+    if not google_key:
+        problemi.append(
+            "GOOGLE_API_KEY non impostata nel .env (serve agli embedding della ricerca semantica)"
+        )
+    su_openrouter = sorted({m for m in modelli if m.startswith(OPENROUTER_PREFIX)})
+    if su_openrouter and not openrouter_key:
+        problemi.append(
+            f"OPENROUTER_API_KEY non impostata nel .env (serve a {', '.join(su_openrouter)})"
+        )
     return problemi

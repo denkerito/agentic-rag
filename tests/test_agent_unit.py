@@ -6,7 +6,7 @@ from pydantic_ai import ModelRetry
 from agentic_rag import config as app_config
 from agentic_rag.agent.agent import MOTIVI_RIFIUTO, RIFIUTO_CAUSA_NON_LETTA, check_risposta
 from agentic_rag.agent.ids import ID_PATTERN, extract_ids
-from agentic_rag.agent.model import build_model
+from agentic_rag.agent.model import build_model, impostazioni_openrouter
 from agentic_rag.agent.output import Numero, Risposta
 from agentic_rag.agent.sql_guard import SqlRejected, validate_select
 from agentic_rag.agent.tentativi import ModelloGestito
@@ -172,3 +172,32 @@ def test_client_gemini_non_ritenta_da_solo(monkeypatch: pytest.MonkeyPatch) -> N
     assert isinstance(m, ModelloGestito)
     # niente doppi tentativi: li fa solo il wrapper
     assert m.wrapped.client._api_client._http_options.retry_options is None  # type: ignore[attr-defined]
+
+
+def test_impostazioni_openrouter() -> None:
+    a = impostazioni_openrouter("agente")
+    assert a["openrouter_cache_instructions"]
+    assert a["openrouter_cache_tool_definitions"]
+    assert a["openrouter_cache_messages"]
+    assert a["openrouter_provider"] == {"order": ["anthropic"], "allow_fallbacks": False}
+    assert a["openrouter_usage"] == {"include": True}
+    assert a["max_tokens"] == 16_000
+    assert "openrouter_reasoning" not in a  # l'agente usa l'effort di default del modello
+    assert impostazioni_openrouter("giudice")["openrouter_reasoning"] == {"effort": "medium"}
+
+
+def test_client_openrouter_non_ritenta_da_solo(monkeypatch: pytest.MonkeyPatch) -> None:
+    from pydantic_ai.models.openrouter import OpenRouterModel
+
+    monkeypatch.setattr(app_config, "OPENROUTER_API_KEY", "chiave-finta")
+    m = build_model("openrouter:anthropic/claude-haiku-5.5")
+    assert isinstance(m, ModelloGestito) and isinstance(m.wrapped, OpenRouterModel)
+    assert m.wrapped.model_name == "anthropic/claude-haiku-5.5"
+    # niente doppi tentativi: li fa solo il wrapper
+    assert m.wrapped.client.max_retries == 0
+
+
+def test_openrouter_senza_chiave(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(app_config, "OPENROUTER_API_KEY", "")
+    with pytest.raises(SystemExit, match="OPENROUTER_API_KEY"):
+        build_model("openrouter:anthropic/claude-haiku-5.5")

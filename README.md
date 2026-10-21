@@ -4,7 +4,9 @@
   <img alt="Pydantic AI" src="https://img.shields.io/badge/Pydantic_AI-E92063?logo=pydantic&logoColor=white">
   <img alt="PostgreSQL 17" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
   <img alt="pgvector" src="https://img.shields.io/badge/pgvector-336791?logo=postgresql&logoColor=white">
-  <img alt="Gemini" src="https://img.shields.io/badge/Gemini-8E75B2?logo=googlegemini&logoColor=white">
+  <img alt="Claude" src="https://img.shields.io/badge/Claude-D97757?logo=claude&logoColor=white">
+  <img alt="OpenRouter" src="https://img.shields.io/badge/OpenRouter-6566F1?logo=openrouter&logoColor=white">
+  <img alt="Gemini embeddings" src="https://img.shields.io/badge/Gemini_embeddings-8E75B2?logo=googlegemini&logoColor=white">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white">
   <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white">
@@ -88,7 +90,7 @@ flowchart TD
     UI["Frontend React<br/>passi in tempo reale, risposta, fonti cliccabili"]
     API["API FastAPI<br/>indagini in background, SSE, storico"]
     AG["Agente (Pydantic AI)"]
-    LLM["LLM (Gemini)<br/>pianifica, interpreta, scrive la risposta"]
+    LLM["LLM (Claude Haiku via OpenRouter)<br/>pianifica, interpreta, scrive la risposta"]
     GUARD["Validazione risposta<br/>fonti viste, numeri con fonti,<br/>cause su documenti aperti"]
     SQL["query_sql<br/>validator sqlglot + ruolo agent_ro"]
     RAG["elenca_documenti / cerca_testo<br/>cerca_semantica / apri_documento"]
@@ -150,7 +152,7 @@ Un harness (`python -m agentic_rag.eval`) esegue un set di domande con lo stesso
 - **Successo:** fonti attese citate, numeri attesi ritrovati nella risposta, nessuna fonte citata mai vista, comportamento corretto nei casi onesti/non rispondibili; opzionalmente un giudice LLM sulla causa.
 - **Separazione:** il ground truth non è mai accessibile all'agente né a chi lo sviluppa. Prompt, soglie e tool non vanno ritoccati guardando il test set.
 
-I report pubblici di ogni esecuzione (risposte, query SQL dell'agente, conteggi per domanda) sono in [`eval/reports/`](eval/reports/); l'ultima batteria completa usa `gemini-3.5-flash-lite`, senza giudice, con ~9 richieste al modello per domanda.
+I report pubblici di ogni esecuzione (risposte, query SQL dell'agente, conteggi per domanda) sono in [`eval/reports/`](eval/reports/); i report di ottobre 2026 usano `gemini-3.5-flash-lite`, senza giudice, con ~9 richieste al modello per domanda. L'agente ora gira su Claude Haiku 5.5 e il giudice su Claude Sonnet 5.5, entrambi via OpenRouter; il riepilogo degli esperimenti riporta il costo reale dichiarato da OpenRouter (agente e giudice) e la quota di input servita dalla cache.
 
 **Esperimenti.** Oltre alla batteria singola, `python -m agentic_rag.eval.esperimento` esegue varianti × ripetizioni × domande (le varianti sono configurazioni: modello, ricerca semantica sì/no). Ogni esecuzione è salvata appena conclusa e un'interruzione si riprende rilanciando `esegui` con la sola `--etichetta` (varianti, domande, criterio e timeout vengono dal manifesto); un manifesto lega l'esperimento al codice (`src/`) e al ground truth (solo l'hash), e la ripresa rifiuta se sono cambiati. Gli errori di infrastruttura (rete, 429, 5xx) non contano come fallimenti: la combinazione si ritenta in un passaggio finale e, se resta fallita, è esclusa e riportata; il confronto tra varianti usa solo le combinazioni concluse in entrambe, e oltre il 10% di escluse (o con esclusioni sbilanciate) l'esperimento è dichiarato non valido.
 
@@ -177,10 +179,10 @@ tests/      unit e integrazione
 
 ## Avvio in locale
 
-Requisiti: Docker, Python 3.13+, Node.js, una chiave Gemini (`GOOGLE_API_KEY`).
+Requisiti: Docker, Python 3.13+, Node.js, una chiave OpenRouter (`OPENROUTER_API_KEY`, per agente e giudice) e una chiave Gemini (`GOOGLE_API_KEY`, per gli embedding della ricerca semantica).
 
 ```bash
-cp .env.example .env                    # imposta GOOGLE_API_KEY; cambia le password se vuoi
+cp .env.example .env                    # imposta OPENROUTER_API_KEY e GOOGLE_API_KEY; cambia le password se vuoi
 docker compose up -d db                 # Postgres + pgvector
 pip install -e ".[dev]"
 python -m agentic_rag.db.init --reset   # ruoli, schema, viste, caricamento dati
@@ -201,7 +203,7 @@ python -m agentic_rag.agent "Perché il margine è diminuito ad agosto?"
 
 Ruoli: `postgres` (solo bootstrap), `agentic_owner` (DDL e caricamento), `agent_ro` (sola lettura, usato dall'agente), `app_rw` (scrive lo storico nello schema `app`, senza accesso a `public`). Su un database già inizializzato: `python -m agentic_rag.db.init --app-only` (storico) e `--fulltext-only` (ricerca testuale sui documenti), senza toccare dati ed embedding.
 
-Variabili principali: `GOOGLE_API_KEY`, `AGENT_MODEL`, `AGENT_MAX_REQUESTS` (25), `RICERCA_SEMANTICA` (1), `DATABASE_URL*`, `CORS_ORIGINS`, `MAX_INDAGINI_CONCORRENTI` (3), `LOGFIRE_TOKEN`. Vedi `.env.example`. Con Docker l'API raggiunge il DB come `db` (`DATABASE_URL_APP_DOCKER` / `DATABASE_URL_AGENT_DOCKER`, da impostare solo se hai cambiato le password).
+Variabili principali: `OPENROUTER_API_KEY`, `GOOGLE_API_KEY`, `AGENT_MODEL` (default `openrouter:anthropic/claude-haiku-5.5`), `JUDGE_MODEL` (default `openrouter:anthropic/claude-sonnet-5.5`), `AGENT_MAX_REQUESTS` (25), `RICERCA_SEMANTICA` (1), `DATABASE_URL*`, `CORS_ORIGINS`, `MAX_INDAGINI_CONCORRENTI` (3), `LOGFIRE_TOKEN`. Vedi `.env.example`. Con Docker l'API raggiunge il DB come `db` (`DATABASE_URL_APP_DOCKER` / `DATABASE_URL_AGENT_DOCKER`, da impostare solo se hai cambiato le password).
 
 | Endpoint | |
 |---|---|
@@ -238,7 +240,7 @@ python -m agentic_rag.eval.esperimento etichette --etichetta esp --campione 30  
 python -m agentic_rag.eval.esperimento kappa --etichetta esp         # accordo umano/giudice
 ```
 
-Opzioni: `--ids`, `--storia`, `--modalita`, `--model`, `--judge-model`, `--pause`, `--timeout`, `--senza-semantica`, `--etichetta`, `--gt`, `--out`. Gli errori di rete e del provider si rieseguono una volta; il timeout (300 s di lavoro, attese del limitatore escluse) conta come fallimento dell'agente. Gli esperimenti scrivono in `eval/reports/esperimenti/<etichetta>/` (pubblico) e in `eval/reports/private/esperimenti/<etichetta>/`. Limiti opzionali di richieste e token al minuto: `AGENT_RPM`, `AGENT_TPM`, `JUDGE_RPM`, `JUDGE_TPM`. Due report: pubblico in `eval/reports/` e privato (con ground truth) in `eval/reports/private/`, ignorato da git.
+Opzioni: `--ids`, `--storia`, `--modalita`, `--model`, `--judge-model`, `--pause`, `--timeout`, `--senza-semantica`, `--etichetta`, `--gt`, `--out`. Gli errori di rete e del provider si rieseguono una volta; credito esaurito o chiave non valida (401/402/403) fermano batteria ed esperimento, che si riprende dopo la ricarica; un'esecuzione senza verdetto del giudice resta da rifare; il timeout (300 s di lavoro, attese del limitatore escluse) conta come fallimento dell'agente. Gli esperimenti scrivono in `eval/reports/esperimenti/<etichetta>/` (pubblico) e in `eval/reports/private/esperimenti/<etichetta>/`. Limiti opzionali di richieste e token al minuto: `AGENT_RPM`, `AGENT_TPM`, `JUDGE_RPM`, `JUDGE_TPM`. Due report: pubblico in `eval/reports/` e privato (con ground truth) in `eval/reports/private/`, ignorato da git.
 
 </details>
 

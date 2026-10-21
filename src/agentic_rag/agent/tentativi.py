@@ -14,7 +14,7 @@ from typing import Any
 
 import httpx
 from google.genai import errors as genai_errors
-from pydantic_ai.exceptions import ModelHTTPError
+from pydantic_ai.exceptions import ModelAPIError, ModelHTTPError
 from pydantic_ai.messages import ModelMessage, ModelResponse
 from pydantic_ai.models import KnownModelName, Model, ModelRequestParameters, StreamedResponse
 from pydantic_ai.models.wrapper import WrapperModel
@@ -59,6 +59,9 @@ def da_ritentare(e: BaseException) -> bool:
     """Errori temporanei del provider o della rete. CancelledError e gli errori dell'agente no."""
     if isinstance(e, ModelHTTPError):
         return e.status_code in CODICI_TEMPORANEI
+    # senza codice HTTP: connessione persa o corpo senza completamento (client OpenAI, OpenRouter)
+    if isinstance(e, ModelAPIError):
+        return True
     if isinstance(e, genai_errors.APIError):
         return e.code in CODICI_TEMPORANEI
     return isinstance(e, ERRORI_RETE)

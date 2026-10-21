@@ -16,7 +16,7 @@ from agentic_rag.eval.esperimento import (
 )
 from agentic_rag.eval.groundtruth import Domanda
 from agentic_rag.eval.metriche import riga_esecuzione_pubblica
-from agentic_rag.eval.runner import RisultatoDomanda
+from agentic_rag.eval.runner import ErroreFatale, RisultatoDomanda
 
 STATO = {"src": "s", "ground_truth": "g", "domande": [1, 2], "limiti": {"timeout_lavoro_s": 300}}
 
@@ -174,7 +174,7 @@ def test_la_ripresa_usa_il_timeout_del_manifesto(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(esperimento, "carica", lambda _gt: SimpleNamespace(domande=domande))
     monkeypatch.setattr(esperimento, "hash_src", lambda: "s")
     monkeypatch.setattr(esperimento, "hash_ground_truth", lambda _gt: "g")
-    monkeypatch.setattr(esperimento, "controlla_ambiente", list)
+    monkeypatch.setattr(esperimento, "controlla_ambiente", lambda *a, **k: [])
     eseguiti: list[float] = []
     monkeypatch.setattr(
         esperimento,
@@ -204,3 +204,47 @@ def test_la_ripresa_usa_il_timeout_del_manifesto(tmp_path, monkeypatch) -> None:
     assert eseguiti == [600.0, 600.0]
     with pytest.raises(ErroreEsperimento, match="--timeout"):
         esperimento.cmd_esegui(args(timeout=600.0))  # in ripresa i parametri sono del manifesto
+
+
+def test_errore_fatale_ferma_e_la_ripresa_riesegue_la_combinazione(tmp_path) -> None:
+    m = _manifesto(ripetizioni=1)
+    chiamate = {"n": 0}
+
+    def credito_finito(d, *_):
+        chiamate["n"] += 1
+        if chiamate["n"] == 2:
+            raise ErroreFatale("ModelHTTPError 402")
+        return _ok(d)
+
+    with pytest.raises(ErroreFatale):
+        esegui_esperimento(m, _domande(), tmp_path, tmp_path / "p", credito_finito, pausa=0)
+    assert len(leggi_jsonl(tmp_path / "esecuzioni.jsonl")) == 1  # nulla di scritto per la seconda
+
+    esegui_esperimento(m, _domande(), tmp_path, tmp_path / "p", _ok, pausa=0)
+    righe = leggi_jsonl(tmp_path / "esecuzioni.jsonl")
+    chiavi = [(r["variante"], r["id"]) for r in righe]
+    assert len(chiavi) == len(set(chiavi)) == 4  # tutte chiuse, nessun duplicato
+    assert all(r["tentativo"] == 1 for r in righe)
+
+
+def test_giudice_senza_verdetto_resta_aperto_e_si_recupera_alla_fine(tmp_path) -> None:
+    m = _manifesto(ripetizioni=1, giudice="openrouter:anthropic/claude-sonnet-5.5")
+    tentativi = {"n": 0}
+
+    def giudice_instabile(d, variante, *_):
+        if variante["nome"] == "con" and d.id == 1:
+            tentativi["n"] += 1
+            if tentativi["n"] < 3:
+                return RisultatoDomanda(
+                    d, "errore", errore_giudice="ModelHTTPError", stato="errore_giudice"
+                )
+        return _ok(d)
+
+    esegui_esperimento(m, _domande(), tmp_path, tmp_path / "p", giudice_instabile, pausa=0)
+    righe = [r for r in leggi_jsonl(tmp_path / "esecuzioni.jsonl") if r["variante"] == "con"]
+    assert [(r["id"], r["tentativo"], r["stato"]) for r in righe] == [
+        (1, 1, "errore_giudice"),
+        (2, 1, "completata"),
+        (1, 2, "errore_giudice"),  # primo passaggio finale
+        (1, 3, "completata"),  # secondo passaggio finale
+    ]
