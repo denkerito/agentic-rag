@@ -74,7 +74,9 @@ def main() -> None:
         help="secondi massimi per domanda (poi la domanda risulta in errore)",
     )
     p.add_argument("--judge", action="store_true", help="giudice LLM sulla correttezza della causa")
-    p.add_argument("--judge-model", help="modello del giudice (default: lo stesso dell'agente)")
+    p.add_argument(
+        "--judge-model", help=f"modello del giudice (default {agent_config.JUDGE_MODEL})"
+    )
     p.add_argument(
         "--senza-semantica",
         action="store_true",
@@ -134,9 +136,7 @@ def main() -> None:
     meta = {
         "data": datetime.now().astimezone().isoformat(timespec="seconds"),
         "modello": args.model or agent_config.AGENT_MODEL,
-        "giudice": (args.judge_model or args.model or agent_config.AGENT_MODEL)
-        if args.judge
-        else "spento",
+        "giudice": (args.judge_model or agent_config.JUDGE_MODEL) if args.judge else "spento",
         "ricerca_semantica": semantica,
         "etichetta": args.etichetta,
         "domande": f"{len(risultati)} di {len(domande)}" if interrotta else len(domande),

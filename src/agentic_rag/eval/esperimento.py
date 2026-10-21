@@ -267,7 +267,7 @@ def cmd_esegui(args: argparse.Namespace) -> None:
         ids = [int(x) for x in args.ids.split(",")] if args.ids else sorted(tutte)
         timeout = TIMEOUT_DOMANDA_S if args.timeout is None else args.timeout
         stato = stato_corrente(args.gt, ids, timeout)
-        giudice = (args.judge_model or agent_config.AGENT_MODEL) if args.judge else None
+        giudice = (args.judge_model or agent_config.JUDGE_MODEL) if args.judge else None
         manifesto = crea_manifesto(
             args.etichetta,
             [analizza_variante(v) for v in args.variante],
@@ -339,7 +339,9 @@ def main() -> None:
     e.add_argument("--ripetizioni", type=int, default=5)
     e.add_argument("--ids", help="solo queste domande (separate da virgola)")
     e.add_argument("--judge", action="store_true", help="giudice LLM sulla correttezza")
-    e.add_argument("--judge-model", help="modello del giudice (default: AGENT_MODEL)")
+    e.add_argument(
+        "--judge-model", help=f"modello del giudice (default {agent_config.JUDGE_MODEL})"
+    )
     e.add_argument("--criterio", help="es. task_success_rate:con-senza>=10")
     e.add_argument(
         "--pausa", type=float, default=PAUSA_S, help="secondi tra un'esecuzione e l'altra"
