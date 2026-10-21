@@ -19,9 +19,11 @@ SQL_MAX_ROWS: int = 50
 SQL_MAX_CELL_CHARS: int = 300
 DOC_MAX_CHARS: int = 6000
 SEARCH_MAX_K: int = 8
-# Distanza coseno oltre la quale un chunk è considerato non pertinente. Calibrata a mano:
-# query pertinenti ≤ 0.37, query fuori tema ≥ 0.41. Da riverificare con l'eval.
-SEARCH_MAX_DISTANCE: float = float(os.getenv("SEARCH_MAX_DISTANCE", "0.38"))
+# Distanza coseno oltre la quale un chunk è considerato non pertinente. Calibrata a mano su
+# gemini-embedding-2 con query non del test set: pertinenti 0.20-0.24 (altri chunk pertinenti fino
+# a ~0.31), aziendali ma assenti dai documenti ≥ 0.32, fuori tema ≥ 0.43. La soglia esclude le
+# "assenti": una ricerca senza riscontro deve restituire nulla, non il documento più simile.
+SEARCH_MAX_DISTANCE: float = float(os.getenv("SEARCH_MAX_DISTANCE", "0.30"))
 # Ricerca semantica (tool `cerca_semantica`): spegnibile per l'ablazione (RICERCA_SEMANTICA=0).
 RICERCA_SEMANTICA: bool = os.getenv("RICERCA_SEMANTICA", "1").strip().lower() not in (
     "0",

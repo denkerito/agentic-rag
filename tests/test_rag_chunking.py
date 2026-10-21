@@ -65,7 +65,8 @@ def test_long_section_is_split_by_paragraphs() -> None:
 def test_testo_per_embedding_header() -> None:
     doc = Documento("X", "email", "2025-01-01", "Titolo", "corpo", "Fornitore: ACME")
     text = chunking.testo_per_embedding(doc, "corpo")
-    assert text == "Documento: Titolo (email, 2025-01-01)\nFornitore: ACME\n\ncorpo"
+    # formato documento di gemini-embedding-2: "title: ... | text: ..."
+    assert text == "title: Titolo | text: email, 2025-01-01\nFornitore: ACME\n\ncorpo"
     no_cp = Documento("X", "email", "2025-01-01", "Titolo", "corpo")
     assert chunking.testo_per_embedding(no_cp, "corpo").count("\n") == 2
 

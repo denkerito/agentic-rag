@@ -13,7 +13,9 @@ class FakeModels:
         self.calls: list[tuple[list[str], str]] = []
 
     def embed_content(self, *, model, contents, config):
-        self.calls.append((contents, config.task_type))
+        # embedding 2: un Content per testo (una lista di stringhe darebbe un solo vettore)
+        testi = [c.parts[0].text for c in contents]
+        self.calls.append((testi, config.task_type))
         vectors = [SimpleNamespace(values=[0.1] * self.dim) for _ in contents]
         return SimpleNamespace(embeddings=vectors)
 
@@ -29,19 +31,20 @@ def fake_client(monkeypatch):
     return install
 
 
-def test_embed_documents_batches_and_uses_document_task(fake_client) -> None:
+def test_embed_documents_batches_one_content_per_text(fake_client) -> None:
     models = fake_client()
     texts = [f"testo {i}" for i in range(embeddings.BATCH_SIZE + 5)]
     vectors = embeddings.embed_documents(texts)
     assert len(vectors) == len(texts)
     assert [len(c) for c, _ in models.calls] == [embeddings.BATCH_SIZE, 5]
-    assert {t for _, t in models.calls} == {"RETRIEVAL_DOCUMENT"}
+    assert models.calls[0][0][0] == "testo 0"  # il formato dei documenti lo dà il chunking
+    assert {t for _, t in models.calls} == {None}  # embedding 2 non accetta task_type
 
 
-def test_embed_query_uses_query_task(fake_client) -> None:
+def test_embed_query_mette_il_compito_nel_testo(fake_client) -> None:
     models = fake_client()
     assert len(embeddings.embed_query("canone")) == config.EMBEDDING_DIM
-    assert models.calls == [(["canone"], "RETRIEVAL_QUERY")]
+    assert models.calls == [(["task: search result | query: canone"], None)]
 
 
 def test_wrong_dimension_is_rejected(fake_client, monkeypatch) -> None:

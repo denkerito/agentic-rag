@@ -64,13 +64,13 @@ def get_client() -> genai.Client:
     return genai.Client(api_key=config.GOOGLE_API_KEY)
 
 
-def _embed(texts: list[str], task_type: str) -> list[list[float]]:
+def _embed(texts: list[str]) -> list[list[float]]:
+    # gemini-embedding-2: un Content per testo (una lista di stringhe darebbe un solo vettore
+    # aggregato) e niente task_type: il compito è scritto nel testo (vedi embed_query e chunking)
     response = get_client().models.embed_content(
         model=config.EMBEDDING_MODEL,
-        contents=texts,
-        config=types.EmbedContentConfig(
-            task_type=task_type, output_dimensionality=config.EMBEDDING_DIM
-        ),
+        contents=[types.Content(parts=[types.Part(text=t)]) for t in texts],
+        config=types.EmbedContentConfig(output_dimensionality=config.EMBEDDING_DIM),
     )
     return [list(e.values or []) for e in response.embeddings or []]
 
@@ -106,12 +106,13 @@ def embed_documents(texts: list[str]) -> list[list[float]]:
         batch = texts[i : i + BATCH_SIZE]
         _limiter.acquire(len(batch), sum(estimate_tokens(t) for t in batch))
         vectors += _check(
-            _with_retry(lambda b=batch: _embed(b, "RETRIEVAL_DOCUMENT")),
+            _with_retry(lambda b=batch: _embed(b)),
             len(batch),
         )
     return vectors
 
 
 def embed_query(text: str) -> list[float]:
-    _limiter.acquire(1, estimate_tokens(text))
-    return _check(_with_retry(lambda: _embed([text], "RETRIEVAL_QUERY")), 1)[0]
+    testo = f"task: search result | query: {text}"  # formato query di gemini-embedding-2
+    _limiter.acquire(1, estimate_tokens(testo))
+    return _check(_with_retry(lambda: _embed([testo])), 1)[0]
