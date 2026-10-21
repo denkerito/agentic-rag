@@ -14,7 +14,7 @@ from agentic_rag.eval import report
 from agentic_rag.eval.ambiente import controlla_ambiente
 from agentic_rag.eval.groundtruth import GROUND_TRUTH_DIR, GroundTruth, Modalita, carica
 from agentic_rag.eval.numeri import esegui_query_attesa
-from agentic_rag.eval.runner import TIMEOUT_DOMANDA_S, RisultatoDomanda, esegui
+from agentic_rag.eval.runner import TIMEOUT_DOMANDA_S, ErroreFatale, RisultatoDomanda, esegui
 
 
 def _filtra(gt: GroundTruth, args: argparse.Namespace) -> list:
@@ -134,6 +134,9 @@ def main() -> None:
     except KeyboardInterrupt:
         interrotta = True
         print("\nInterrotto: salvo il report delle domande già completate.")
+    except ErroreFatale as e:
+        interrotta = True
+        print(f"\nFermato per {e} (credito esaurito o chiave non valida): salvo il report.")
     if not risultati:
         raise SystemExit("Nessuna domanda completata: nessun report scritto.")
     meta = {

@@ -39,6 +39,19 @@ TENTATIVI_GIUDICE = 2
 Stato = Literal["completata", "fallita_agente", "errore_infrastruttura"]
 
 
+# Credito esaurito, chiave non valida o non autorizzata: ogni domanda successiva fallirebbe allo stesso
+# modo, e contarle come insuccessi dell'agente falserebbe l'esperimento. Si ferma tutto.
+CODICI_FATALI: tuple[int, ...] = (401, 402, 403)
+
+
+class ErroreFatale(Exception):
+    """Errore che rende inutile proseguire (credito, chiave): ferma batteria ed esperimento."""
+
+
+def errore_fatale(e: BaseException) -> bool:
+    return isinstance(e, ModelHTTPError) and e.status_code in CODICI_FATALI
+
+
 class TempoScaduto(Exception):
     """Il tempo di lavoro dell'agente, al netto delle attese del limitatore, ha superato il limite."""
 
@@ -178,7 +191,9 @@ def esegui_domanda(
             risposta = result.output
             trace: list[dict[str, Any]] = list(deps.trace)
             seen_ids = set(deps.seen_ids)
-        except Exception as e:  # noqa: BLE001 - la batteria deve proseguire con le domande successive
+        except Exception as e:  # la batteria deve proseguire con le domande successive
+            if errore_fatale(e):
+                raise ErroreFatale(nome_errore(e)) from e
             infra = errore_di_infrastruttura(e)
             return RisultatoDomanda(
                 domanda,
@@ -209,7 +224,9 @@ def esegui_domanda(
                 giudizio = giudica(domanda.domanda, domanda.risposta_attesa, risposta, judge_model)
                 errore_giudice = None
                 break
-            except Exception as e:  # noqa: BLE001 - il giudice non deve far perdere la domanda
+            except Exception as e:  # il giudice non deve far perdere la domanda
+                if errore_fatale(e):
+                    raise ErroreFatale(nome_errore(e)) from e
                 errore_giudice = type(e).__name__
 
     val = valuta(domanda, risposta, trace, seen_ids, query_attesa, giudizio)

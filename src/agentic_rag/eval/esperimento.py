@@ -32,7 +32,12 @@ from agentic_rag.eval.ambiente import controlla_ambiente
 from agentic_rag.eval.groundtruth import GROUND_TRUTH_DIR, Domanda, carica
 from agentic_rag.eval.metriche import riga_esecuzione_privata, riga_esecuzione_pubblica
 from agentic_rag.eval.report import PRIVATE_SUBDIR, REPORTS_DIR
-from agentic_rag.eval.runner import TIMEOUT_DOMANDA_S, RisultatoDomanda, esegui_domanda
+from agentic_rag.eval.runner import (
+    TIMEOUT_DOMANDA_S,
+    ErroreFatale,
+    RisultatoDomanda,
+    esegui_domanda,
+)
 
 CHIAVI_VARIANTE = {"modello", "semantica"}
 TENTATIVI_FINALI = 2
@@ -307,6 +312,13 @@ def cmd_esegui(args: argparse.Namespace) -> None:
     except KeyboardInterrupt:
         print(
             "\nInterrotto: le esecuzioni concluse sono salvate. Rilancia `esegui` per riprendere."
+        )
+        return
+    except ErroreFatale as e:
+        print(
+            f"\nFermato per {e}: credito esaurito o chiave non valida. Le esecuzioni concluse sono "
+            "salvate: ricarica o correggi la chiave e rilancia "
+            f"`esegui --etichetta {args.etichetta}`."
         )
         return
     scrivi_riepilogo(args.etichetta)

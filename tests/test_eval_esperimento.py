@@ -16,7 +16,7 @@ from agentic_rag.eval.esperimento import (
 )
 from agentic_rag.eval.groundtruth import Domanda
 from agentic_rag.eval.metriche import riga_esecuzione_pubblica
-from agentic_rag.eval.runner import RisultatoDomanda
+from agentic_rag.eval.runner import ErroreFatale, RisultatoDomanda
 
 STATO = {"src": "s", "ground_truth": "g", "domande": [1, 2], "limiti": {"timeout_lavoro_s": 300}}
 
@@ -204,3 +204,24 @@ def test_la_ripresa_usa_il_timeout_del_manifesto(tmp_path, monkeypatch) -> None:
     assert eseguiti == [600.0, 600.0]
     with pytest.raises(ErroreEsperimento, match="--timeout"):
         esperimento.cmd_esegui(args(timeout=600.0))  # in ripresa i parametri sono del manifesto
+
+
+def test_errore_fatale_ferma_e_la_ripresa_riesegue_la_combinazione(tmp_path) -> None:
+    m = _manifesto(ripetizioni=1)
+    chiamate = {"n": 0}
+
+    def credito_finito(d, *_):
+        chiamate["n"] += 1
+        if chiamate["n"] == 2:
+            raise ErroreFatale("ModelHTTPError 402")
+        return _ok(d)
+
+    with pytest.raises(ErroreFatale):
+        esegui_esperimento(m, _domande(), tmp_path, tmp_path / "p", credito_finito, pausa=0)
+    assert len(leggi_jsonl(tmp_path / "esecuzioni.jsonl")) == 1  # nulla di scritto per la seconda
+
+    esegui_esperimento(m, _domande(), tmp_path, tmp_path / "p", _ok, pausa=0)
+    righe = leggi_jsonl(tmp_path / "esecuzioni.jsonl")
+    chiavi = [(r["variante"], r["id"]) for r in righe]
+    assert len(chiavi) == len(set(chiavi)) == 4  # tutte chiuse, nessun duplicato
+    assert all(r["tentativo"] == 1 for r in righe)

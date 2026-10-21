@@ -356,3 +356,37 @@ def test_la_batteria_rispetta_ricerca_semantica_spenta(tmp_path, monkeypatch, da
     monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(registra))
     esegui(gt.domande[:1], pausa=0)
     assert "cerca_testo" in offerti and "cerca_semantica" not in offerti
+
+
+def test_credito_esaurito_dell_agente_e_fatale(tmp_path, monkeypatch, dati) -> None:
+    from pydantic_ai.exceptions import ModelHTTPError
+
+    from agentic_rag.eval.runner import ErroreFatale, esegui_domanda
+
+    gt = _gt(tmp_path, dati)
+
+    def senza_credito(messages, info):
+        raise ModelHTTPError(402, "m")
+
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(senza_credito))
+    with pytest.raises(ErroreFatale, match="402"):
+        esegui_domanda(gt.domande[0])
+
+
+def test_credito_esaurito_del_giudice_e_fatale(tmp_path, monkeypatch, dati) -> None:
+    from pydantic_ai.exceptions import ModelHTTPError
+
+    from agentic_rag.eval import giudice
+    from agentic_rag.eval.runner import ErroreFatale, esegui_domanda
+
+    gt = _gt(tmp_path, dati)
+
+    def senza_credito(messages, info):
+        raise ModelHTTPError(402, "m")
+
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: _modello(dati))
+    monkeypatch.setattr(
+        giudice, "build_model", lambda name=None, ruolo=None: FunctionModel(senza_credito)
+    )
+    with pytest.raises(ErroreFatale, match="402"):
+        esegui_domanda(gt.domande[0], judge=True)
