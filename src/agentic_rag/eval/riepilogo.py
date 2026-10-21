@@ -341,6 +341,17 @@ def _pct(s: dict[str, Any]) -> str:
     return f"{100 * s['valore']:.1f}% [{100 * s['basso']:.1f}, {100 * s['alto']:.1f}]"
 
 
+def _cella_efficienza(chiave: str, x: Any) -> str:
+    """I costi per indagine sono frazioni di centesimo: un decimale li mostrerebbe come 0.0."""
+    if x is None:
+        return "n/d"
+    if chiave.startswith("costo"):
+        return f"{x:.4f} $"
+    if chiave.startswith("quota"):
+        return f"{x:.0%}"
+    return f"{x:.1f}" if isinstance(x, float) else str(x)
+
+
 def markdown(manifesto: dict[str, Any], riep: dict[str, Any]) -> str:
     nomi = list(riep["varianti"])
     out = [f"# Esperimento {riep['etichetta']}", ""]
@@ -396,14 +407,7 @@ def markdown(manifesto: dict[str, Any], riep: dict[str, Any]) -> str:
     out.append("|---|" + "---|" * len(nomi))
     for k in chiavi:
         valori = [riep["varianti"][n]["efficienza"].get(k) for n in nomi]
-        out.append(
-            f"| {k} | "
-            + " | ".join(
-                "n/d" if x is None else (f"{x:.1f}" if isinstance(x, float) else str(x))
-                for x in valori
-            )
-            + " |"
-        )
+        out.append(f"| {k} | " + " | ".join(_cella_efficienza(k, x) for x in valori) + " |")
     out += ["", "## Esecuzioni", ""]
     for n in nomi:
         v = riep["varianti"][n]
