@@ -30,7 +30,7 @@ storie:
         - "FATT-P-2025-0010"
         - "FATT-P-2025-0011"
         - "FATT-P-2025-0012"
-      scadenzario: "SCD-0009"
+      scadenzario: "SCD-0013"
     numeri_chiave:
       canone_precedente_mensile: 4000.00
       canone_nuovo_mensile: 5360.00
@@ -58,7 +58,7 @@ storie:
         - "DOC-EML-006"
         - "DOC-NOT-001"
       fattura: "FATT-P-2025-0037"
-      movimento_pagamento: "MOV-000084"
+      movimento_pagamento: "MOV-000069"
     numeri_chiave:
       importo_imponibile_eur: 12000.00
       importo_totale_iva_inclusa: 14640.00
@@ -98,14 +98,14 @@ storie:
       contrazione_mensile_eur: 16000.00
       data_notifica_recesso_parziale: "2025-09-15"
       decorrenza_riduzione: "2025-10-01"
-      peso_fatturato_annuo_barilli: "circa 27.5% dell'intero fatturato aziendale 2025"
+      peso_fatturato_annuo_barilli: "26,81% dell'intero fatturato aziendale 2025 (284.000 € su 1.059.400 €)"
 
   - id: "ST-04"
     titolo: "Variazione non documentata dei costi per trasferte e viaggi a novembre"
     descrizione: >
       Nel mese di novembre 2025 i costi aggregati per trasferte e viaggi (conti 64.01, 64.02, 64.03 -
       alberghi FOR-017, treni FOR-016, pasti FOR-018) registrano un'impennata anomala raggiungendo
-      6.500,00 € rispetto alla media mensile ordinaria di circa 2.100,00 € (+210%).
+      6.500,00 € rispetto ai 1.850,00 € di ogni altro mese (+4.650,00 €, +251%).
       A livello di database strutturato risultano molteplici fatture ravvicinate per biglietti AV e pernottamenti.
       Tuttavia, nell'intero corpus documentale non esiste alcun documento (verbale, email, preventivo o ordine)
       che giustifichi o motivi tale spesa.
@@ -118,23 +118,23 @@ storie:
         - "FOR-018"
       documenti: []  # NESSUN DOCUMENTO PRESENTE (voluto)
       fatture_novembre:
-        - "FATT-P-2025-0182"
-        - "FATT-P-2025-0183"
-        - "FATT-P-2025-0184"
-        - "FATT-P-2025-0185"
-        - "FATT-P-2025-0186"
-        - "FATT-P-2025-0187"
-        - "FATT-P-2025-0188"
-        - "FATT-P-2025-0189"
-        - "FATT-P-2025-0190"
-        - "FATT-P-2025-0191"
-        - "FATT-P-2025-0192"
-        - "FATT-P-2025-0193"
+        - "FATT-P-2025-0197"
+        - "FATT-P-2025-0198"
+        - "FATT-P-2025-0199"
+        - "FATT-P-2025-0200"
+        - "FATT-P-2025-0201"
+        - "FATT-P-2025-0202"
+        - "FATT-P-2025-0203"
+        - "FATT-P-2025-0204"
+        - "FATT-P-2025-0205"
+        - "FATT-P-2025-0206"
+        - "FATT-P-2025-0207"
+        - "FATT-P-2025-0208"
     numeri_chiave:
-      spesa_trasferte_media_ordinaria: 2100.00
+      spesa_trasferte_media_ordinaria: 1850.00
       spesa_trasferte_novembre: 6500.00
-      scostamento_assoluto: 4400.00
-      variazione_percentuale: 209.52
+      scostamento_assoluto: 4650.00
+      variazione_percentuale: 251.35
 
   - id: "ST-05"
     titolo: "Adeguamento ISTAT ordinario e legittimo del canone di locazione a ottobre"

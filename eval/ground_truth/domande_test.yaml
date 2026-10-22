@@ -7,7 +7,7 @@ domande:
     storia_id: "ST-01 + Ferie estive"
     tipo: "multi-passo, causa mista"
     risposta_attesa: >
-      Il margine operativo è crollato ad agosto (passando dal 18.95% di luglio allo 0.44% di agosto) a causa di una duplice combinazione:
+      Il margine operativo è crollato ad agosto (da 18.535 € di luglio a 355 € di agosto, cioè dal 18.95% allo 0.44% dei ricavi) a causa di una duplice combinazione:
       1. Causa principale: un forte calo dei ricavi (-17.800 €, scesi da 97.800 € a 80.000 €) dovuto alla chiusura estiva degli uffici
          e ferie collettive di 2 settimane dall'11 al 22 agosto 2025 (provata dalla circolare interna DOC-NOT-002 e dalla contrazione delle ore
          fatturate su tutti i clienti);
@@ -26,7 +26,7 @@ domande:
         strftime('%m', data) AS mese,
         SUM(CASE WHEN tipo = 'attiva' THEN CAST(imponibile AS REAL) ELSE 0 END) AS ricavi,
         SUM(CASE WHEN tipo = 'passiva' THEN CAST(imponibile AS REAL) ELSE 0 END) + 52075.0 AS costi_operativi,
-        ROUND((SUM(CASE WHEN tipo = 'attiva' THEN CAST(imponibile AS REAL) ELSE 0 END) - (SUM(CASE WHEN tipo = 'passiva' THEN CAST(imponibile AS REAL) ELSE 0 END) + 52075.0)) / SUM(CASE WHEN tipo = 'attiva' THEN CAST(imponibile AS REAL) ELSE 0 END) * 100, 2) AS margine_pct
+        SUM(CASE WHEN tipo = 'attiva' THEN CAST(imponibile AS REAL) ELSE 0 END) - (SUM(CASE WHEN tipo = 'passiva' THEN CAST(imponibile AS REAL) ELSE 0 END) + 52075.0) AS margine
       FROM fatture
       WHERE strftime('%m', data) IN ('07', '08')
       GROUP BY mese
@@ -46,7 +46,7 @@ domande:
       - "FATT-P-2025-0007"
       - "FATT-P-2025-0008"
     query_sql: >
-      SELECT id, numero, data, imponibile, iva, totale
+      SELECT id, numero, data, imponibile
       FROM fatture
       WHERE controparte_id = 'FOR-001' AND data >= '2025-07-01' AND data <= '2025-09-01'
       ORDER BY data;
@@ -56,7 +56,7 @@ domande:
     storia_id: "ST-02"
     tipo: "causa una tantum"
     risposta_attesa: >
-      I costi operativi di marzo 2025 sono particolarmente elevati (pari a circa 90.400 € rispetto alla media di ~79.000 € degli altri mesi)
+      I costi operativi di marzo 2025 sono particolarmente elevati (90.405 € contro una media di 80.268,64 € negli altri mesi)
       a causa della fattura passiva FATT-P-2025-0037 dello Studio Legale Ferraris & Associati, emessa il 25/03/2025 per un importo imponibile
       straordinario di 12.000,00 € + IVA (14.640,00 € totali), relativa all'attività di due diligence legale per un'operazione di acquisizione societaria.
     fonti_attese:
@@ -104,24 +104,20 @@ domande:
       - "FATT-A-2025-0057"
       - "FATT-A-2025-0064"
     query_sql: >
-      SELECT 
-        strftime('%m', data) AS mese,
-        controparte,
-        SUM(CAST(imponibile AS REAL)) AS ricavo_cliente
+      SELECT id, data, imponibile
       FROM fatture
-      WHERE tipo = 'attiva' AND strftime('%m', data) >= '09'
-      GROUP BY mese, controparte
-      ORDER BY mese, ricavo_cliente DESC;
+      WHERE id IN ('FATT-A-2025-0057', 'FATT-A-2025-0064')
+      ORDER BY data;
 
   - id: 6
     domanda: "Quanto pesa Barilli sui ricavi, e come è cambiato?"
     storia_id: "ST-03"
     tipo: "quota e trend"
     risposta_attesa: >
-      Su base annua 2025, Barilli Logistica ha generato 291.500,00 € su un fatturato complessivo aziendale di 1.059.400,00 €, pesando per il 27,51%
+      Su base annua 2025, Barilli Logistica ha generato 284.000,00 € su un fatturato complessivo aziendale di 1.059.400,00 €, pesando per il 26,81%
       dei ricavi totali. Tuttavia, la sua quota è mutata radicalmente nel corso dell'anno:
-      - Da gennaio a settembre rappresentava circa il 30-31% dei ricavi mensili (fatturando mediamente 28.000 €/mese);
-      - Da ottobre a dicembre, a seguito dell'internalizzazione, il fatturato è sceso a 12.000 €/mese, facendo crollare il peso di Barilli a circa il 15-16% dei ricavi mensili.
+      - Da gennaio a settembre rappresentava circa il 29-31% dei ricavi mensili (27,5% ad agosto), fatturando circa 28.000 €/mese;
+      - Da ottobre a dicembre, a seguito dell'internalizzazione, il fatturato è sceso a 12.000 €/mese, facendo crollare il peso di Barilli a circa il 15,5-16,2% dei ricavi mensili.
     fonti_attese:
       - "clienti.csv"
       - "CTR-008"
@@ -141,13 +137,13 @@ domande:
     tipo: "risposta onesta: causa non documentata"
     risposta_attesa: >
       I dati contabili mostrano un forte incremento delle spese per trasferte e viaggi nel mese di novembre 2025, pari a 6.500,00 € complessivi
-      (distribuiti tra 1.750 € di treni FOR-016, 3.100 € di alberghi FOR-017 e 1.650 € di pasti FOR-018), evidenziando un aumento del +210% rispetto
-      alla media degli altri mesi (~2.100 €). Tuttavia, dall'analisi della documentazione aziendale disponibile non è presente alcun documento,
+      (distribuiti tra 1.750 € di treni FOR-016, 3.100 € di alberghi FOR-017 e 1.650 € di pasti FOR-018), evidenziando un aumento di +4.650 € (+251%)
+      rispetto agli altri mesi (1.850 € ogni mese). Tuttavia, dall'analisi della documentazione aziendale disponibile non è presente alcun documento,
       email o verbale che spieghi la motivazione specifica o la finalità di tali trasferte. La causa non è documentata nelle fonti fornite.
     fonti_attese:
-      - "FATT-P-2025-0182"
-      - "FATT-P-2025-0186"
-      - "FATT-P-2025-0191"
+      - "FATT-P-2025-0197"
+      - "FATT-P-2025-0201"
+      - "FATT-P-2025-0206"
       - "piano_dei_conti.csv"
     query_sql: >
       SELECT 
@@ -175,7 +171,7 @@ domande:
       - "FATT-P-2025-0033"
       - "FATT-P-2025-0034"
     query_sql: >
-      SELECT id, numero, data, imponibile, totale
+      SELECT id, numero, data, imponibile
       FROM fatture
       WHERE controparte_id = 'FOR-003' AND strftime('%m', data) IN ('09', '10')
       ORDER BY data;
@@ -197,7 +193,7 @@ domande:
       - "DOC-EML-012"
       - "DOC-EML-013"
     query_sql: >
-      SELECT f.numero, f.controparte, COUNT(*) AS numero_registrazioni, SUM(CAST(f.totale AS REAL)) AS totale_addebitato
+      SELECT f.numero, f.controparte, COUNT(*) AS numero_registrazioni, CAST(f.totale AS REAL) AS totale_fattura
       FROM fatture f
       WHERE f.tipo = 'passiva'
       GROUP BY f.numero, f.controparte_id, f.totale
@@ -208,14 +204,14 @@ domande:
     storia_id: "multipla"
     tipo: "ragionamento SQL"
     risposta_attesa: >
-      La categoria di costo che ha registrato la maggiore crescita sia in percentuale che in termini monetari assoluti da giugno a novembre 2025
-      è quella delle Spese per trasferte e viaggi (conti 64.01, 64.02 e 64.03 aggregati: alberghi, treni e pasti), passata da 1.850,00 € a giugno
-      a 6.500,00 € a novembre, con un aumento di +4.650,00 € (+251.35%).
-      In seconda posizione si colloca la categoria Software e SaaS (conto 61.02), cresciuta di +1.360,00 € (+34%, passando da 4.000 € a 5.360 € per il canone Nimbus).
+      Per singolo conto (le categorie di costo del piano dei conti), da giugno a novembre 2025 la crescita maggiore in valore assoluto è quella
+      del conto 64.01 Spese alberghiere (+2.250,00 €, da 850,00 € a 3.100,00 €, +264,7%); in percentuale cresce di più il 64.03 Spese di ristorazione
+      (+266,7%, da 450,00 € a 1.650,00 €). In seconda posizione per valore assoluto si colloca il conto 61.02 Software e SaaS (+1.360,00 €, +34%,
+      da 4.000 € a 5.360 € per il canone Nimbus), seguito da 64.02 treni (+1.200,00 €).
+      È corretta anche la lettura aggregata delle trasferte (conti 64.01, 64.02 e 64.03), che passano da 1.850,00 € a 6.500,00 € (+4.650,00 €, +251,35%).
     fonti_attese:
       - "piano_dei_conti.csv"
       - "fatture.csv"
-      - "fatture_righe.csv"
     query_sql: >
       SELECT 
         r.categoria,
@@ -250,10 +246,9 @@ domande:
       Il contratto quadro di fornitura infrastruttura cloud con Altocumulo Cloud Services S.r.l. (CTR-003), sottoscritto in data 15 novembre 2023
       per una durata di 36 mesi, giunge a naturale scadenza il **14 novembre 2026**.
       Il contratto prevede il rinnovo tacito biennale salvo invio di formale disdetta a mezzo PEC con un preavviso minimo di 90 giorni prima della scadenza
-      (ovvero entro il termine del 15 agosto 2026, come registrato anche nello scadenzario aziendale con ID SCD-0015).
+      (ovvero entro il termine del 15 agosto 2026, come registrato anche nello scadenzario aziendale con ID SCD-0019).
     fonti_attese:
       - "CTR-003"
-      - "scadenzario.csv"
       - "fornitori.csv"
     query_sql: >
       SELECT id, controparte, data_inizio, data_fine, rinnovo, preavviso_giorni
