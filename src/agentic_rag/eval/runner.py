@@ -13,12 +13,11 @@ from google.genai import errors as genai_errors
 from pydantic_ai import capture_run_messages
 from pydantic_ai.exceptions import ModelAPIError, ModelHTTPError
 from pydantic_ai.messages import ModelMessage, ModelResponse, RetryPromptPart
-from pydantic_ai.models import Model
 from pydantic_ai.usage import RunUsage
 
 from agentic_rag.agent.agent import MOTIVI_RIFIUTO
 from agentic_rag.agent.limiti import MisuraAttese, misura_attese
-from agentic_rag.agent.model import chiudi_client
+from agentic_rag.agent.model import poi_chiudi
 from agentic_rag.agent.output import Risposta
 from agentic_rag.agent.run import open_session, usage_limits
 from agentic_rag.agent.tentativi import ERRORI_RETE
@@ -140,16 +139,6 @@ async def entro_il_tempo[T](
             task.cancel()
             with suppress(BaseException):
                 await task
-
-
-async def poi_chiudi[T](coro: Coroutine[Any, Any, T], model: Model) -> T:
-    """Esegue `coro` e chiude il client del modello nello stesso ciclo di eventi (ne apre uno per
-    domanda): vedi `chiudi_client`. Un errore di chiusura non cambia l'esito della domanda."""
-    try:
-        return await coro
-    finally:
-        with suppress(Exception):
-            await chiudi_client(model)
 
 
 def rifiuti_del_validatore(messaggi: list[ModelMessage]) -> dict[str, int]:

@@ -158,11 +158,24 @@ Cinque domande scritte sul database, su parti dei dati senza anomalie e quindi l
 
 - **A, misura dei numeri** (`eval/numeri.py`): contano anche i numeri di `numeri[].descrizione`. Quelli nei `limiti` no: lì va ciò che non è verificato, e contarli premierebbe i numeri senza fonti.
 - **B, fonti nel margine** (`db/schema_views.sql`): `v_margine_mensile` espone `fonti`; le viste si aggiornano con `init --views-only`.
-- **Client chiuso a ogni domanda** (`agent/model.py`, `eval/runner.py`): l'`AsyncOpenAI` di OpenRouter non veniva chiuso. Con un `asyncio.run` per domanda, il garbage collector lo chiudeva nel ciclo della domanda successiva e il log mostrava `RuntimeError: Event loop is closed`. Nessun effetto sui risultati, ma i traceback avrebbero potuto nascondere errori veri nel log dell'esperimento.
+- **Client chiuso a ogni domanda e a ogni verdetto** (`agent/model.py`, `eval/runner.py`, `eval/giudice.py`): l'`AsyncOpenAI` di OpenRouter non veniva chiuso. Con un `asyncio.run` per domanda, il garbage collector lo chiudeva nel ciclo della domanda successiva e il log mostrava `RuntimeError: Event loop is closed`. Nessun effetto sui risultati, ma i traceback avrebbero potuto nascondere errori veri nel log dell'esperimento. La prima correzione chiudeva solo il client dell'agente e la sua verifica girava senza giudice; `batteria2-*` ha mostrato che restava quello del giudice. Il giudice usava `run_sync`, che lascia il client legato a un ciclo di eventi orfano. Ora agente e giudice usano lo stesso `poi_chiudi`, e la riproduzione con il giudice acceso passa da 2 traceback a 0.
 
 Rilanciando le sonde dopo A e B, tutte le risposte risultano complete. L'unica eccezione dipende da un errore nella risposta di riferimento: era indicato l'imponibile, mentre l'agente riporta il totale IVA inclusa. Il prompt non è stato modificato.
 
 **Conseguenze:** le batterie di oggi sono state misurate prima di A e B e non sono confrontabili con le esecuzioni successive. Prima del congelamento si rilancia il controllo di funzionamento su entrambe le varianti, con le stesse soglie.
+
+### Controllo di funzionamento dopo A e B (`batteria2-*`)
+
+| | `senza` (`batteria2-senza`) | `con` (`batteria2-con`) |
+|---|---|---|
+| Task Success Rate | 2/12 | 4/12 |
+| Giudice: corrette / parziali / errate | 10 / 2 / 0 | 8 / 3 / 0 (11 completate) |
+| Cause inventate | 0/2 | 0/2 |
+| Errori di infrastruttura, senza verdetto | 0, 0 | 0, 0 (1 fallita per l'agente: `UnexpectedModelBehavior`) |
+
+Il controllo **non è superato di nuovo**: `senza` fa 2/12 `ok` contro i 5 richiesti, mentre le altre soglie sono rispettate. A e B non hanno cambiato il Task Success Rate sulle domande del test. In quattro batterie, su 47 risposte completate: nessuna `errata`, nessuna causa inventata, ID citati al 70-76% e numeri trovati al 70-73%.
+
+Sulle sonde l'agente è completo, quindi ciò che manca è qualcosa che il ground truth si aspetta. Per distinguere «l'agente tralascia qualcosa che serve» da «il ground truth chiede più del necessario» serve una lettura del report privato, che può fare solo chi scrive il ground truth. A chi sviluppa arrivano soltanto i conteggi per categoria, senza ID né valori (`AGENTS.md`). La decisione su come procedere è aperta.
 
 ## Budget
 
