@@ -1,6 +1,10 @@
 """Costruzione del modello: 429, 5xx ed errori di rete si ritentano nel wrapper (`ModelloGestito`),
 non nel client del provider, così le attese sono misurate e la run non riparte."""
 
+from collections.abc import Coroutine
+from contextlib import suppress
+from typing import Any
+
 from openai import AsyncOpenAI
 from pydantic_ai.models import Model
 from pydantic_ai.models.google import GoogleModel
@@ -61,6 +65,16 @@ async def chiudi_client(model: Model) -> None:
     client = getattr(model, "client", None)
     if isinstance(client, AsyncOpenAI):
         await client.close()
+
+
+async def poi_chiudi[T](coro: Coroutine[Any, Any, T], model: Model) -> T:
+    """Esegue `coro` e chiude il client del modello nello stesso ciclo di eventi: l'eval ne apre uno
+    per domanda (agente) e uno per verdetto (giudice). Un errore di chiusura non cambia l'esito."""
+    try:
+        return await coro
+    finally:
+        with suppress(Exception):
+            await chiudi_client(model)
 
 
 def build_model(name: str | None = None, ruolo: str = "agente") -> Model:
