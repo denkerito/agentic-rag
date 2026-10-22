@@ -42,7 +42,7 @@ L'agente passa a **Claude Haiku 5.5**, il giudice a **Claude Sonnet 5.5**, entra
 
 ## Decisioni aperte (tue)
 
-1. **Uno o due esperimenti.**
+1. **Uno o due esperimenti.** *Decisa il 2026-10-22: B.* Le 12 domande attuali sono diventate il set di sviluppo (vedi «Revisione del ground truth di sviluppo»), quindi l'esperimento finale si fa solo sul test set nuovo.
    - **B (consigliata):** un solo esperimento sul test set nuovo, con entrambe le varianti. Nel CV va la tabella con tutte e due; nel prodotto resta la vincente. Il numero della vincente è leggermente ottimista perché viene dallo stesso esperimento che l'ha scelta; lo compensano il criterio fissato prima e il fatto di mostrare entrambe.
    - **A:** ablazione sul set attuale, poi benchmark della sola vincente sul set nuovo. È più pulita e costa circa 2-4 $ in più.
 2. **Ripetizioni: 3 o 5.** Il costo reale ora è noto: circa 0,01 $ per indagine col giudice (vedi «Esito della fase 2»). Con 12 domande e una ripetizione, 5 domande su 12 hanno cambiato esito tra le due varianti: le ripetizioni servono.
@@ -175,7 +175,50 @@ Rilanciando le sonde dopo A e B, tutte le risposte risultano complete. L'unica e
 
 Il controllo **non è superato di nuovo**: `senza` fa 2/12 `ok` contro i 5 richiesti, mentre le altre soglie sono rispettate. A e B non hanno cambiato il Task Success Rate sulle domande del test. In quattro batterie, su 47 risposte completate: nessuna `errata`, nessuna causa inventata, ID citati al 70-76% e numeri trovati al 70-73%.
 
-Sulle sonde l'agente è completo, quindi ciò che manca è qualcosa che il ground truth si aspetta. Per distinguere «l'agente tralascia qualcosa che serve» da «il ground truth chiede più del necessario» serve una lettura del report privato, che può fare solo chi scrive il ground truth. A chi sviluppa arrivano soltanto i conteggi per categoria, senza ID né valori (`AGENTS.md`). La decisione su come procedere è aperta.
+Sulle sonde l'agente è completo, quindi ciò che manca è qualcosa che il ground truth si aspetta. Per capirlo si sono letti i report privati: le 12 domande sono diventate il **set di sviluppo** (`AGENTS.md`) e non servono più a misurare.
+
+## Revisione del ground truth di sviluppo (2026-10-22)
+
+Lettura dei report privati delle quattro batterie e verifica di ogni ID e numero sul DB e sui CSV. Dei 10 `ko` di `batteria2-senza`, circa due e mezzo sono mancanze dell'agente (Q4, Q9 e metà di Q1). Gli altri dipendono da errori o richieste eccessive del ground truth e dell'harness. Il giudice non ha mai dato `errata`.
+
+### Errori di fatto corretti
+
+| | Era | Corretto (verificato sui dati) |
+|---|---|---|
+| Q6 / ST-03 | Barilli 291.500 €, 27,51% | 284.000 € su 1.059.400 €, **26,81%** (lo diceva anche la query attesa). Il giudice penalizzava la risposta giusta |
+| Q7 / ST-04 | media trasferte circa 2.100 €, +210%; fatture `FATT-P-2025-0182`…`0193` | media **1.850 €** (ogni altro mese), +4.650 €, +251%; fatture di novembre `0197`…`0208` (le altre sono di giugno-settembre) |
+| Q10 | trasferte aggregate come «categoria» più cresciuta | allineata alla query attesa, per conto: 64.01 +2.250 € in valore assoluto, 64.03 +266,7% in percentuale, poi 61.02 +1.360 €. La lettura aggregata resta accettata |
+| Q3 | media altri mesi circa 79.000 € | 80.268,64 € |
+| Q12 | `SCD-0015` (è l'adeguamento ISTAT dell'affitto) | `SCD-0019`, promemoria del preavviso Altocumulo (15/08/2026) |
+| ST-01 | `SCD-0009` (è un F24) | `SCD-0013`, termine di preavviso del contratto Nimbus |
+| ST-02 | `MOV-000084` (è un incasso da un cliente) | `MOV-000069`, pagamento della fattura legale (07/04/2025) |
+
+**Bug dell'harness:** i codici conto (`64.01`) dei CSV venivano letti come numeri e le query attese che li confrontano come testo restituivano 0 righe. La query di Q7 era vuota.
+
+### Richieste che la domanda non fa, tolte
+
+- **Numeri** (la query attesa restituiva celle che nessuna risposta riporta):
+  - Q1: margine in euro invece che in percentuale;
+  - Q2 e Q8: solo imponibili, senza IVA e totali;
+  - Q5: solo le due fatture Barilli prima e dopo il cambio, invece del fatturato di ogni cliente in ogni mese (19 valori);
+  - Q9: il totale della fattura, non la somma dei due pagamenti.
+- **Tabelle** che imponevano un percorso:
+  - Q10 `fatture_righe`: le scritture contabili sono una fonte equivalente;
+  - Q12 `scadenzario`: la scadenza è nel contratto.
+- **Q11:** il controllo delle domande non rispondibili ammette numeri di contesto. Restano causa non documentata, limiti e confidenza non alta.
+
+### Cosa resta richiesto, e perché
+
+Le fonti di supporto che l'agente non cerca restano nel ground truth: CTR-001 e DOC-EML-001 in Q1, DOC-PRV-001 in Q3 e Q4, DOC-EML-005 in Q4, DOC-EML-012 in Q9. L'agente trova il primo documento che spiega la causa e si ferma. Per il commercialista contratto, comunicazione e conferme sono verificabilità in più, quindi è una mancanza dell'agente, non del ground truth. Criterio della revisione: si corregge il ground truth dove è sbagliato o chiede ciò che la domanda non chiede, mai per far passare l'agente.
+
+### Linee guida per il test set nuovo
+
+1. La query attesa restituisce **solo i numeri che la risposta deve contenere**: niente colonne di contorno (IVA, totali, ID numerici) ed elenchi solo se la domanda li chiede.
+2. Le tabelle attese (`*.csv` in `fonti_attese`) si indicano solo quando il percorso è obbligato.
+3. Ogni ID e ogni numero della risposta attesa si controlla sul DB prima di congelare il set.
+4. Risposta attesa e query attesa devono dire la stessa cosa (stessa granularità, stesse definizioni).
+5. Nelle query i codici si confrontano come testo (`categoria = '64.01'`).
+6. Validazione con `python -m agentic_rag.eval --dry-run --gt <cartella>`: tutte le query `ok` e il numero di valori attesi previsto.
 
 ## Budget
 

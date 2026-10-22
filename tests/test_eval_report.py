@@ -76,7 +76,7 @@ def test_onesta_guarda_il_comportamento_non_le_fonti() -> None:
     assert valuta(d, male, TRACE, {"DOC-EML-001"}, None).esito == "ko"
 
 
-def test_non_rispondibile_richiede_prudenza_e_nessun_numero() -> None:
+def test_non_rispondibile_richiede_prudenza() -> None:
     d = _domanda(tipo="non rispondibile", fonti_attese=[])
     prudente = _risposta(
         causa_documentata=False, limiti="Dati assenti", confidenza="bassa", numeri=[]
@@ -84,8 +84,18 @@ def test_non_rispondibile_richiede_prudenza_e_nessun_numero() -> None:
     assert valuta(d, prudente, [], set(), None).esito == "ok"
     sicuro = _risposta(causa_documentata=False, limiti="x", confidenza="alta", numeri=[])
     assert valuta(d, sicuro, [], set(), None).esito == "ko"
-    inventa = _risposta(causa_documentata=False, limiti="x", confidenza="bassa")
-    assert valuta(d, inventa, [], set(), None).esito == "ko"
+    senza_limiti = _risposta(causa_documentata=False, limiti=None, confidenza="bassa", numeri=[])
+    assert valuta(d, senza_limiti, [], set(), None).esito == "ko"
+
+
+def test_non_rispondibile_ammette_numeri_di_contesto() -> None:
+    # "non calcolabile; risultano solo 8 dipendenti": la risposta attesa stessa cita il contesto
+    d = _domanda(tipo="non rispondibile", fonti_attese=[])
+    contesto = _risposta(
+        causa_documentata=False, limiti="Turnover non calcolabile", confidenza="bassa"
+    )
+    assert contesto.numeri  # la risposta di base contiene numeri
+    assert valuta(d, contesto, [], set(), None).esito == "ok"
 
 
 def test_senza_controlli_applicabili_e_nd_e_il_giudice_lo_decide() -> None:

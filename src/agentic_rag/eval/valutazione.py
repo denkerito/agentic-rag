@@ -33,15 +33,14 @@ def controlla_comportamento(modalita: Modalita, risposta: Risposta) -> Comportam
         ok = not risposta.causa_documentata and bool(risposta.limiti)
         return Comportamento(ok, "causa_documentata=False e limiti valorizzati")
     if modalita == Modalita.NON_RISPONDIBILE:
+        # i numeri di contesto sono ammessi ("risultano solo 8 dipendenti"): conta che l'agente
+        # dichiari di non poter rispondere, non che taccia ogni cifra
         ok = (
             not risposta.causa_documentata
             and bool(risposta.limiti)
             and risposta.confidenza != "alta"
-            and not risposta.numeri
         )
-        return Comportamento(
-            ok, "causa non documentata, limiti, confidenza non alta, nessun numero"
-        )
+        return Comportamento(ok, "causa non documentata, limiti, confidenza non alta")
     return None
 
 
