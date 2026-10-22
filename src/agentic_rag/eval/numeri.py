@@ -76,6 +76,9 @@ class RisultatoQuery:
 
 
 CSV_DIR: Path = config.DATA_DIR / "csv"
+# Codici del piano dei conti ("64.01"): sembrano numeri, ma le query attese li confrontano come testo
+# e non sono importi (piano_dei_conti, fatture_righe, scritture_contabili).
+COLONNE_CODICE = frozenset({"codice", "categoria", "conto_codice"})
 _NUM = re.compile(r"-?\d+(\.\d+)?")
 
 
@@ -101,7 +104,7 @@ def carica_csv_in_sqlite(csv_dir: Path) -> sqlite3.Connection:
         convertitori = []
         for i in range(len(intestazione)):
             valori = [r[i] for r in dati if i < len(r)]
-            if _colonna_numerica(valori):
+            if intestazione[i] not in COLONNE_CODICE and _colonna_numerica(valori):
                 intero = all("." not in v for v in valori)
                 convertitori.append(int if intero else float)
             else:
