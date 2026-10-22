@@ -45,9 +45,13 @@ L'agente passa a **Claude Haiku 5.5**, il giudice a **Claude Sonnet 5.5**, entra
 1. **Uno o due esperimenti.**
    - **B (consigliata):** un solo esperimento sul test set nuovo, con entrambe le varianti. Nel CV va la tabella con tutte e due; nel prodotto resta la vincente. Il numero della vincente è leggermente ottimista perché viene dallo stesso esperimento che l'ha scelta; lo compensano il criterio fissato prima e il fatto di mostrare entrambe.
    - **A:** ablazione sul set attuale, poi benchmark della sola vincente sul set nuovo. È più pulita e costa circa 2-4 $ in più.
-2. **Ripetizioni: 3 o 5.** Si decide dopo la prova breve, con il costo reale per indagine.
-3. **Dimensione del test set nuovo.** Consiglio 20-30 domande: con 12 domande, una sola vale 8 punti, quindi il criterio dei 10 punti si gioca su poco più di una domanda.
+2. **Ripetizioni: 3 o 5.** Il costo reale ora è noto: circa 0,01 $ per indagine col giudice (vedi «Esito della fase 2»). Con 12 domande e una ripetizione, 5 domande su 12 hanno cambiato esito tra le due varianti: le ripetizioni servono.
+3. **Dimensione del test set nuovo.** Il costo non è più il vincolo; lo è il tempo per scrivere il ground truth.
+   - **25 domande** (circa 1,5 $ con 3 ripetizioni): bastano per la decisione di prodotto. Con 12 domande una sola vale 8 punti, con 25 ne vale 4.
+   - **50-60 domande** (circa 3 $): necessarie se si vuole affermare che i vettori «non servono» (vedi il punto 5).
 4. **Ground truth e git.** I due file attuali sono tracciati in git, mentre il README dice che il ground truth è fuori da git. Il set nuovo lo terrei fuori (`.gitignore`), almeno fino alla fine dell'esperimento.
+5. **Non-inferiorità come analisi secondaria.** Il criterio decide sulla stima puntuale (`con − senza ≥ 10`): se non è superato, la frase corretta è «la ricerca semantica non ha dato il miglioramento richiesto», non «non serve». Per sostenere la seconda serve il limite superiore dell'IC 95% di `con − senza` sotto i 10 punti. Con 25 domande l'intervallo sarà largo circa ±20 punti; servono nell'ordine di 60-100 domande (stima grezza). Va aggiunta, se la si vuole, prima di vedere i dati.
+6. **Metrica principale.** Proposta: resta il Task Success Rate, come fissato il 2026-10-19 (dopo la correzione della misura dei numeri, vedi sotto). Answer Accuracy e quota di risposte `errata` si riportano come secondarie. Cambiare la metrica principale adesso sarebbe una scelta fatta dopo aver visto le batterie.
 
 ## Fasi
 
@@ -114,6 +118,51 @@ Le interruzioni si riprendono con la sola etichetta. Alla fine si controllano la
 - **README e CV:** tabella delle due varianti con intervalli al 95%, κ del giudice, costo per indagine.
 - **Prodotto:** `RICERCA_SEMANTICA` si imposta secondo il verdetto.
 - I report Gemini restano come storico.
+
+## Esito della fase 2 (2026-10-22)
+
+Solo dati dei report pubblici (`eval/reports/esperimenti/`): nessun valore del ground truth.
+
+### Prova breve e costo misurato
+
+`prova` (2 domande × 2 varianti, con il giudice): 0,053 $ in tutto, nessun errore di infrastruttura, ogni esecuzione con il verdetto, cache all'84-85% dell'input. Nelle batterie: circa **0,004 $ per indagine dell'agente e 0,005 $ per verdetto**.
+
+### Batteria di sviluppo come controllo di funzionamento
+
+Soglie fissate **prima** di lanciarla (per la variante `senza`):
+- zero errori di infrastruttura e timeout, ogni esecuzione con il verdetto del giudice;
+- nessuna causa inventata (False Acceptance Rate 0);
+- al massimo 2 risposte `errata` su 12;
+- almeno 5 `ok` su 12 (la vecchia batteria Gemini, solo vettori e senza giudice, aveva fatto 5/12).
+
+| | `senza` (`batteria-senza`) | `con` (`batteria-con`) |
+|---|---|---|
+| Task Success Rate | 3/12 | 4/12 |
+| Giudice: corrette / parziali / errate | 9 / 3 / 0 | 7 / 5 / 0 |
+| Cause inventate | 0/2 | 0/2 |
+| Errori di infrastruttura, senza verdetto | 0, 0 | 0, 0 |
+| Richieste medie | 6,6 | 5,7 |
+
+`senza` non supera la soglia degli `ok`; le altre tre sì. Regola fissata prima di lanciare `con`: se anche `con` fa al massimo 4/12, l'incompletezza dipende dal modello o dalla misura e non dalla v2. È andata così. Le domande `ok` delle due varianti coincidono su una sola: 5 domande su 12 hanno cambiato esito, quindi gran parte della differenza tra due esecuzioni singole è rumore.
+
+### Sonde su domande nostre
+
+Cinque domande scritte sul database, su parti dei dati senza anomalie e quindi lontane dalle storie del test, con la risposta di riferimento calcolata in SQL. Due esecuzioni ciascuna sulla variante `senza`.
+- **ID citati completi in 10 esecuzioni su 10.** Le domande semplici si chiudono in 2-3 richieste: poche richieste non vogliono dire una risposta incompleta.
+- I numeri «mancanti» venivano da due cause:
+  1. **misura:** l'harness contava solo la conclusione e `numeri[].valore`, mentre l'agente scrive spesso i valori dei due periodi in `numeri[].descrizione` («aprile 1.100 → maggio 450») e la differenza nel valore;
+  2. **vista senza fonti:** `v_margine_mensile` non aveva una colonna `fonti`, il validatore rifiuta i numeri senza fonti, e l'agente spostava i totali di ricavi, costi e margine nei `limiti`, dove non contano.
+- Gli ID mancanti nelle batterie **non si riproducono** sulle domande nostre e restano senza spiegazione. Le cause documentate del dataset sono le storie del test, quindi non si possono scrivere sonde su di esse senza sovrapporsi al ground truth.
+
+### Correzioni (trovate con le sonde, non guardando il ground truth)
+
+- **A, misura dei numeri** (`eval/numeri.py`): contano anche i numeri di `numeri[].descrizione`. Quelli nei `limiti` no: lì va ciò che non è verificato, e contarli premierebbe i numeri senza fonti.
+- **B, fonti nel margine** (`db/schema_views.sql`): `v_margine_mensile` espone `fonti`; le viste si aggiornano con `init --views-only`.
+- **Client chiuso a ogni domanda** (`agent/model.py`, `eval/runner.py`): l'`AsyncOpenAI` di OpenRouter non veniva chiuso. Con un `asyncio.run` per domanda, il garbage collector lo chiudeva nel ciclo della domanda successiva e il log mostrava `RuntimeError: Event loop is closed`. Nessun effetto sui risultati, ma i traceback avrebbero potuto nascondere errori veri nel log dell'esperimento.
+
+Rilanciando le sonde dopo A e B, tutte le risposte risultano complete. L'unica eccezione dipende da un errore nella risposta di riferimento: era indicato l'imponibile, mentre l'agente riporta il totale IVA inclusa. Il prompt non è stato modificato.
+
+**Conseguenze:** le batterie di oggi sono state misurate prima di A e B e non sono confrontabili con le esecuzioni successive. Prima del congelamento si rilancia il controllo di funzionamento su entrambe le varianti, con le stesse soglie.
 
 ## Budget
 
