@@ -8,6 +8,7 @@ from pydantic_ai import ModelRetry
 from agentic_rag import config
 from agentic_rag.agent import config as agent_config
 from agentic_rag.agent.deps import AgentDeps, list_relations
+from agentic_rag.agent.ids import extract_ids
 from agentic_rag.agent.schema_prompt import build_schema_ddl
 from agentic_rag.agent.tools import run_elenco, run_open, run_query, run_testo
 
@@ -56,6 +57,18 @@ def test_monthly_view_exposes_citable_sources(deps) -> None:
     res = run_query(deps, "SELECT fonti FROM v_economico_mensile WHERE mese = '2025-08-01'")
     assert res["n_righe"] > 0
     assert deps.seen_ids
+
+
+def test_margin_view_exposes_citable_sources(deps, owner) -> None:
+    # senza fonti i totali del margine non possono stare in `numeri` (il validatore li rifiuta)
+    res = run_query(deps, "SELECT fonti FROM v_margine_mensile WHERE mese = '2025-05-01'")
+    attese = owner.execute(
+        "SELECT array_agg(DISTINCT f ORDER BY f) FROM v_economico_mensile, unnest(fonti) f "
+        "WHERE mese = '2025-05-01'"
+    ).fetchone()[0]
+    assert sorted(res["righe"][0][0]) == attese
+    # citabili gli ID riconosciuti (FATT-*, MOV-*...), non i riferimenti esterni (PAGA-*)
+    assert extract_ids(str(attese)) and extract_ids(str(attese)) <= deps.seen_ids
 
 
 def test_query_sql_returns_strings_for_decimals_and_registers_ids(deps) -> None:

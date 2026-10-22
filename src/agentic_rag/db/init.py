@@ -1,6 +1,6 @@
 """Inizializzazione del database: ruoli, schema, grant, caricamento dati.
 
-Uso: python -m agentic_rag.db.init [--reset | --app-only | --comments-only | --fulltext-only]
+Uso: python -m agentic_rag.db.init [--reset | --app-only | --comments-only | --fulltext-only | --views-only]
 """
 
 import argparse
@@ -20,6 +20,7 @@ SCHEMA_FILE = Path(__file__).with_name("schema.sql")
 SCHEMA_APP_FILE = Path(__file__).with_name("schema_app.sql")
 SCHEMA_COMMENTS_FILE = Path(__file__).with_name("schema_comments.sql")
 SCHEMA_FULLTEXT_FILE = Path(__file__).with_name("schema_fulltext.sql")
+SCHEMA_VIEWS_FILE = Path(__file__).with_name("schema_views.sql")
 # Scansione iterativa HNSW (pgvector >= 0.8): con i filtri di `cerca_semantica` l'indice non restituisce
 # meno risultati del richiesto quando i primi vicini sono esclusi dai filtri.
 ITERATIVE_SCAN_MIN_VERSION = (0, 8)
@@ -98,6 +99,7 @@ def apply_schema(owner_url: str, reset: bool) -> None:
                     sql.SQL("DROP TABLE IF EXISTS {} CASCADE").format(sql.Identifier(table))
                 )
         cur.execute(ddl)
+        cur.execute(SCHEMA_VIEWS_FILE.read_text(encoding="utf-8"))
         cur.execute(SCHEMA_FULLTEXT_FILE.read_text(encoding="utf-8"))
         cur.execute(SCHEMA_COMMENTS_FILE.read_text(encoding="utf-8"))
         role_a = sql.Identifier(AGENT_ROLE)
@@ -119,6 +121,12 @@ def apply_schema_fulltext(owner_url: str) -> None:
     """Colonna e indice full-text dei documenti: idempotente, non tocca dati ed embedding."""
     with psycopg.connect(owner_url, autocommit=True) as conn:
         conn.execute(SCHEMA_FULLTEXT_FILE.read_text(encoding="utf-8"))  # type: ignore[arg-type]
+
+
+def apply_schema_views(owner_url: str) -> None:
+    """Viste economiche: idempotente, non tocca dati ed embedding. agent_ro le legge già."""
+    with psycopg.connect(owner_url, autocommit=True) as conn:
+        conn.execute(SCHEMA_VIEWS_FILE.read_text(encoding="utf-8"))  # type: ignore[arg-type]
 
 
 def apply_schema_app(owner_url: str) -> None:
@@ -151,6 +159,11 @@ def main() -> None:
         action="store_true",
         help="solo colonna e indice full-text dei documenti: non tocca dati ed embedding",
     )
+    parser.add_argument(
+        "--views-only",
+        action="store_true",
+        help="solo le viste economiche (v_economico*, v_margine_mensile): non tocca dati ed embedding",
+    )
     args = parser.parse_args()
     for name in ("DATABASE_URL_ADMIN", "DATABASE_URL", "DATABASE_URL_AGENT", "DATABASE_URL_APP"):
         if not getattr(config, name):
@@ -173,6 +186,10 @@ def main() -> None:
     if args.fulltext_only:
         apply_schema_fulltext(config.DATABASE_URL)
         print("Ricerca testuale sui documenti pronta.")
+        return
+    if args.views_only:
+        apply_schema_views(config.DATABASE_URL)
+        print("Viste economiche aggiornate.")
         return
     apply_schema(config.DATABASE_URL, args.reset)
     apply_schema_app(config.DATABASE_URL)
