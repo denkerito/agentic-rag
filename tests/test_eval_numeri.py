@@ -74,6 +74,24 @@ def test_i_numeri_nella_conclusione_contano() -> None:
     assert m.recall == 1.0
 
 
+def test_i_numeri_nella_descrizione_contano() -> None:
+    # "aprile 1.100,00 → maggio 450,00" nella descrizione, la differenza nel valore
+    r = _r()
+    r.numeri = [
+        Numero(descrizione="67.01: aprile 1.100,00 → maggio 450,00", valore="-650,00 €", fonti=[])
+    ]
+    m = valuta_numeri(RisultatoQuery(valori={D(1100), D(450), D(-650)}, n_righe=1), r)
+    assert m.recall == 1.0
+
+
+def test_i_numeri_nei_limiti_non_contano() -> None:
+    # nei limiti va ciò che non è verificato: contarli premierebbe i numeri senza fonti
+    r = _r()
+    r.limiti = "Margine di maggio 16.205,00 € non riportato tra i numeri"
+    m = valuta_numeri(RisultatoQuery(valori={D(16205)}, n_righe=1), r)
+    assert m.recall == 0.0
+
+
 @pytest.mark.parametrize(
     ("atteso", "frammento"),
     [

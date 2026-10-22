@@ -5,6 +5,7 @@ from openai import AsyncOpenAI
 from pydantic_ai.models import Model
 from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.models.openrouter import OpenRouterModel, OpenRouterModelSettings
+from pydantic_ai.models.wrapper import WrapperModel
 from pydantic_ai.providers.google import GoogleProvider
 from pydantic_ai.providers.openrouter import OpenRouterProvider
 
@@ -45,6 +46,21 @@ def _openrouter(nome: str, ruolo: str) -> OpenRouterModel:
         provider=OpenRouterProvider(openai_client=client),
         settings=impostazioni_openrouter(ruolo),
     )
+
+
+async def chiudi_client(model: Model) -> None:
+    """Chiude il client OpenAI-compatibile del modello nel ciclo di eventi in cui è stato usato.
+
+    Il provider chiude solo un client HTTP suo, non l'AsyncOpenAI che gli passiamo. Senza chiusura,
+    il __del__ dell'SDK lo chiude nel ciclo che gira quando passa il garbage collector: con un
+    asyncio.run per domanda (eval) è quello della domanda successiva, e la chiusura fallisce con
+    "Event loop is closed". Con modelli senza client OpenAI non fa niente.
+    """
+    while isinstance(model, WrapperModel):
+        model = model.wrapped
+    client = getattr(model, "client", None)
+    if isinstance(client, AsyncOpenAI):
+        await client.close()
 
 
 def build_model(name: str | None = None, ruolo: str = "agente") -> Model:

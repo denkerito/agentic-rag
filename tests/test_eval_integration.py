@@ -162,6 +162,26 @@ def test_errore_del_modello_non_ferma_la_batteria(tmp_path, monkeypatch, dati) -
     assert all(r.errore for r in risultati)
 
 
+def test_il_client_del_modello_si_chiude_dopo_ogni_domanda(tmp_path, monkeypatch, dati) -> None:
+    from agentic_rag.eval import runner
+
+    gt = _gt(tmp_path, dati)
+    chiusi: list[object] = []
+
+    async def registra(model) -> None:
+        chiusi.append(model)
+
+    def rotto(messages, info):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(runner, "chiudi_client", registra)
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: _modello(dati))
+    esegui(gt.domande[:1], pausa=0)
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(rotto))
+    esegui(gt.domande[:1], pausa=0)  # anche quando la run fallisce
+    assert len(chiusi) == 2
+
+
 def test_la_pausa_si_applica_solo_tra_le_domande(tmp_path, monkeypatch, dati) -> None:
     gt = _gt(tmp_path, dati)
     monkeypatch.setattr(agent_run, "build_model", lambda name=None: _modello(dati))

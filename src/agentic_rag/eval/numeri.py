@@ -170,10 +170,11 @@ class MetricheNumeri:
 
 
 def numeri_dichiarati(risposta: Risposta) -> set[Decimal]:
-    """Numeri dell'agente: `numeri[].valore` e quelli scritti nella conclusione."""
+    """Numeri dell'agente: conclusione e `numeri[]` (valore e descrizione, es. "aprile 1.100 →
+    maggio 450" con la differenza nel valore). Non i `limiti`: lì va ciò che non è verificato."""
     out = estrai_numeri(risposta.conclusione)
     for n in risposta.numeri:
-        out |= estrai_numeri(n.valore)
+        out |= estrai_numeri(n.valore) | estrai_numeri(n.descrizione)
     return out
 
 

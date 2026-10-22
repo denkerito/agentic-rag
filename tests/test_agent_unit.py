@@ -1,3 +1,4 @@
+import asyncio
 import csv
 
 import pytest
@@ -6,7 +7,7 @@ from pydantic_ai import ModelRetry
 from agentic_rag import config as app_config
 from agentic_rag.agent.agent import MOTIVI_RIFIUTO, RIFIUTO_CAUSA_NON_LETTA, check_risposta
 from agentic_rag.agent.ids import ID_PATTERN, extract_ids
-from agentic_rag.agent.model import build_model, impostazioni_openrouter
+from agentic_rag.agent.model import build_model, chiudi_client, impostazioni_openrouter
 from agentic_rag.agent.output import Numero, Risposta
 from agentic_rag.agent.sql_guard import SqlRejected, validate_select
 from agentic_rag.agent.tentativi import ModelloGestito
@@ -195,6 +196,19 @@ def test_client_openrouter_non_ritenta_da_solo(monkeypatch: pytest.MonkeyPatch) 
     assert m.wrapped.model_name == "anthropic/claude-haiku-5.5"
     # niente doppi tentativi: li fa solo il wrapper
     assert m.wrapped.client.max_retries == 0
+
+
+def test_chiudi_client_chiude_il_client_openrouter(monkeypatch: pytest.MonkeyPatch) -> None:
+    # chiuso nel ciclo in cui è stato usato: altrimenti il __del__ dell'SDK prova a chiuderlo nel
+    # ciclo della domanda successiva (RuntimeError: Event loop is closed)
+    monkeypatch.setattr(app_config, "OPENROUTER_API_KEY", "chiave-finta")
+    m = build_model("openrouter:anthropic/claude-haiku-5.5")
+    asyncio.run(chiudi_client(m))
+    assert m.wrapped.client.is_closed()
+
+
+def test_chiudi_client_ignora_i_modelli_senza_client_openai() -> None:
+    asyncio.run(chiudi_client(build_model("test")))
 
 
 def test_openrouter_senza_chiave(monkeypatch: pytest.MonkeyPatch) -> None:

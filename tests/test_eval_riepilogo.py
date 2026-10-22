@@ -194,3 +194,18 @@ def test_righe_senza_costo_danno_nd() -> None:
     assert riep["varianti"]["con"]["costo_totale_usd"] is None
     assert riep["costo_totale_usd"] is None
     assert "costo: n/d" in markdown(_manifesto(), riep)
+
+
+def test_tabella_efficienza_mostra_costi_e_quota_cache_leggibili() -> None:
+    # con un decimale i costi per indagine (frazioni di centesimo) apparivano come 0.0
+    righe = [
+        _riga("con", 1, 1) | {"costo_usd": 0.0092, "token_cache_lettura": 820},
+        _riga("con", 1, 2) | {"costo_usd": 0.0092, "token_cache_lettura": 820},
+        _riga("senza", 1, 1),
+        _riga("senza", 1, 2),
+    ]
+    md = markdown(_manifesto(), riepiloga(_manifesto(), righe))
+    riga_costo = next(r for r in md.splitlines() if r.startswith("| costo_medio_usd |"))
+    assert "0.0092 $" in riga_costo and "n/d" in riga_costo
+    riga_cache = next(r for r in md.splitlines() if r.startswith("| quota_input_da_cache |"))
+    assert "82%" in riga_cache
