@@ -34,6 +34,25 @@ def test_sql_result_has_counts_and_ids_but_no_rows() -> None:
     assert "righe" not in ev.model_dump() and "10.00" not in ev.model_dump_json()
 
 
+def test_sql_preview_has_total_and_visible_ids() -> None:
+    content = {
+        "colonne": ["id", "fornitore"],
+        "anteprima": [["FATT-P-2025-0001", "FOR-001"]],
+        "n_righe": 1,
+        "totale_righe": 873,
+        "totale_esatto": True,
+        "troncato": True,
+        "profilo": {"fornitore": {"distinti": 2, "nulli": 0, "valori": ["FOR-001", "FOR-002"]}},
+        "colonne_per_raggruppare": ["fornitore"],
+        "nota": "anteprima",
+    }
+    ev = tradurre(FunctionToolResultEvent(ToolReturnPart("query_sql", content, "c1")))
+    assert isinstance(ev, ToolResult)
+    assert (ev.n_righe, ev.totale, ev.troncato) == (1, 873, True)
+    assert ev.ids == ["FATT-P-2025-0001", "FOR-001", "FOR-002"]
+    assert "anteprima" not in ev.model_dump()
+
+
 def test_legacy_search_result_lists_doc_ids() -> None:
     # cerca_documenti: nome della ricerca semantica nelle indagini salvate prima della rinomina
     content = {"risultati": [{"doc_id": "DOC-EML-003", "testo": "x"}, {"doc_id": "CTR-001"}]}

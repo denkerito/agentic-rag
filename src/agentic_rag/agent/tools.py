@@ -1,5 +1,6 @@
 """Tool dell'agente: query_sql, elenca_documenti, cerca_testo, cerca_semantica, apri_documento."""
 
+import json
 from datetime import date
 from decimal import Decimal
 from typing import Any, Literal
@@ -33,6 +34,91 @@ def _cell(value: Any) -> Any:
     return text[: config.SQL_MAX_CELL_CHARS] + "…"
 
 
+VALORI_ELENCATI_MAX = 10  # nel profilo, una colonna di testo elenca i valori se sono al più tanti
+RAGGRUPPABILE = range(2, 21)  # valori distinti di una colonna adatta a un GROUP BY
+
+
+def _chiave(value: Any) -> str:
+    return json.dumps(_cell(value), ensure_ascii=False, sort_keys=True, default=str)
+
+
+def profilo_colonne(
+    colonne: list[str], righe: list[tuple[Any, ...]]
+) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    """Profilo di ogni colonna sulle righe lette: orienta la query aggregata che serve per concludere.
+
+    Numeri: min, max e somma; date: min e max; testi con pochi valori: l'elenco; array: lunghezze.
+    Restituisce anche le colonne adatte a un GROUP BY (2-20 valori distinti), nell'ordine dato.
+    """
+    profilo: dict[str, dict[str, Any]] = {}
+    per_raggruppare: list[str] = []
+    for i, nome in enumerate(colonne):
+        pieni = [r[i] for r in righe if r[i] is not None]
+        distinti = {_chiave(v): v for v in pieni}
+        voce: dict[str, Any] = {"distinti": len(distinti), "nulli": len(righe) - len(pieni)}
+        if pieni and all(isinstance(v, (list, tuple)) for v in pieni):
+            lunghezze = [len(v) for v in pieni]
+            voce |= {"lunghezza_min": min(lunghezze), "lunghezza_max": max(lunghezze)}
+            profilo[nome] = voce
+            continue
+        if pieni and all(
+            isinstance(v, (int, float, Decimal)) and not isinstance(v, bool) for v in pieni
+        ):
+            voce |= {"min": _cell(min(pieni)), "max": _cell(max(pieni)), "somma": _cell(sum(pieni))}
+        elif pieni and all(isinstance(v, date) for v in pieni):
+            voce |= {"min": _cell(min(pieni)), "max": _cell(max(pieni))}
+        elif 0 < len(distinti) <= VALORI_ELENCATI_MAX:
+            voce["valori"] = sorted(str(_cell(v)) for v in distinti.values())
+        if len(distinti) in RAGGRUPPABILE:
+            per_raggruppare.append(nome)
+        profilo[nome] = voce
+    return profilo, per_raggruppare
+
+
+def _migliaia(n: int) -> str:
+    return f"{n:,}".replace(",", ".")
+
+
+def componi_risultato(
+    colonne: list[str], righe: list[tuple[Any, ...]], letto_tutto: bool
+) -> dict[str, Any]:
+    """Il risultato intero se il JSON sta in SQL_MAX_CARATTERI, altrimenti un'anteprima dichiarata.
+
+    Un pezzo di risultato sembrerebbe il tutto: con la riga che conta in fondo, l'agente concluderebbe
+    che non esiste. L'anteprima dà invece il totale, poche righe d'esempio e il profilo di tutte le
+    colonne, e chiede di aggregare o filtrare per concludere.
+    """
+    celle = [[_cell(v) for v in r] for r in righe]
+    intero = {"colonne": colonne, "righe": celle, "n_righe": len(celle), "troncato": False}
+    caratteri = len(json.dumps(intero, ensure_ascii=False))
+    if letto_tutto and caratteri <= config.SQL_MAX_CARATTERI:
+        return intero
+    anteprima = celle[: config.SQL_RIGHE_ANTEPRIMA]
+    profilo, per_raggruppare = profilo_colonne(colonne, righe)
+    if letto_tutto:
+        quante = f"{_migliaia(len(righe))} righe (circa {_migliaia(caratteri)} caratteri)"
+        base_profilo = "un profilo di tutte le colonne"
+    else:
+        quante = f"più di {_migliaia(len(righe))} righe"
+        base_profilo = f"un profilo delle colonne calcolato sulle prime {_migliaia(len(righe))}"
+    return {
+        "colonne": colonne,
+        "anteprima": anteprima,
+        "n_righe": len(anteprima),
+        "totale_righe": len(righe),
+        "totale_esatto": letto_tutto,
+        "troncato": True,
+        "profilo": profilo,
+        "colonne_per_raggruppare": per_raggruppare,
+        "nota": (
+            f"Risultato di {quante}: troppo grande da restituire. Queste sono "
+            f"{len(anteprima)} righe d'anteprima e {base_profilo}, non il risultato: non usarle "
+            "per concludere che qualcosa manca o non esiste. Per concludere riformula la query con "
+            "aggregazioni o filtri (COUNT, GROUP BY, HAVING, WHERE)."
+        ),
+    }
+
+
 def run_query(deps: AgentDeps, sql: str) -> dict[str, Any]:
     """Esegue una SELECT validata in una transazione di sola lettura."""
     try:
@@ -44,14 +130,22 @@ def run_query(deps: AgentDeps, sql: str) -> dict[str, Any]:
             cur.execute("SET TRANSACTION READ ONLY")
             cur.execute(query)  # type: ignore[arg-type]
             columns = [d.name for d in cur.description or []]
-            rows = cur.fetchmany(config.SQL_MAX_ROWS + 1)
+            rows = cur.fetchmany(config.SQL_RIGHE_LETTE + 1)
     except psycopg.Error as e:
         raise ModelRetry(f"Errore SQL: {str(e).splitlines()[0]}") from e
-    truncated = len(rows) > config.SQL_MAX_ROWS
-    out = [[_cell(v) for v in r] for r in rows[: config.SQL_MAX_ROWS]]
-    deps.seen_ids |= extract_ids(str(out))
-    deps.record("sql", sql=query, n_righe=len(out), troncato=truncated)
-    return {"colonne": columns, "righe": out, "n_righe": len(out), "troncato": truncated}
+    letto_tutto = len(rows) <= config.SQL_RIGHE_LETTE
+    out = componi_risultato(columns, rows[: config.SQL_RIGHE_LETTE], letto_tutto)
+    # citabili solo gli ID che l'agente vede: righe intere, oppure anteprima e valori del profilo
+    visibile = {k: out[k] for k in ("righe", "anteprima", "profilo") if k in out}
+    deps.seen_ids |= extract_ids(str(visibile))
+    deps.record(
+        "sql",
+        sql=query,
+        n_righe=out["n_righe"],
+        troncato=out["troncato"],
+        totale_righe=out.get("totale_righe", out["n_righe"]),
+    )
+    return out
 
 
 def query_sql(ctx: RunContext[AgentDeps], sql: str) -> dict[str, Any]:
@@ -59,7 +153,8 @@ def query_sql(ctx: RunContext[AgentDeps], sql: str) -> dict[str, Any]:
 
     Usa le viste v_* per ricavi/costi/margine. Per ogni aggregazione includi gli ID delle
     fonti (colonna `fonti` delle viste, oppure array_agg(id)). Mai calcolare a mente:
-    differenze e percentuali vanno calcolate nella query.
+    differenze e percentuali vanno calcolate nella query. Un risultato troppo grande torna come
+    anteprima (totale, poche righe, profilo delle colonne): per concludere aggrega o filtra.
     """
     return run_query(ctx.deps, sql)
 

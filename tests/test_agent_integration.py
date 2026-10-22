@@ -1,3 +1,4 @@
+import json
 import re
 from decimal import Decimal
 
@@ -79,9 +80,40 @@ def test_query_sql_returns_strings_for_decimals_and_registers_ids(deps) -> None:
     assert deps.trace[-1]["kind"] == "sql"
 
 
-def test_query_sql_truncates_rows_and_cells(deps) -> None:
-    res = run_query(deps, "SELECT * FROM scritture_contabili")
-    assert res["troncato"] and res["n_righe"] == agent_config.SQL_MAX_ROWS
+def test_query_sql_analisi_annuale_arriva_intera(deps) -> None:
+    # 213 righe: con il vecchio limite di 50 righe veniva tagliata
+    res = run_query(
+        deps,
+        "SELECT mese, conto_codice, conto_descrizione, importo, n_scritture, fonti "
+        "FROM v_economico_mensile WHERE tipo = 'Costi' ORDER BY mese, conto_codice",
+    )
+    assert (
+        not res["troncato"] and res["n_righe"] == 213 and "anteprima" not in res
+    )  # costi per conto, 12 mesi
+    assert len(json.dumps(res, ensure_ascii=False)) <= agent_config.SQL_MAX_CARATTERI
+
+
+def test_query_sql_risultato_grande_diventa_anteprima(deps) -> None:
+    # la query della Q9 (batteria3-senza): la coppia duplicata era alla riga 841 di 873
+    res = run_query(
+        deps,
+        "SELECT f1.id AS fatt_a, f2.id AS fatt_b, f1.numero, f2.numero AS numero_b, f1.totale "
+        "FROM fatture f1 JOIN fatture f2 ON f1.id < f2.id AND f1.totale = f2.totale "
+        "AND COALESCE(f1.fornitore_id, f1.cliente_id) = COALESCE(f2.fornitore_id, f2.cliente_id) "
+        "AND f1.tipo = f2.tipo ORDER BY f1.data",
+    )
+    assert res["troncato"] and "righe" not in res
+    assert res["totale_righe"] == 873 and res["totale_esatto"]
+    assert len(res["anteprima"]) == res["n_righe"] == agent_config.SQL_RIGHE_ANTEPRIMA
+    assert set(res["profilo"]) == {"fatt_a", "fatt_b", "numero", "numero_b", "totale"}
+    assert "aggrega" in res["nota"] or "aggregazioni" in res["nota"]
+    # citabili solo gli ID visti: le fatture dell'anteprima, non la coppia alla riga 841
+    assert "FATT-P-2025-0166" not in deps.seen_ids
+    assert {r[0] for r in res["anteprima"]} <= deps.seen_ids
+    assert deps.trace[-1]["totale_righe"] == 873
+
+
+def test_query_sql_tronca_le_celle_lunghe(deps) -> None:
     res = run_query(deps, "SELECT repeat('x', 5000) AS t")
     assert len(res["righe"][0][0]) <= agent_config.SQL_MAX_CELL_CHARS + 1
 

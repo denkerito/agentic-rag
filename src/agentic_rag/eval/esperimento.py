@@ -125,6 +125,9 @@ def limiti_correnti(timeout: float) -> dict[str, Any]:
         "search_max_distance": agent_config.SEARCH_MAX_DISTANCE,
         "elenco_per_pagina": agent_config.ELENCO_PER_PAGINA,
         "testo_max_k": agent_config.TESTO_MAX_K,
+        "sql_max_caratteri": agent_config.SQL_MAX_CARATTERI,
+        "sql_righe_anteprima": agent_config.SQL_RIGHE_ANTEPRIMA,
+        "sql_righe_lette": agent_config.SQL_RIGHE_LETTE,
         "limiti_rpm_tpm": {k: list(v) for k, v in agent_config.LIMITI.items()},
     }
 

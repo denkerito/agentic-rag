@@ -15,7 +15,12 @@ MAX_TOKENS_RISPOSTA: int = 16_000  # tetto per risposta (ragionamento compreso):
 AGENT_MAX_REQUESTS: int = int(
     os.getenv("AGENT_MAX_REQUESTS", "25")
 )  # chiamate al modello per domanda
-SQL_MAX_ROWS: int = 50
+# Un risultato di query_sql è intero oppure un'anteprima dichiarata, mai un pezzo che sembra il tutto.
+# Soglia in caratteri del JSON restituito, tarata sulle 302 SQL delle batterie del 2026-10-22: p99 a
+# 25.643, solo 2 oltre i 30.000 (873 e 132 righe). Circa 10.000 token nel caso peggiore.
+SQL_MAX_CARATTERI: int = 30_000
+SQL_RIGHE_ANTEPRIMA: int = 5  # righe d'esempio di un'anteprima
+SQL_RIGHE_LETTE: int = 5_000  # tetto di lettura per contare e profilare
 SQL_MAX_CELL_CHARS: int = 300
 DOC_MAX_CHARS: int = 6000
 SEARCH_MAX_K: int = 8
