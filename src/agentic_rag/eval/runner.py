@@ -13,10 +13,12 @@ from google.genai import errors as genai_errors
 from pydantic_ai import capture_run_messages
 from pydantic_ai.exceptions import ModelAPIError, ModelHTTPError
 from pydantic_ai.messages import ModelMessage, ModelResponse, RetryPromptPart
+from pydantic_ai.models import Model
 from pydantic_ai.usage import RunUsage
 
 from agentic_rag.agent.agent import MOTIVI_RIFIUTO
 from agentic_rag.agent.limiti import MisuraAttese, misura_attese
+from agentic_rag.agent.model import chiudi_client
 from agentic_rag.agent.output import Risposta
 from agentic_rag.agent.run import open_session, usage_limits
 from agentic_rag.agent.tentativi import ERRORI_RETE
@@ -140,6 +142,16 @@ async def entro_il_tempo[T](
                 await task
 
 
+async def poi_chiudi[T](coro: Coroutine[Any, Any, T], model: Model) -> T:
+    """Esegue `coro` e chiude il client del modello nello stesso ciclo di eventi (ne apre uno per
+    domanda): vedi `chiudi_client`. Un errore di chiusura non cambia l'esito della domanda."""
+    try:
+        return await coro
+    finally:
+        with suppress(Exception):
+            await chiudi_client(model)
+
+
 def rifiuti_del_validatore(messaggi: list[ModelMessage]) -> dict[str, int]:
     """Risposte finali scartate dal validatore delle fonti, per motivo."""
     conteggi: Counter[str] = Counter()
@@ -198,10 +210,15 @@ def esegui_domanda(
     with misura_attese() as misura, capture_run_messages() as messaggi:
         try:
             result = asyncio.run(
-                entro_il_tempo(
-                    agent.run(domanda.domanda, deps=deps, usage_limits=usage_limits(), usage=usage),
-                    timeout,
-                    misura,
+                poi_chiudi(
+                    entro_il_tempo(
+                        agent.run(
+                            domanda.domanda, deps=deps, usage_limits=usage_limits(), usage=usage
+                        ),
+                        timeout,
+                        misura,
+                    ),
+                    agent.model,  # type: ignore[arg-type]  # open_session costruisce sempre un Model
                 )
             )
             durata = time.monotonic() - inizio
