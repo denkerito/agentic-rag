@@ -75,6 +75,20 @@ def profilo_colonne(
     return profilo, per_raggruppare
 
 
+def _numero(v: Any) -> bool:
+    return isinstance(v, (int, float, Decimal)) and not isinstance(v, bool)
+
+
+def prova_assenza(righe: list[tuple[Any, ...]]) -> bool:
+    """Il risultato prova un'assenza: nessuna riga, oppure righe di soli conteggi a zero (COUNT(*) = 0,
+    anche accanto a un'etichetta). Un elenco di candidati non prova nulla: va filtrato finché è vuoto."""
+    for riga in righe:
+        numeri = [v for v in riga if _numero(v)]
+        if not numeri or any(v != 0 for v in numeri):
+            return False
+    return True
+
+
 def _migliaia(n: int) -> str:
     return f"{n:,}".replace(",", ".")
 
@@ -134,12 +148,21 @@ def run_query(deps: AgentDeps, sql: str) -> dict[str, Any]:
     except psycopg.Error as e:
         raise ModelRetry(f"Errore SQL: {str(e).splitlines()[0]}") from e
     letto_tutto = len(rows) <= config.SQL_RIGHE_LETTE
-    out = componi_risultato(columns, rows[: config.SQL_RIGHE_LETTE], letto_tutto)
+    query_id = f"Q{len(deps.query) + 1}"
+    out = {"query_id": query_id} | componi_risultato(
+        columns, rows[: config.SQL_RIGHE_LETTE], letto_tutto
+    )
+    deps.query[query_id] = {
+        "sql": query,
+        "completo": not out["troncato"],
+        "zero": not out["troncato"] and prova_assenza(rows),
+    }
     # citabili solo gli ID che l'agente vede: righe intere, oppure anteprima e valori del profilo
     visibile = {k: out[k] for k in ("righe", "anteprima", "profilo") if k in out}
     deps.seen_ids |= extract_ids(str(visibile))
     deps.record(
         "sql",
+        query_id=query_id,
         sql=query,
         n_righe=out["n_righe"],
         troncato=out["troncato"],

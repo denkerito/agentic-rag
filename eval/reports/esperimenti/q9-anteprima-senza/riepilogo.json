@@ -1,0 +1,190 @@
+{
+  "etichetta": "q9-anteprima-senza",
+  "valido": true,
+  "validita": {
+    "combinazioni_per_variante": 2,
+    "escluse": {
+      "senza": []
+    },
+    "quote_escluse": {
+      "senza": 0.0
+    },
+    "motivi_invalidita": []
+  },
+  "varianti": {
+    "senza": {
+      "config": {
+        "nome": "senza",
+        "modello": "openrouter:anthropic/claude-haiku-5.5",
+        "semantica": false
+      },
+      "chiuse": 2,
+      "fallite_agente": 0,
+      "errori_infrastruttura": 0,
+      "errori_giudice": 0,
+      "metriche": {
+        "task_success_rate": {
+          "valore": 1.0,
+          "basso": 1.0,
+          "alto": 1.0,
+          "domande": 1,
+          "esecuzioni": 2
+        },
+        "answer_accuracy": {
+          "valore": 1.0,
+          "basso": 1.0,
+          "alto": 1.0,
+          "domande": 1,
+          "esecuzioni": 2
+        },
+        "answer_partial": {
+          "valore": 0.0,
+          "basso": 0.0,
+          "alto": 0.0,
+          "domande": 1,
+          "esecuzioni": 2
+        },
+        "source_citation_recall": {
+          "valore": 1.0,
+          "basso": 1.0,
+          "alto": 1.0,
+          "domande": 1,
+          "esecuzioni": 2
+        },
+        "numeric_exact_match_recall": {
+          "valore": 1.0,
+          "basso": 1.0,
+          "alto": 1.0,
+          "domande": 1,
+          "esecuzioni": 2
+        },
+        "false_acceptance_rate": {
+          "valore": null,
+          "basso": null,
+          "alto": null,
+          "domande": 0,
+          "esecuzioni": 0
+        },
+        "false_abstention_rate": {
+          "valore": 0.0,
+          "basso": 0.0,
+          "alto": 0.0,
+          "domande": 1,
+          "esecuzioni": 2
+        },
+        "guardrail_intervention_rate": {
+          "valore": 0.5,
+          "basso": 0.5,
+          "alto": 0.5,
+          "domande": 1,
+          "esecuzioni": 2
+        },
+        "session_evidence_recall": {
+          "valore": 1.0,
+          "basso": 1.0,
+          "alto": 1.0,
+          "domande": 1,
+          "esecuzioni": 2
+        },
+        "pass_hat_3": {
+          "valore": null,
+          "basso": null,
+          "alto": null,
+          "domande": 0,
+          "domande_escluse": 1
+        }
+      },
+      "per_modalita": {
+        "normale": {
+          "task_success_rate": {
+            "valore": 1.0,
+            "basso": 1.0,
+            "alto": 1.0,
+            "domande": 1,
+            "esecuzioni": 2
+          },
+          "answer_accuracy": {
+            "valore": 1.0,
+            "basso": 1.0,
+            "alto": 1.0,
+            "domande": 1,
+            "esecuzioni": 2
+          },
+          "answer_partial": {
+            "valore": 0.0,
+            "basso": 0.0,
+            "alto": 0.0,
+            "domande": 1,
+            "esecuzioni": 2
+          },
+          "source_citation_recall": {
+            "valore": 1.0,
+            "basso": 1.0,
+            "alto": 1.0,
+            "domande": 1,
+            "esecuzioni": 2
+          },
+          "numeric_exact_match_recall": {
+            "valore": 1.0,
+            "basso": 1.0,
+            "alto": 1.0,
+            "domande": 1,
+            "esecuzioni": 2
+          },
+          "false_acceptance_rate": {
+            "valore": null,
+            "basso": null,
+            "alto": null,
+            "domande": 0,
+            "esecuzioni": 0
+          },
+          "false_abstention_rate": {
+            "valore": 0.0,
+            "basso": 0.0,
+            "alto": 0.0,
+            "domande": 1,
+            "esecuzioni": 2
+          },
+          "guardrail_intervention_rate": {
+            "valore": 0.5,
+            "basso": 0.5,
+            "alto": 0.5,
+            "domande": 1,
+            "esecuzioni": 2
+          },
+          "session_evidence_recall": {
+            "valore": 1.0,
+            "basso": 1.0,
+            "alto": 1.0,
+            "domande": 1,
+            "esecuzioni": 2
+          }
+        }
+      },
+      "rifiuti_per_motivo": {
+        "numeri_senza_fonti": 1
+      },
+      "efficienza": {
+        "esecuzioni": 2,
+        "token_input_medi": 68492,
+        "token_output_medi": 4980,
+        "richieste_medie": 7.0,
+        "chiamate_tool_medie": 10.5,
+        "lavoro_p50_s": 27.9,
+        "lavoro_p95_s": 28.89,
+        "attesa_media_s": 0.0,
+        "tentativi_provider_medi": 0.0,
+        "quota_input_da_cache": 0.8279932546374368,
+        "costo_medio_usd": 0.004529305,
+        "costo_giudice_medio_usd": 0.00586925
+      },
+      "costo_totale_usd": 0.02079711
+    }
+  },
+  "confronti": {},
+  "kappa": null,
+  "costo_totale_usd": 0.02079711,
+  "costo_agente_usd": 0.00905861,
+  "costo_giudice_usd": 0.0117385,
+  "esecuzioni_registrate": 2
+}

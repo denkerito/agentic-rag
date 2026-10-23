@@ -50,6 +50,7 @@ def riga_pubblica(r: RisultatoDomanda) -> dict[str, Any]:
             "limiti": r.risposta.limiti,
             "numeri": [n.model_dump() for n in r.risposta.numeri],
             "fonti": r.risposta.fonti,
+            "assenze": [a.model_dump() for a in r.risposta.assenze],
         }
     v = r.valutazione
     if v:

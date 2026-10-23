@@ -59,6 +59,7 @@ class ToolResult(BaseModel):
     pagina: int | None = None  # elenca_documenti
     pagine: int | None = None  # elenca_documenti
     troncato: bool | None = None  # query_sql, apri_documento
+    query_id: str | None = None  # query_sql: Q1, Q2... (citato dalle assenze della risposta)
     offset: int | None = None  # apri_documento
 
 

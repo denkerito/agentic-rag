@@ -785,3 +785,25 @@
     flex-direction: column;
   }
 }
+
+/* Assenze verificate: ogni affermazione rimanda alla query che la prova (Q1, Q2...) */
+.assenze {
+  margin-top: 16px;
+}
+.assenze h3 {
+  margin-bottom: 6px;
+  font-size: var(--t-s);
+}
+.assenze ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.query-id {
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: var(--t-xs);
+  font-weight: 500;
+}

@@ -236,6 +236,46 @@ Le fonti di supporto che l'agente non cerca restano nel ground truth: CTR-001 e 
 
 Un budget in caratteri da solo era stato scartato: sposta il punto di taglio, ma una riga utile in fondo resta invisibile.
 
+## Prova dell'assenza, principi e confidenza (2026-10-23)
+
+Restavano tre comportamenti dell'agente: falsi «non c'è» (Q9), cause secondarie e documenti di supporto non cercati (Q1, Q3, Q4, Q5) e confidenza «alta» sulle domande non rispondibili (Q11).
+
+**Regole introdotte**, uguali per `con` e `senza`:
+- **ID delle query e prova dell'assenza.** Ogni `query_sql` ha un ID (`Q1`, `Q2`…). Un'affermazione «nei dati non esiste / non è accaduto» si dichiara in `assenze`, insieme alla query che la prova. Il validatore accetta l'assenza solo se la query esiste, il risultato era completo (non un'anteprima) ed era vuoto oppure con soli conteggi a zero; altrimenti scatta il rifiuto `assenza_non_provata`. Un elenco di candidati non prova un'assenza.
+- **Principio 3 (due canali):** un'assenza nei dati si verifica sia nei dati sia nei documenti.
+- **Principio 4 (documenti di supporto):** la spiegazione va cercata per ogni voce che spiega la variazione, non solo per la principale, insieme ai documenti collegati (contratto, comunicazione formale, conferme). Il prompt continua a non nominare i tool di ricerca.
+- **Confidenza:** alta = verificato con le fonti; media = verifica parziale; bassa = dati insufficienti o domanda non rispondibile.
+- **UI:** le assenze verificate compaiono con il rimando alla query, e ogni passo SQL mostra il suo ID.
+
+**Limite dichiarato:** il validatore controlla completezza e risultato, non i criteri della query. Se l'agente cerca con criteri sbagliati e trova zero righe, l'assenza passa il controllo. Coprono quel caso la conferma nei documenti e la query visibile al commercialista.
+
+### Verifica
+
+- **Replay della Q9** (conversazione con l'anteprima da 873 righe, `senza`, 3 volte): duplicato trovato 3 volte su 3 (prima 2 su 3). In ogni replay il validatore rifiuta una prima assenza non provata, e l'agente la corregge.
+- **Batteria sul set di sviluppo, 2 ripetizioni per variante:**
+
+| | `senza` b3 → b4 | `con` b3 → b4 |
+|---|---|---|
+| Task Success Rate | 6/12 → **16/24 (67%)** | 6/12 → **16/24 (67%)** |
+| Risposte `errata` | 1 → **0** | 0 → **0** |
+| Cause inventate | 0 → 0 | 0 → 0 |
+| ID citati / numeri trovati | 77% / 78% → 89% / 90% | 84% / 95% → 92% / 98% |
+| Indagini fallite per l'agente | 0 → 1 | 0 → 1 |
+| Costo dell'agente per indagine | 0,0039 $ → 0,0055 $ | 0,0040 $ → 0,0064 $ |
+
+- **Migliorate:**
+  - Q9: duplicato trovato 4 volte su 4, nessuna `errata`;
+  - Q11: `ok` 4 volte su 4, confidenza bassa;
+  - Q1 `con`: la causa secondaria Nimbus è attribuita e documentata, giudice `corretta` (prima `parziale`);
+  - Q5: CTR-008 citato.
+- **Restano:**
+  - documenti di supporto non citati: CTR-001 (Q1), DOC-EML-005 (Q4), DOC-EML-012 (Q9);
+  - Q3, prima ripetizione, in entrambe le varianti: fallita dopo tre risposte rifiutate per fonti mai viste o numeri senza fonti, un guasto già visto in `batteria2-con` e indipendente dal nuovo validatore;
+  - circa un rifiuto `assenza_non_provata` ogni due indagini, tutte poi chiuse.
+- **Costo:** +40-60% per indagine (più ricerche e più rifiuti), comunque basso. L'esperimento finale con 25 domande, 2 varianti e 3 ripetizioni costerebbe circa 1,8 $ col giudice.
+
+**Regola di stop:** da qui l'agente non si ritocca più sul set di sviluppo. I `ko` rimasti si inseguirebbero solo spingendo l'agente verso documenti specifici di queste 12 domande. Il numero che conta verrà dal test set nuovo.
+
 ## Budget
 
 | Voce | Stima |

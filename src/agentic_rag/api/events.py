@@ -42,6 +42,7 @@ def _tool_result(part: ToolReturnPart) -> ToolResult:
             n_righe=content.get("n_righe"),
             troncato=content.get("troncato"),
             totale=content.get("totale_righe"),
+            query_id=content.get("query_id"),
         )
     if part.tool_name == "elenca_documenti":
         return ToolResult(
