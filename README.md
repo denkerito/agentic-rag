@@ -223,7 +223,8 @@ Eventi SSE: `tool_call`, `tool_result` (solo conteggi e ID, mai le righe), `tool
 
 ```bash
 pytest                                  # unit
-pytest -m integration                   # richiede il database
+pytest -m integration                   # richiede il database e l'indice (python -m agentic_rag.rag.indexer)
+                                        # non reindicizza: circa 6 chiamate a Gemini per corsa
 cd frontend && npm test && npm run build
 
 python -m agentic_rag.eval --dry-run            # valida il ground truth senza chiamare il modello

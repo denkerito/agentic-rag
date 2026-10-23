@@ -105,6 +105,7 @@ python -m agentic_rag.eval.esperimento esegui --etichetta finale --gt <cartella-
 
 Prima di lanciarlo:
 - impostare su OpenRouter un **limite di credito sulla chiave**, ad esempio 8 $;
+- attivare la **fatturazione su Gemini**: la quota gratuita degli embedding (1.000 al giorno) è stata esaurita il 2026-10-22, quando ogni corsa dei test di integrazione ricostruiva l'indice (circa 200 embedding). Ora i test usano embedding finti in una transazione annullata e costano circa 6 chiamate, ma la variante `con` dell'esperimento ne usa alcune centinaia;
 - tenere il PC sveglio.
 
 Le interruzioni si riprendono con la sola etichetta. Alla fine si controllano la validità (escluse ≤ 10% per variante) e il verdetto.
