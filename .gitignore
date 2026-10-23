@@ -37,3 +37,6 @@ Thumbs.db
 
 # Report privati dell'eval: contengono il ground truth
 eval/reports/private/
+
+# Test set finale: fuori da git fino alla fine dell'esperimento (vedi AGENTS.md)
+eval/ground_truth_finale/

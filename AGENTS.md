@@ -8,6 +8,8 @@
 
 ## Ground truth
 - Le 12 domande in `eval/ground_truth/` sono il set di sviluppo.
+- La cartella `eval/ground_truth_finale/` (test set finale) e i report privati dei suoi esperimenti (`eval/reports/private/esperimenti/` delle etichette che la usano) sono **vietati all'assistente** fino alla fine dell'esperimento finale: non si aprono, non si leggono, non se ne stampa il contenuto. L'assistente ne conosce solo la struttura (stesso formato del set di sviluppo). Il codice dell'harness li legge a runtime; all'assistente arrivano solo output di conteggi (es. `tools/controlla_ground_truth.py`) e i report pubblici.
+- L'agente e i moduli applicativi non accedono mai ai file di ground truth.
 
 ## Principi Guida dell'Agente
 1. **I numeri non si inventano:** calcoli, aggregazioni e confronti periodici passano **sempre ed esclusivamente** da query SQL in sola lettura (database relazionale). L'agente non calcola a mente né stima cifre nei prompt.
