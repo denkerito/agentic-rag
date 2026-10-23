@@ -113,6 +113,17 @@ def test_query_sql_risultato_grande_diventa_anteprima(deps) -> None:
     assert deps.trace[-1]["totale_righe"] == 873
 
 
+def test_query_sql_assegna_id_e_registra_la_prova(deps) -> None:
+    vuota = run_query(deps, "SELECT id FROM fatture WHERE id = 'INESISTENTE'")
+    conteggio = run_query(deps, "SELECT count(*) AS n FROM fatture")
+    grande = run_query(deps, "SELECT * FROM scritture_contabili")
+    assert [vuota["query_id"], conteggio["query_id"], grande["query_id"]] == ["Q1", "Q2", "Q3"]
+    assert deps.query["Q1"]["completo"] and deps.query["Q1"]["zero"]
+    assert deps.query["Q2"]["completo"] and not deps.query["Q2"]["zero"]
+    assert not deps.query["Q3"]["completo"] and "anteprima" in grande
+    assert [ev["query_id"] for ev in deps.trace if ev["kind"] == "sql"] == ["Q1", "Q2", "Q3"]
+
+
 def test_query_sql_tronca_le_celle_lunghe(deps) -> None:
     res = run_query(deps, "SELECT repeat('x', 5000) AS t")
     assert len(res["righe"][0][0]) <= agent_config.SQL_MAX_CELL_CHARS + 1

@@ -12,6 +12,8 @@ class AgentDeps:
     relations: set[str]  # tabelle e viste interrogabili
     seen_ids: set[str] = field(default_factory=set)
     aperti: set[str] = field(default_factory=set)  # letti con apri_documento: base per la causa
+    # query_sql eseguite: query_id (Q1, Q2...) -> {sql, completo, zero}, per la prova delle assenze
+    query: dict[str, dict[str, Any]] = field(default_factory=dict)
     trace: list[dict[str, Any]] = field(default_factory=list)
 
     def record(self, kind: str, **data: Any) -> None:

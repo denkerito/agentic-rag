@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic_ai import Agent, ModelRetry, RunContext, Tool
 from pydantic_ai.models import Model
 
@@ -19,16 +21,23 @@ RIFIUTO_FONTI_NON_VISTE = "Fonti mai ricevute dai tool"
 RIFIUTO_NUMERI_SENZA_FONTI = "Numeri senza fonti"
 RIFIUTO_CAUSA_SENZA_DOCUMENTO = "causa_documentata=true richiede"
 RIFIUTO_CAUSA_NON_LETTA = "Causa documentata senza documenti aperti"
+RIFIUTO_ASSENZA_NON_PROVATA = "Assenza non provata"
 # Nessun prefisso deve iniziare con un altro: ogni rifiuto si conta per un solo motivo.
 MOTIVI_RIFIUTO: dict[str, str] = {
     "fonti_non_viste": RIFIUTO_FONTI_NON_VISTE,
     "numeri_senza_fonti": RIFIUTO_NUMERI_SENZA_FONTI,
     "causa_senza_documento": RIFIUTO_CAUSA_SENZA_DOCUMENTO,
     "causa_non_letta": RIFIUTO_CAUSA_NON_LETTA,
+    "assenza_non_provata": RIFIUTO_ASSENZA_NON_PROVATA,
 }
 
 
-def check_risposta(risposta: Risposta, seen_ids: set[str], aperti: set[str]) -> None:
+def check_risposta(
+    risposta: Risposta,
+    seen_ids: set[str],
+    aperti: set[str],
+    query: dict[str, dict[str, Any]] | None = None,
+) -> None:
     """Solleva ModelRetry se la risposta viola i vincoli sulle fonti.
 
     Un documento trovato da una ricerca è citabile, ma come causa conta solo se aperto: i frammenti
@@ -55,6 +64,22 @@ def check_risposta(risposta: Risposta, seen_ids: set[str], aperti: set[str]) -> 
             f"{', '.join(documenti)} prima di dichiarare la causa documentata, "
             "oppure usa causa_documentata=false."
         )
+    for a in risposta.assenze:
+        q = (query or {}).get(a.query_id)
+        if q is None:
+            motivo = (
+                f"la query {a.query_id} è inesistente: cita il query_id restituito da query_sql"
+            )
+        elif not q["completo"]:
+            motivo = f"{a.query_id} è un'anteprima, non il risultato completo: aggrega o filtra"
+        elif not q["zero"]:
+            motivo = (
+                f"{a.query_id} restituisce righe: filtra con HAVING o WHERE finché il risultato è "
+                "vuoto o a zero, oppure togli l'assenza"
+            )
+        else:
+            continue
+        raise ModelRetry(f"{RIFIUTO_ASSENZA_NON_PROVATA} ({a.affermazione!r}): {motivo}.")
 
 
 def build_agent(
@@ -77,7 +102,7 @@ def build_agent(
 
     @agent.output_validator
     def _validate(ctx: RunContext[AgentDeps], output: Risposta) -> Risposta:
-        check_risposta(output, ctx.deps.seen_ids, ctx.deps.aperti)
+        check_risposta(output, ctx.deps.seen_ids, ctx.deps.aperti, ctx.deps.query)
         return output
 
     return agent
