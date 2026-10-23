@@ -72,6 +72,7 @@ function PassoView({ passo, numero }: { passo: Passo; numero: number }) {
           <h3>
             <span className="n">{numero}</span>
             {info.titolo}
+            {passo.esito?.query_id && <span className="mono query-id">{passo.esito.query_id}</span>}
           </h3>
           {passo.esito && <span className="riepilogo">{riepilogo(passo.tool, passo.esito)}</span>}
           {passo.retry && <span className="riepilogo">Richiesta rifiutata, l'agente riprova</span>}

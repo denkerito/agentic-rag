@@ -47,6 +47,19 @@ export function RispostaCard({ risposta }: { risposta: Risposta }) {
         </table>
       )}
 
+      {risposta.assenze && risposta.assenze.length > 0 && (
+        <div className="assenze">
+          <h3>Assenze verificate</h3>
+          <ul>
+            {risposta.assenze.map((a) => (
+              <li key={`${a.query_id}|${a.affermazione}`}>
+                {a.affermazione} <span className="mono query-id">{a.query_id}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {risposta.limiti && (
         <div className="callout" role="note">
           <Icona nome="alert" size={18} />

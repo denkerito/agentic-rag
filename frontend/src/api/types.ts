@@ -10,6 +10,11 @@ export interface Numero {
   fonti: string[]
 }
 
+export interface Assenza {
+  affermazione: string
+  query_id: string
+}
+
 export interface Risposta {
   conclusione: string
   numeri: Numero[]
@@ -17,6 +22,8 @@ export interface Risposta {
   confidenza: 'alta' | 'media' | 'bassa'
   causa_documentata: boolean
   limiti: string | null
+  // assente nelle indagini salvate prima della prova dell'assenza
+  assenze?: Assenza[]
 }
 
 export interface IndagineRiga {
@@ -52,6 +59,7 @@ export interface ToolResult {
   pagine?: number | null
   troncato: boolean | null
   offset: number | null
+  query_id?: string | null
 }
 export interface ToolRetry {
   tool_call_id: string

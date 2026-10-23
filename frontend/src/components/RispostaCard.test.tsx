@@ -24,6 +24,19 @@ describe('RispostaCard', () => {
     expect(screen.getByText('10.000,00 €')).toBeInTheDocument()
   })
 
+  it('mostra le assenze verificate con la query che le prova', () => {
+    const assenze = [{ affermazione: 'nessuna fattura pagata due volte', query_id: 'Q3' }]
+    render(<RispostaCard risposta={{ ...risposta, assenze }} />)
+    expect(screen.getByText('Assenze verificate')).toBeInTheDocument()
+    expect(screen.getByText(/nessuna fattura pagata due volte/)).toBeInTheDocument()
+    expect(screen.getByText('Q3')).toBeInTheDocument()
+  })
+
+  it('senza assenze la sezione non compare', () => {
+    render(<RispostaCard risposta={risposta} />)
+    expect(screen.queryByText('Assenze verificate')).not.toBeInTheDocument()
+  })
+
   it('segnala la causa documentata', () => {
     render(<RispostaCard risposta={{ ...risposta, causa_documentata: true, limiti: null }} />)
     expect(screen.getByText('Causa documentata')).toBeInTheDocument()
@@ -66,6 +79,7 @@ describe('Passi', () => {
         n_pertinenti: null,
         troncato: false,
         offset: null,
+        query_id: 'Q1',
       },
       retry: null,
     },
@@ -85,6 +99,7 @@ describe('Passi', () => {
     render(<Passi passi={passi} />)
     expect(screen.getAllByText('SELECT * FROM v_margine_mensile')).toHaveLength(2) // summary + pre
     expect(screen.getByText('12 righe')).toBeInTheDocument()
+    expect(screen.getByText('Q1')).toBeInTheDocument() // la query citabile da un'assenza
     expect(screen.getByRole('button', { name: 'FATT-A-2025-0001' })).toBeInTheDocument()
   })
 

@@ -25,12 +25,13 @@ def test_sql_result_has_counts_and_ids_but_no_rows() -> None:
         "righe": [["FATT-P-2025-0001", "10.00"], ["FATT-A-2025-0002", "20.00"]],
         "n_righe": 2,
         "troncato": False,
+        "query_id": "Q1",
     }
     part = ToolReturnPart("query_sql", content, tool_call_id="c1")
     ev = tradurre(FunctionToolResultEvent(part))
     assert isinstance(ev, ToolResult)
     assert ev.ids == ["FATT-A-2025-0002", "FATT-P-2025-0001"]
-    assert (ev.n_righe, ev.troncato) == (2, False)
+    assert (ev.n_righe, ev.troncato, ev.query_id) == (2, False, "Q1")
     assert "righe" not in ev.model_dump() and "10.00" not in ev.model_dump_json()
 
 
