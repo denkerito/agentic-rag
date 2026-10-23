@@ -1,0 +1,47 @@
+{
+  "etichetta": "batteria3-senza",
+  "creato_il": "2026-10-22T14:25:06+02:00",
+  "varianti": [
+    {
+      "nome": "senza",
+      "modello": "openrouter:anthropic/claude-haiku-5.5",
+      "semantica": false
+    }
+  ],
+  "ripetizioni": 1,
+  "giudice": "openrouter:anthropic/claude-sonnet-5.5",
+  "criterio": null,
+  "src": "8e0004226b6f5aa5edacff6471e0ae24ed54fa4e",
+  "ground_truth": "e393cb374a81b3a18d9a80f648b89ebf1cf1ce7ab5bef748f29fb75970e7c7c0",
+  "domande": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "limiti": {
+    "agent_max_requests": 25,
+    "timeout_lavoro_s": 300.0,
+    "search_max_distance": 0.3,
+    "elenco_per_pagina": 30,
+    "testo_max_k": 8,
+    "limiti_rpm_tpm": {
+      "agente": [
+        null,
+        null
+      ],
+      "giudice": [
+        null,
+        null
+      ]
+    }
+  }
+}
