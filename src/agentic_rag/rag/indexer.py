@@ -4,6 +4,7 @@ Uso: python -m agentic_rag.rag.indexer
 """
 
 import collections
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import psycopg
@@ -47,10 +48,14 @@ def load_documents(conn: psycopg.Connection) -> list[Documento]:
     return [Documento(r[0], r[1], r[2], r[3], r[4], r[5]) for r in rows]
 
 
-def index_all(conn: psycopg.Connection) -> list[ChunkRecord]:
+Embedder = Callable[[list[str]], list[list[float]]]
+
+
+def index_all(conn: psycopg.Connection, embed: Embedder = embed_documents) -> list[ChunkRecord]:
+    """Riscrive documenti_chunks. `embed` si sostituisce nei test: non consumano la quota Gemini."""
     chunks = build_chunks(load_documents(conn))
     # Tutti gli embedding prima di scrivere: se l'API fallisce il DB resta invariato.
-    vectors = embed_documents([c.testo_embedding for c in chunks])
+    vectors = embed([c.testo_embedding for c in chunks])
     register_vector(conn)
     with conn.transaction(), conn.cursor() as cur:
         cur.execute("DELETE FROM documenti_chunks")
