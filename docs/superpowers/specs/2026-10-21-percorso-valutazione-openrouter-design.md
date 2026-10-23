@@ -220,6 +220,22 @@ Le fonti di supporto che l'agente non cerca restano nel ground truth: CTR-001 e 
 5. Nelle query i codici si confrontano come testo (`categoria = '64.01'`).
 6. Validazione con `python -m agentic_rag.eval --dry-run --gt <cartella>`: tutte le query `ok` e il numero di valori attesi previsto.
 
+## Anteprima invece di risultati SQL tagliati (2026-10-22)
+
+`batteria3-senza`, Q9: l'unica `errata` dopo la revisione. La query delle coppie di fatture restituiva 873 righe, `query_sql` ne mostrava le prime 50 con `troncato: true`, e la coppia duplicata era alla riga 841. L'agente ha concluso «nessuna fattura pagata due volte». Un risultato tagliato sembra comunque un risultato.
+
+**Regola:** un risultato è intero oppure è dichiaratamente un'anteprima.
+- **Intero** se il JSON restituito sta in `SQL_MAX_CARATTERI = 30.000`. La taratura è fatta sulle 302 SQL dell'agente nelle batterie del 22/10: mediana 1.014 caratteri, p99 25.643, solo 2 oltre i 30.000. Le analisi annuali per conto (213 righe) prima venivano tagliate a 50 righe e ora arrivano intere.
+- **Anteprima** oltre la soglia:
+  - `totale_righe` (esatto fino a 5.000 righe lette);
+  - 5 righe d'esempio;
+  - il profilo di tutte le colonne: distinti e nulli; min, max e somma per i numeri; intervallo delle date; valori elencati se sono al massimo 10; lunghezze degli array;
+  - le colonne adatte a un `GROUP BY`;
+  - una nota che chiede di aggregare o filtrare prima di concludere.
+- Citabili solo gli ID visti, cioè anteprima e profilo. Un risultato al limite costa circa 10.000 token (circa 0,0015 $ con la cache); un'anteprima costa meno delle vecchie 50 righe.
+
+Un budget in caratteri da solo era stato scartato: sposta il punto di taglio, ma una riga utile in fondo resta invisibile.
+
 ## Budget
 
 | Voce | Stima |

@@ -34,11 +34,14 @@ def _tool_result(part: ToolReturnPart) -> ToolResult:
     if not isinstance(content, dict):
         return ToolResult(**base)
     if part.tool_name == "query_sql":
+        # risultato intero (righe) oppure anteprima (poche righe e profilo, con il totale)
+        visibile = [content.get(k) for k in ("righe", "anteprima", "profilo") if k in content]
         return ToolResult(
             **base,
-            ids=sorted(extract_ids(str(content.get("righe", [])))),
+            ids=sorted(extract_ids(str(visibile))),
             n_righe=content.get("n_righe"),
             troncato=content.get("troncato"),
+            totale=content.get("totale_righe"),
         )
     if part.tool_name == "elenca_documenti":
         return ToolResult(

@@ -17,6 +17,10 @@ const plurale = (n: number, uno: string, molti: string) => `${n} ${n === 1 ? uno
 /** Riepilogo di una riga dell'esito di un tool. */
 export function riepilogo(tool: string, esito: ToolResult): string {
   if (tool === 'query_sql') {
+    // anteprima: il risultato era troppo grande, l'agente deve aggregare o filtrare
+    if (esito.troncato && esito.totale) {
+      return `Anteprima: ${plurale(esito.n_righe ?? 0, 'riga', 'righe')} su ${esito.totale} (va aggregato)`
+    }
     return `${plurale(esito.n_righe ?? 0, 'riga', 'righe')}${esito.troncato ? ' (risultato troncato)' : ''}`
   }
   if (tool === 'elenca_documenti') {

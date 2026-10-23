@@ -14,6 +14,17 @@ const esito = (campi: Partial<ToolResult>): ToolResult => ({
 })
 
 describe('riepilogo', () => {
+  it('query SQL: righe intere, oppure anteprima con il totale', () => {
+    expect(riepilogo('query_sql', esito({ n_righe: 213, troncato: false }))).toBe('213 righe')
+    expect(riepilogo('query_sql', esito({ n_righe: 5, troncato: true, totale: 873 }))).toBe(
+      'Anteprima: 5 righe su 873 (va aggregato)',
+    )
+    // indagini salvate prima dell'anteprima: troncato senza totale
+    expect(riepilogo('query_sql', esito({ n_righe: 50, troncato: true }))).toBe(
+      '50 righe (risultato troncato)',
+    )
+  })
+
   it('elenco documenti: totale e pagina', () => {
     expect(riepilogo('elenca_documenti', esito({ totale: 12, pagina: 1, pagine: 1 }))).toBe(
       '12 documenti · pagina 1 di 1',
