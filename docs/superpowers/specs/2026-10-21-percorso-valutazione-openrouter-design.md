@@ -45,8 +45,8 @@ L'agente passa a **Claude Haiku 5.5**, il giudice a **Claude Sonnet 5.5**, entra
 1. **Uno o due esperimenti.** *Decisa il 2026-10-22: B.* Le 12 domande attuali sono diventate il set di sviluppo (vedi «Revisione del ground truth di sviluppo»), quindi l'esperimento finale si fa solo sul test set nuovo.
    - **B (consigliata):** un solo esperimento sul test set nuovo, con entrambe le varianti. Nel CV va la tabella con tutte e due; nel prodotto resta la vincente. Il numero della vincente è leggermente ottimista perché viene dallo stesso esperimento che l'ha scelta; lo compensano il criterio fissato prima e il fatto di mostrare entrambe.
    - **A:** ablazione sul set attuale, poi benchmark della sola vincente sul set nuovo. È più pulita e costa circa 2-4 $ in più.
-2. **Ripetizioni: 3 o 5.** Il costo reale ora è noto: circa 0,01 $ per indagine col giudice (vedi «Esito della fase 2»). Con 12 domande e una ripetizione, 5 domande su 12 hanno cambiato esito tra le due varianti: le ripetizioni servono.
-3. **Dimensione del test set nuovo.** *Decisa il 2026-10-23: 50-60 domande* (in `eval/ground_truth_finale/`, guida in `docs/superpowers/plans/2026-10-23-i-tuoi-passi.md`). Il costo non è più il vincolo; lo è il tempo per scrivere il ground truth.
+2. **Ripetizioni: 3 o 5.** *Decisa il 2026-10-25: 3.* L'intervallo si calcola sulle medie per domanda, quindi dipende soprattutto dal numero di domande: altre due ripetizioni riducono poco il rumore e costerebbero circa 3 $ e 3 ore in più, togliendo la riserva per un rilancio. Il costo reale ora è noto: circa 0,01 $ per indagine col giudice (vedi «Esito della fase 2»). Con 12 domande e una ripetizione, 5 domande su 12 hanno cambiato esito tra le due varianti: le ripetizioni servono.
+3. **Dimensione del test set nuovo.** *Decisa il 2026-10-23: 50-60 domande* (in `eval/ground_truth_finale/`, guida in `docs/superpowers/plans/2026-10-23-test-set-finale.md`). Il costo non è più il vincolo; lo è il tempo per scrivere il ground truth.
    - **25 domande** (circa 1,5 $ con 3 ripetizioni): bastano per la decisione di prodotto. Con 12 domande una sola vale 8 punti, con 25 ne vale 4.
    - **50-60 domande** (circa 3 $): necessarie se si vuole affermare che i vettori «non servono» (vedi il punto 5).
 4. **Ground truth e git.** *Deciso il 2026-10-23:* `eval/ground_truth_finale/` è nel `.gitignore` e vietata all'assistente fino alla fine dell'esperimento (`AGENTS.md`). I due file attuali sono tracciati in git, mentre il README dice che il ground truth è fuori da git. Il set nuovo lo terrei fuori (`.gitignore`), almeno fino alla fine dell'esperimento.
@@ -276,6 +276,25 @@ Restavano tre comportamenti dell'agente: falsi «non c'è» (Q9), cause secondar
 - **Costo:** +40-60% per indagine (più ricerche e più rifiuti), comunque basso. L'esperimento finale con 25 domande, 2 varianti e 3 ripetizioni costerebbe circa 1,8 $ col giudice.
 
 **Regola di stop:** da qui l'agente non si ritocca più sul set di sviluppo. I `ko` rimasti si inseguirebbero solo spingendo l'agente verso documenti specifici di queste 12 domande. Il numero che conta verrà dal test set nuovo.
+
+## Avvio dell'esperimento finale (2026-10-25)
+
+Scritto prima di lanciare `finale` e prima di vedere qualunque risultato del test set nuovo.
+
+- **Comando:** `esegui --etichetta finale --gt eval/ground_truth_finale --variante senza:semantica=0 --variante con:semantica=1 --ripetizioni 3 --judge --criterio "task_success_rate:con-senza>=10"`. Codice congelato al tag `eval-v1`.
+- **Ordine delle varianti:** `senza` per prima. Il riepilogo usa la prima variante come riferimento dei confronti appaiati, quindi la tabella esce come `con − senza`, nella stessa direzione del criterio. Il criterio non cambia.
+- **Lettura**, sulle stesse differenze appaiate:
+  - criterio sulla stima puntuale: `con − senza ≥ 10` punti di Task Success Rate;
+  - non-inferiorità: limite superiore dell'IC 95% di `con − senza` sotto i 10 punti;
+  - Answer Accuracy riportata accanto, con lo stesso peso e la stessa lettura.
+- **Validità:** escluse ≤ 10% per variante e sbilanciamento tra le varianti ≤ 5 punti (`riepilogo.validita`).
+- **Rischio accettato:** un errore 4xx degli embedding Gemini (chiave non valida, fatturazione assente) non ferma l'esperimento. Finisce come `fallita_agente` con errore `ClientError` nella variante `con`. Si è scelto di non modificare `src/` prima del congelamento. Lo coprono:
+  - un collaudo sul codice congelato (set di sviluppo, 2 domande × 2 varianti);
+  - una regola di stop.
+- **Regole di stop** (la corsa si interrompe con Ctrl-C e si decide prima di riprendere):
+  - un `ClientError` o `APIError` in `con`;
+  - errori di infrastruttura oltre il 5% delle esecuzioni di una variante;
+  - costo cumulato oltre 6 $.
 
 ## Budget
 
