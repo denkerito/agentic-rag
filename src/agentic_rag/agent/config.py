@@ -29,13 +29,8 @@ SEARCH_MAX_K: int = 8
 # a ~0.31), aziendali ma assenti dai documenti ≥ 0.32, fuori tema ≥ 0.43. La soglia esclude le
 # "assenti": una ricerca senza riscontro deve restituire nulla, non il documento più simile.
 SEARCH_MAX_DISTANCE: float = float(os.getenv("SEARCH_MAX_DISTANCE", "0.30"))
-# Ricerca semantica (tool `cerca_semantica`): spegnibile per l'ablazione (RICERCA_SEMANTICA=0).
-RICERCA_SEMANTICA: bool = os.getenv("RICERCA_SEMANTICA", "1").strip().lower() not in (
-    "0",
-    "false",
-    "no",
-    "off",
-)
+# La ricerca semantica (tool `cerca_semantica`) fa sempre parte del prodotto: non c'è un interruttore
+# di configurazione. Solo l'harness di valutazione la spegne, per l'ablazione (ricerca_semantica=False).
 ELENCO_PER_PAGINA: int = 30  # documenti per pagina di `elenca_documenti`
 TESTO_MAX_K: int = 8  # risultati massimi di `cerca_testo`
 

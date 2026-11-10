@@ -118,6 +118,7 @@ Le interruzioni si riprendono con la sola etichetta. Alla fine si controllano la
 
 - **README e CV:** tabella delle due varianti con intervalli al 95%, κ del giudice, costo per indagine.
 - **Prodotto:** `RICERCA_SEMANTICA` si imposta secondo il verdetto.
+  - *Deciso il 2026-11-10:* la ricerca semantica è sempre inclusa, per scelta di prodotto: con archivi più grandi e un linguaggio meno controllato è considerata indispensabile. Nell'esperimento finale non ha dato un miglioramento misurabile (+0,7 punti di Task Success Rate, IC 95% da −2,0 a +3,3), e la variante con la semantica non è inferiore. L'interruttore `RICERCA_SEMANTICA` è stato tolto; solo l'harness la spegne, per l'ablazione (`--senza-semantica`, varianti `semantica=0`).
 - I report Gemini restano come storico.
 
 ## Esito della fase 2 (2026-10-22)

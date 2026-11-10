@@ -361,9 +361,7 @@ def test_ambiente_pronto_sul_database_reale(dati) -> None:
     assert controlla_ambiente(google_key="k") == []  # compresa la colonna full-text dei documenti
 
 
-def test_la_batteria_rispetta_ricerca_semantica_spenta(tmp_path, monkeypatch, dati) -> None:
-    from agentic_rag.agent import config as agent_config
-
+def _tool_offerti(tmp_path, monkeypatch, dati, **kw) -> set[str]:
     gt = _gt(tmp_path, dati)
     sano = _modello(dati).function
     offerti: set[str] = set()
@@ -372,10 +370,22 @@ def test_la_batteria_rispetta_ricerca_semantica_spenta(tmp_path, monkeypatch, da
         offerti.update(t.name for t in info.function_tools)
         return sano(messages, info)
 
-    monkeypatch.setattr(agent_config, "RICERCA_SEMANTICA", False)  # RICERCA_SEMANTICA=0 nel .env
     monkeypatch.setattr(agent_run, "build_model", lambda name=None: FunctionModel(registra))
-    esegui(gt.domande[:1], pausa=0)
+    esegui(gt.domande[:1], pausa=0, **kw)
+    return offerti
+
+
+def test_la_batteria_puo_spegnere_la_ricerca_semantica(tmp_path, monkeypatch, dati) -> None:
+    offerti = _tool_offerti(tmp_path, monkeypatch, dati, ricerca_semantica=False)  # ablazione
     assert "cerca_testo" in offerti and "cerca_semantica" not in offerti
+
+
+def test_la_ricerca_semantica_non_si_spegne_da_configurazione(tmp_path, monkeypatch, dati) -> None:
+    from agentic_rag.agent import config as agent_config
+
+    # come un RICERCA_SEMANTICA=0 letto dal .env all'avvio: non deve contare più
+    monkeypatch.setattr(agent_config, "RICERCA_SEMANTICA", False, raising=False)
+    assert "cerca_semantica" in _tool_offerti(tmp_path, monkeypatch, dati)
 
 
 def test_credito_esaurito_dell_agente_e_fatale(tmp_path, monkeypatch, dati) -> None:

@@ -18,14 +18,13 @@ def usage_limits() -> UsageLimits:
 
 
 def open_session(
-    model: str | None = None, ricerca_semantica: bool | None = None
+    model: str | None = None, ricerca_semantica: bool = True
 ) -> tuple[Agent[AgentDeps, Risposta], AgentDeps]:
     """Apre la connessione agent_ro e prepara agente e deps. Chi chiama chiude `deps.conn`.
 
-    `ricerca_semantica=None` usa la configurazione (RICERCA_SEMANTICA).
+    Il prodotto usa sempre la ricerca semantica: `ricerca_semantica=False` serve solo all'ablazione
+    dell'harness di valutazione.
     """
-    if ricerca_semantica is None:
-        ricerca_semantica = config.RICERCA_SEMANTICA
     if not app_config.DATABASE_URL_AGENT:
         raise SystemExit("DATABASE_URL_AGENT non impostata (vedi .env.example)")
     # autocommit: agent_ro ha idle_in_transaction_session_timeout=30s, e una transazione implicita
@@ -43,7 +42,7 @@ def open_session(
 
 
 def investigate(
-    domanda: str, model: str | None = None, ricerca_semantica: bool | None = None
+    domanda: str, model: str | None = None, ricerca_semantica: bool = True
 ) -> tuple[Risposta, AgentDeps]:
     agent, deps = open_session(model, ricerca_semantica)
     try:
