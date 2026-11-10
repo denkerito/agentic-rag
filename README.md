@@ -75,7 +75,7 @@ Agente (LLM con tool)
    ├── query_sql          metriche, confronti tra periodi, analisi di fatture e movimenti
    ├── elenca_documenti   indice dei documenti per tipo, periodo, cliente, fornitore
    ├── cerca_testo        ricerca full-text (italiano) su titolo e contenuto
-   ├── cerca_semantica    ricerca per significato (pgvector), disattivabile
+   ├── cerca_semantica    ricerca per significato (pgvector), sempre attiva
    └── apri_documento     lettura del documento completo
    ↓
 Risposta strutturata: numeri + fonti + confidenza + limiti
@@ -203,7 +203,7 @@ python -m agentic_rag.agent "Perché il margine è diminuito ad agosto?"
 
 Ruoli: `postgres` (solo bootstrap), `agentic_owner` (DDL e caricamento), `agent_ro` (sola lettura, usato dall'agente), `app_rw` (scrive lo storico nello schema `app`, senza accesso a `public`). Su un database già inizializzato: `python -m agentic_rag.db.init --app-only` (storico) `--fulltext-only` (ricerca testuale sui documenti) e `--views-only` (viste economiche), senza toccare dati ed embedding.
 
-Variabili principali: `OPENROUTER_API_KEY`, `GOOGLE_API_KEY`, `AGENT_MODEL` (default `openrouter:anthropic/claude-haiku-5.5`), `JUDGE_MODEL` (default `openrouter:anthropic/claude-sonnet-5.5`), `AGENT_MAX_REQUESTS` (25), `RICERCA_SEMANTICA` (1), `DATABASE_URL*`, `CORS_ORIGINS`, `MAX_INDAGINI_CONCORRENTI` (3), `LOGFIRE_TOKEN`. Vedi `.env.example`. Con Docker l'API raggiunge il DB come `db` (`DATABASE_URL_APP_DOCKER` / `DATABASE_URL_AGENT_DOCKER`, da impostare solo se hai cambiato le password).
+Variabili principali: `OPENROUTER_API_KEY`, `GOOGLE_API_KEY`, `AGENT_MODEL` (default `openrouter:anthropic/claude-haiku-5.5`), `JUDGE_MODEL` (default `openrouter:anthropic/claude-sonnet-5.5`), `AGENT_MAX_REQUESTS` (25), `DATABASE_URL*`, `CORS_ORIGINS`, `MAX_INDAGINI_CONCORRENTI` (3), `LOGFIRE_TOKEN`. Vedi `.env.example`. Con Docker l'API raggiunge il DB come `db` (`DATABASE_URL_APP_DOCKER` / `DATABASE_URL_AGENT_DOCKER`, da impostare solo se hai cambiato le password).
 
 | Endpoint | |
 |---|---|

@@ -189,6 +189,20 @@ def test_agent_ro_non_vede_lo_storico() -> None:
         conn.execute("SELECT * FROM app.indagini")
 
 
+def test_la_sessione_del_prodotto_ha_sempre_la_ricerca_semantica(monkeypatch) -> None:
+    """Il percorso dell'API (open_session senza argomenti) ignora un RICERCA_SEMANTICA=0 rimasto."""
+    from agentic_rag.agent import config as agent_config
+
+    # come un RICERCA_SEMANTICA=0 letto dal .env all'avvio
+    monkeypatch.setattr(agent_config, "RICERCA_SEMANTICA", False, raising=False)
+    monkeypatch.setattr(agent_run, "build_model", lambda name=None: "test")
+    agent, deps = agent_run.open_session()
+    try:
+        assert "cerca_semantica" in agent._function_toolset.tools
+    finally:
+        deps.conn.close()
+
+
 def test_sessione_agente_non_resta_in_transazione(monkeypatch) -> None:
     """agent_ro ha idle_in_transaction_session_timeout=30s: nessuna transazione aperta in attesa."""
     monkeypatch.setattr(agent_run, "build_model", lambda name=None: "test")
