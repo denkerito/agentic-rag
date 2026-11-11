@@ -1,19 +1,23 @@
 # AGENTS.md
 
 ## Interaction Protocol
-- Procedi autonomamente solo per task deterministici, modifiche circoscritte o refactoring evidenti.
-- Per modifiche ad alto impatto con molteplici soluzioni valide o task architetturali o nuove feature complesse:
-  - Non fare assunzioni rischiose.
-  - Presenta brevemente i trade-off principali e fai qualche domanda mirata prima di generare il piano o toccare codice.
+- Proceed autonomously only for deterministic tasks, contained changes or obvious refactorings.
+- For high-impact changes with several valid solutions, architectural tasks or complex new features:
+  - Do not make risky assumptions.
+  - Briefly present the main trade-offs and ask a few targeted questions before writing the plan or touching code.
+
+## Language
+- Documentation (README, AGENTS.md, `vision.md`, `docs/`), commit messages and pull requests are in English.
+- Code (names, comments, docstrings, messages), the agent's prompt and the dataset (`data/`) stay in Italian: changing the prompt would change the agent measured in the `finale` experiment.
 
 ## Ground truth
-- Le 12 domande in `eval/ground_truth/` sono il set di sviluppo.
-- La cartella `eval/ground_truth_finale/` (test set finale) e i report privati dei suoi esperimenti (`eval/reports/private/esperimenti/` delle etichette che la usano) sono **vietati all'assistente** fino alla fine dell'esperimento finale: non si aprono, non si leggono, non se ne stampa il contenuto. L'assistente ne conosce solo la struttura (stesso formato del set di sviluppo). Il codice dell'harness li legge a runtime; all'assistente arrivano solo output di conteggi (es. `tools/controlla_ground_truth.py`) e i report pubblici.
-- L'agente e i moduli applicativi non accedono mai ai file di ground truth.
+- The 12 questions in `eval/ground_truth/` are the development set.
+- The 50 questions in `eval/ground_truth_finale/` are the test set of the `finale` experiment (2026-10-26). They were off-limits to the assistant until the experiment and the judge validation were over. Since 2026-11-11 they are visible and in git, so they no longer measure anything new: they are not used to tune prompts, thresholds, tools or metrics, and any future change to the agent must be measured on a new test set.
+- A new test set gets the same protection until its experiment is over. Its folder and the private reports of the labels that use it (`eval/reports/private/esperimenti/`) are not opened, read or printed: the assistant knows only their structure. The harness code reads them at runtime, and the assistant receives only count outputs (e.g. `tools/controlla_ground_truth.py`) and the public reports.
+- The agent and the application modules never access the ground truth files.
 
-## Principi Guida dell'Agente
-1. **I numeri non si inventano:** calcoli, aggregazioni e confronti periodici passano **sempre ed esclusivamente** da query SQL in sola lettura (database relazionale). L'agente non calcola a mente né stima cifre nei prompt.
-2. **Fonti obbligatorie e verificabili:** ogni conclusione o affermazione economica deve essere corredata dagli ID univoci delle fonti a supporto (`FATT-*`, `CTR-*`, `DOC-*`, `MOV-*`, ecc.), per permettere al commercialista di aprire e controllare il dato.
-3. **Onestà sulle cause non documentate:** se un'anomalia o variazione numerica non trova riscontro nei documenti (es. il picco di spese trasferte di novembre), l'agente deve dichiarare esplicitamente che la causa non è documentata nelle fonti, astenendosi da congetture o invenzioni.
-4. **Trasparenza del ragionamento:** l'agente deve rendere visibili i passaggi intermedi dell'indagine (query eseguite, documenti estratti tramite RAG) per consentire all'utente di validare il percorso logico.
-
+## Agent Guiding Principles
+1. **Numbers are never made up:** calculations, aggregations and period comparisons go **always and only** through read-only SQL queries (relational database). The agent does not do mental arithmetic or estimate figures in the prompt.
+2. **Mandatory, verifiable sources:** every conclusion or financial statement must come with the unique IDs of the supporting sources (`FATT-*`, `CTR-*`, `DOC-*`, `MOV-*`, etc.), so the accountant can open and check the data.
+3. **Honesty about undocumented causes:** if an anomaly or numerical change has no match in the documents (e.g. the November travel-expense spike), the agent must state explicitly that the cause is not documented in the sources, without guessing or inventing.
+4. **Transparent reasoning:** the agent must make the intermediate steps of the investigation visible (queries run, documents retrieved through RAG) so the user can validate the line of reasoning.

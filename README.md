@@ -6,263 +6,88 @@
   <img alt="pgvector" src="https://img.shields.io/badge/pgvector-336791?logo=postgresql&logoColor=white">
   <img alt="Claude" src="https://img.shields.io/badge/Claude-D97757?logo=claude&logoColor=white">
   <img alt="OpenRouter" src="https://img.shields.io/badge/OpenRouter-6566F1?logo=openrouter&logoColor=white">
-  <img alt="Gemini embeddings" src="https://img.shields.io/badge/Gemini_embeddings-8E75B2?logo=googlegemini&logoColor=white">
   <img alt="React 19" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black">
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white">
   <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white">
 </p>
 
 # Agentic Financial Investigation
 
-Un agente AI che indaga i dati economici di un'azienda combinando **analisi SQL deterministica** e **ricerca nei documenti** per individuare e spiegare le variazioni rilevanti, citando le fonti e dichiarando quando una causa non è documentata.
+An AI agent that investigates a company's financial data. It combines **SQL queries** for the numbers with **document search** for the causes, cites every source, and says so when a cause is not documented.
 
-<!-- TODO: aggiungere screenshot/GIF in docs/img/ e inserirli qui, ad es. ![Demo](docs/img/demo.gif)
-     Scena consigliata: "Perché il margine è diminuito ad agosto?" → passi dell'indagine → risposta con fonti. -->
+It is a working end-to-end prototype (database, agent, streaming API, web UI, evaluation harness) built on synthetic data from a small Italian company.
 
-[Esempio](#esempio-di-indagine) · [Perché è un agente](#perché-un-agente-e-non-un-chatbot-rag) · [Architettura](#architettura) · [Scelte di progetto](#scelte-di-progetto) · [Incertezza](#quando-le-prove-non-ci-sono) · [Valutazione](#valutazione) · [Avvio locale](#avvio-in-locale)
+[How it works](#how-it-works) · [Results](#results) · [Quick start](#quick-start) · [Limitations](#limitations) · [Full reference](docs/usage.md)
 
-Prototipo end-to-end funzionante: database, RAG, agente, API con streaming, interfaccia web e harness di valutazione. I dati sono sintetici.
+## Example
 
-## Perché l'ho costruito
+**Question:** "Why did revenue in the last quarter fall compared with the previous one?"
 
-Le informazioni economiche di un'azienda sono sparse tra dati strutturati (fatture, movimenti bancari, scritture contabili) e documenti (contratti, email, lettere, verbali). Capire *perché* un numero è cambiato richiede di passare a mano da una fonte all'altra.
+**Answer** (real run, translated):
+> **Facts (from SQL):** revenue fell from €270,300 (Q3 2025) to €226,500 (Q4 2025), **−€43,800**.
+> **Documented cause:** the main customer announced it would bring software development in-house from 1 October, under framework agreement **CTR-008**; its monthly billing drops from about €28,000 to €12,000.
+> **Confidence:** high · **Sources:** CTR-008 plus the invoices and journal entries returned by the queries.
 
-Il progetto esplora una domanda: **come può un agente investigare dati e documenti per aiutare un professionista a capire cosa sta succedendo, mantenendo deterministici i calcoli e verificabili le prove?**
+Every number comes from a query, and every source is an ID you can open in the UI. The UI also shows each step live: queries run, documents searched and opened.
 
-Non sostituisce il commercialista e non automatizza la contabilità: prepara un'analisi preliminare che il professionista può controllare fonte per fonte.
-
-## Esempio di indagine
-
-Domanda: *«Perché i ricavi dell'ultimo trimestre sono calati rispetto al precedente?»*
-(output reale di una esecuzione, riportato dal [report pubblico di eval](eval/reports/20261007-173331.md), troncato)
-
-```
-Domanda
-  ↓
-v_margine_mensile                → andamento mensile di ricavi, costi, margine
-  ↓
-v_economico_mensile (Q3 vs Q4)   → confronto per conto di ricavo
-  ↓
-SUM(ricavi) per trimestre        → totali calcolati dal database
-  ↓
-fatture per cliente, Q3 vs Q4    → il calo si concentra su un cliente (CLI-001)
-  ↓
-ricerca nei documenti            → comunicazione del cliente + contratto CTR-008
-  ↓
-Risposta validata (numeri + fonti)
-```
-
-> **Fatti (da SQL):** i ricavi sono scesi da € 270.300,00 (Q3 2025) a € 226.500,00 (Q4 2025), **-€ 43.800,00**.
-> **Causa documentata:** Barilli Logistica (CLI-001) ha comunicato il 15/09/2025 l'internalizzazione dello sviluppo applicativo dal 1° ottobre, in base all'accordo quadro **CTR-008**; il fatturato mensile del cliente passa da circa € 28.000 a € 12.000.
-> **Confidenza:** alta · **Fonti:** CTR-008 e le fatture/scritture restituite dalle query.
-
-Ogni cifra viene dalla query che l'ha prodotta; ogni fonte è un ID apribile nella UI (fattura, movimento, contratto, email, ...). L'interfaccia mostra i passi in tempo reale: query SQL eseguite, documenti cercati e aperti, eventuali risposte scartate dal controllo sulle fonti.
-
-## Perché un agente e non un chatbot RAG
-
-Un chatbot RAG fa sempre lo stesso percorso:
-
-```
-Domanda → ricerca vettoriale → LLM → risposta
-```
-
-Qui il percorso dipende da ciò che l'indagine scopre:
-
-```
-Domanda
-   ↓
-Agente (LLM con tool)
-   ├── query_sql          metriche, confronti tra periodi, analisi di fatture e movimenti
-   ├── elenca_documenti   indice dei documenti per tipo, periodo, cliente, fornitore
-   ├── cerca_testo        ricerca full-text (italiano) su titolo e contenuto
-   ├── cerca_semantica    ricerca per significato (pgvector), sempre attiva
-   └── apri_documento     lettura del documento completo
-   ↓
-Risposta strutturata: numeri + fonti + confidenza + limiti
-```
-
-Prima confronta i periodi, poi individua la voce responsabile, poi *decide* cosa cercare nei documenti e come: elencare quelli di un cliente o di un periodo, cercare parole precise, cercare un concetto. Una domanda sul contratto di un fornitore non passa dai confronti mensili; una sul margine sì. Un loop di tool con un limite di richieste per domanda (default 25) gestisce entrambi i casi.
-
-## Architettura
+## How it works
 
 ```mermaid
-flowchart TD
-    UI["Frontend React<br/>passi in tempo reale, risposta, fonti cliccabili"]
-    API["API FastAPI<br/>indagini in background, SSE, storico"]
-    AG["Agente (Pydantic AI)"]
-    LLM["LLM (Claude Haiku via OpenRouter)<br/>pianifica, interpreta, scrive la risposta"]
-    GUARD["Validazione risposta<br/>fonti viste, numeri con fonti,<br/>cause su documenti aperti"]
-    SQL["query_sql<br/>validator sqlglot + ruolo agent_ro"]
-    RAG["elenca_documenti / cerca_testo<br/>cerca_semantica / apri_documento"]
-    PG[("PostgreSQL<br/>fatture, movimenti, scritture, viste v_*")]
-    VEC[("documenti<br/>full-text (GIN) + chunk pgvector (HNSW)")]
-    APP[("schema app<br/>storico indagini")]
-
-    UI -->|REST + SSE| API
-    API --> AG
-    API -->|scrive| APP
-    AG <--> LLM
-    AG --> SQL --> PG
-    AG --> RAG --> VEC
-    AG --> GUARD
+flowchart LR
+    Q["Question"] --> A["Agent<br/>(Claude Haiku)"]
+    A --> SQL["SQL tool<br/>read-only"]
+    A --> DOC["Document tools<br/>list · full-text · semantic · open"]
+    SQL --> PG[("PostgreSQL<br/>invoices, payments, ledger")]
+    DOC --> D[("Documents<br/>contracts, emails, minutes")]
+    A --> V["Answer validator"]
+    V --> R["Answer<br/>numbers + sources + confidence"]
 ```
 
-- I **numeri** vengono solo da PostgreSQL (tra cui le viste `v_economico`, `v_economico_mensile`, `v_margine_mensile` che definiscono ricavi, costi e margine per competenza).
-- La **ricerca nei documenti** serve a recuperare contesto e cause, non a produrre cifre. Ai documenti si accede solo con i tool dedicati, non con `query_sql`: ogni accesso è un passo tracciato.
-- L'**LLM** orchestra e interpreta; non calcola.
-- L'agente è **read-only**: si collega con un ruolo che non ha accesso in scrittura ai dati contabili. L'unico dato che l'applicazione scrive è lo storico delle indagini, in uno schema separato (`app`) invisibile all'agente.
+- **The agent chooses the path.** It compares periods, finds the line item responsible, then decides how to search the documents. A fixed RAG pipeline would always take the same route.
+- **Numbers come only from SQL.** The model never calculates; differences and percentages are computed by the queries.
+- **Read-only by design.** The agent connects with a database role that cannot write, and every query is checked before it runs.
+- **Answers are validated.** An answer is rejected (and the model retries) if it cites a source it never saw, gives a number without a source, or claims a documented cause without opening the document.
+- **Honest about gaps.** If no document explains a change, the agent says the cause is not documented instead of guessing.
 
-## Scelte di progetto
+## Results
 
-**SQL + RAG.** Le metriche si calcolano in modo deterministico da dati strutturati, non si generano con un LLM. SQL risponde a «cosa è successo?», i documenti aiutano a rispondere a «perché potrebbe essere successo?». Il prompt vieta il calcolo a mente: differenze e percentuali devono stare nella query.
+Measured on a **test set of 50 questions** written by hand and kept hidden from development until the experiment ended. Each question was run 3 times; an LLM judge (Claude Sonnet) checked the answers.
 
-**Un agente.** Domande diverse richiedono percorsi diversi (solo metriche, confronto tra periodi, ricerca documentale, tutto insieme) e il passo successivo dipende dal risultato del precedente. Una pipeline fissa o sovra-recupera o salta pezzi.
+| Metric | Result (95% CI) |
+|---|---|
+| Task success rate | 94.0% [88.0 – 98.7] |
+| Answer accuracy (LLM judge) | 93.3% [87.3 – 98.0] |
+| All 3 runs correct (pass^3) | 90.0% [80.0 – 98.0] |
+| Invented causes | 0 out of 29 |
+| Sources cited | 100% |
+| Numbers matched | 96.8% [90.7 – 100] |
+| Cost per investigation | about $0.01 (agent + judge) |
+| Time per investigation | 29 s median |
 
-**Sola lettura, a più livelli.** La barriera vera è il database: ruolo `agent_ro` con `statement_timeout` di 10 s e `SET TRANSACTION READ ONLY` per ogni query. Sopra c'è un validator con sqlglot (una sola SELECT, niente scritture, funzioni pericolose bloccate, solo relazioni note) che dà al modello errori chiari invece di errori del database. Investigare e modificare i dati sono responsabilità separate.
+- **Judge reliability:** on 30 answers labelled by hand, agreement was 87% but Cohen's κ was −0.05, below the 0.6 threshold set in advance. Read answer accuracy with caution.
+- **Retrieval:** searching the documents with the question text alone, semantic search finds the right document first more often than keyword search (MRR 0.90 vs 0.75, recall@3 0.93 vs 0.74).
 
-**Prove verificabili.** Le conclusioni sono tracciabili a ID di fonti (`FATT-*`, `MOV-*`, `SCR-*`, `CTR-*`, `DOC-*`, ...). L'obiettivo non è «l'AI dice X» ma «l'AI ha trovato X, ed ecco cosa ha usato». Il vincolo non è solo nel prompt: un *output validator* rifiuta la risposta (e fa riprovare il modello) se cita un ID mai comparso nei risultati dei tool, se un numero non ha fonti, o se dichiara `causa_documentata=true` senza citare almeno un `DOC-*`/`CTR-*` aperto con `apri_documento` (un frammento di ricerca non basta).
+Details: [experiment summary](eval/reports/esperimenti/finale/riepilogo.md) · [retrieval report](eval/reports/recupero/finale.md) · [evaluation design](docs/superpowers/specs/2026-10-19-harness-esperimenti-design.md).
 
-**Ricerca nei documenti: decide l'agente.** Tre strumenti semplici invece di una pipeline di retrieval: l'elenco per metadati e la ricerca full-text sono deterministici (un documento c'è o non c'è, senza soglie), la ricerca semantica copre le parafrasi. È l'agente a scegliere quale usare, come sceglie quale query SQL scrivere. Una ricerca ibrida in un solo tool (fusione RRF di full-text e vettori) sarebbe più robusta con un modello piccolo, ma nasconderebbe la strategia dentro lo strumento; la scelta e i trade-off sono nel [documento di design](docs/superpowers/specs/2026-10-16-ricerca-documenti-opzione-a-design.md). Se la ricerca semantica serva davvero lo decide un esperimento (vedi [Valutazione](#valutazione)).
+## Quick start
 
-**Trasparenza.** Query, ricerche e documenti aperti sono eventi visibili (tool call, tool result, risposte scartate), salvati e rivedibili.
-
-## Quando le prove non ci sono
-
-Il sistema non assume che ogni anomalia abbia una spiegazione.
-
-```
-Variazione rilevata → documento pertinente trovato → conclusione + fonte
-                       (causa_documentata = true)
-
-Variazione rilevata → elenco per controparte/periodo e ricerca testuale con sinonimi: nessun riscontro
-                    → la causa viene dichiarata non documentata
-                       (causa_documentata = false, spiegazione in "limiti")
-```
-
-Esempio reale (stesso report): picco dei costi di trasferta a novembre 2025. L'agente trova nei dati l'origine contabile (quattro fatture di biglietti ferroviari sul conto 64.02, € 1.750 contro una media di € 550), poi risponde che **non esiste alcun documento che motivi le trasferte** e imposta `causa_documentata=false`, con la spiegazione in `limiti`.
-
-I meccanismi: un risultato negativo viene da ricerche riproducibili (l'elenco dei documenti di una controparte in un periodo, una ricerca full-text con le parole usate, visibili nei passi), che il commercialista può rifare; quando una ricerca non trova nulla lo dice esplicitamente e suggerisce di riformulare prima di concludere; la ricerca semantica restituisce solo chunk entro una soglia di distanza coseno; il prompt tratta la causa non documentata come una risposta legittima; il validator impedisce di dichiararla documentata senza aver aperto un documento citato. Non è una garanzia di assenza di allucinazioni: riduce il rischio e rende gli errori controllabili.
-
-## Valutazione
-
-Un harness (`python -m agentic_rag.eval`) esegue un set di domande con lo stesso agente dell'API e le confronta con un ground truth riservato:
-
-- **Dataset:** 12 domande su 6 «storie» (eventi sepolti nei dati: cambi di listino, perdita di un cliente, picchi di spesa, ...) più domande fuori storia, in quattro modalità: normale, *onesta* (causa non documentata), *non rispondibile* (i dati non lo permettono), *regolare* (nessuna anomalia).
-- **Ground truth:** per ciascuna domanda, le fonti che un'indagine corretta deve citare, la query SQL i cui valori sono la risposta numerica attesa, e il comportamento atteso nei casi onesti/non rispondibili. La query attesa gira su un SQLite costruito da `data/csv`, indipendente dall'agente.
-- **Successo:** fonti attese citate, numeri attesi ritrovati nella risposta, nessuna fonte citata mai vista, comportamento corretto nei casi onesti/non rispondibili; opzionalmente un giudice LLM sulla causa.
-- **Separazione:** il ground truth non è mai accessibile all'agente né a chi lo sviluppa. Prompt, soglie e tool non vanno ritoccati guardando il test set.
-
-I report pubblici di ogni esecuzione (risposte, query SQL dell'agente, conteggi per domanda) sono in [`eval/reports/`](eval/reports/); i report di ottobre 2026 usano `gemini-3.5-flash-lite`, senza giudice, con ~9 richieste al modello per domanda. L'agente ora gira su Claude Haiku 5.5 e il giudice su Claude Sonnet 5.5, entrambi via OpenRouter; il riepilogo degli esperimenti riporta il costo reale dichiarato da OpenRouter (agente e giudice) e la quota di input servita dalla cache.
-
-**Esperimenti.** Oltre alla batteria singola, `python -m agentic_rag.eval.esperimento` esegue varianti × ripetizioni × domande (le varianti sono configurazioni: modello, ricerca semantica sì/no). Ogni esecuzione è salvata appena conclusa e un'interruzione si riprende rilanciando `esegui` con la sola `--etichetta` (varianti, domande, criterio e timeout vengono dal manifesto); un manifesto lega l'esperimento al codice (`src/`) e al ground truth (solo l'hash), e la ripresa rifiuta se sono cambiati. Gli errori di infrastruttura (rete, 429, 5xx) non contano come fallimenti: la combinazione si ritenta in un passaggio finale e, se resta fallita, è esclusa e riportata; il confronto tra varianti usa solo le combinazioni concluse in entrambe, e oltre il 10% di escluse (o con esclusioni sbilanciate) l'esperimento è dichiarato non valido.
-
-Metriche, ognuna con il suo denominatore e un intervallo di confidenza al 95% (bootstrap sulle domande): **Task Success Rate**, **Answer Accuracy** (LLM-as-a-judge, validato con il κ di Cohen su un campione etichettato a mano alla cieca), **pass^3** (tutte e tre le esecuzioni corrette), **Source Citation Recall**, **Numeric Exact Match Recall**, **False Acceptance Rate** (cause inventate dove non sono documentate) e **False Abstention Rate** (rinunce dove lo sono), **Guardrail Intervention Rate** (risposte bloccate dal validatore delle fonti), **Session Evidence Recall** (documenti attesi effettivamente recuperati), più token, costo e latenza p50/p95 per indagine. Definizioni nel [documento di design dell'harness](docs/superpowers/specs/2026-10-19-harness-esperimenti-design.md).
-
-**Esperimento sulla ricerca semantica.** Per decidere se tenere i vettori si confrontano le varianti con e senza `cerca_semantica`, stesso modello e stesso prompt, 5 ripetizioni, giudice acceso, con un criterio fissato prima di eseguirlo (i vettori restano solo con almeno 10 punti di Task Success Rate in più). Risultati: in attesa della scelta del modello definitivo.
-
-La valutazione è **preliminare**: 12 domande sono un segnale, non una misura statistica, e gli esiti sono euristiche (soglie in `eval/valutazione.py`) che possono penalizzare risposte corrette ma formulate diversamente.
-
-## Struttura del progetto
-
-```
-src/agentic_rag/
-  agent/    agente, tool, prompt, validazione SQL e risposta
-  rag/      chunking, embedding, indicizzazione, ricerca
-  db/       schema, viste, ruoli, caricamento dati
-  api/      indagini in background, streaming SSE, apertura delle fonti
-  eval/     harness di valutazione
-frontend/   UI React
-data/       CSV contabili e documenti sintetici (contratti, email, lettere, verbali)
-eval/       report pubblici (il ground truth è fuori da git/da questo documento)
-tests/      unit e integrazione
-```
-
-## Avvio in locale
-
-Requisiti: Docker, Python 3.13+, Node.js, una chiave OpenRouter (`OPENROUTER_API_KEY`, per agente e giudice) e una chiave Gemini (`GOOGLE_API_KEY`, per gli embedding della ricerca semantica).
+You need Docker, Python 3.13+, Node.js, an OpenRouter key (agent and judge) and a Gemini key (embeddings).
 
 ```bash
-cp .env.example .env                    # imposta OPENROUTER_API_KEY e GOOGLE_API_KEY; cambia le password se vuoi
+cp .env.example .env                    # add OPENROUTER_API_KEY and GOOGLE_API_KEY
 docker compose up -d db                 # Postgres + pgvector
 pip install -e ".[dev]"
-python -m agentic_rag.db.init --reset   # ruoli, schema, viste, caricamento dati
-python -m agentic_rag.rag.indexer       # chunking + embedding dei documenti (usa la chiave Gemini)
-docker compose up                       # DB + API (:8000) + UI (:5173), con hot-reload
+python -m agentic_rag.db.init --reset   # schema, views, data
+python -m agentic_rag.rag.indexer       # index the documents
+docker compose up                       # API on :8000, UI on :5173
 ```
 
-Apri http://localhost:5173. Senza container: `uvicorn agentic_rag.api.app:app` (un solo worker: le indagini vivono nel processo) e `cd frontend && npm install && npm run dev`.
+Then open http://localhost:5173. Tests: `pytest` (unit) and `pytest -m integration` (needs the database).
 
-Dalla riga di comando:
+The [full reference](docs/usage.md) covers the command line, the API, the environment variables and how to run the evaluation.
 
-```bash
-python -m agentic_rag.agent "Perché il margine è diminuito ad agosto?"
-```
+## Limitations
 
-<details>
-<summary>Ruoli del database, variabili d'ambiente, API</summary>
-
-Ruoli: `postgres` (solo bootstrap), `agentic_owner` (DDL e caricamento), `agent_ro` (sola lettura, usato dall'agente), `app_rw` (scrive lo storico nello schema `app`, senza accesso a `public`). Su un database già inizializzato: `python -m agentic_rag.db.init --app-only` (storico) `--fulltext-only` (ricerca testuale sui documenti) e `--views-only` (viste economiche), senza toccare dati ed embedding.
-
-Variabili principali: `OPENROUTER_API_KEY`, `GOOGLE_API_KEY`, `AGENT_MODEL` (default `openrouter:anthropic/claude-haiku-5.5`), `JUDGE_MODEL` (default `openrouter:anthropic/claude-sonnet-5.5`), `AGENT_MAX_REQUESTS` (25), `DATABASE_URL*`, `CORS_ORIGINS`, `MAX_INDAGINI_CONCORRENTI` (3), `LOGFIRE_TOKEN`. Vedi `.env.example`. Con Docker l'API raggiunge il DB come `db` (`DATABASE_URL_APP_DOCKER` / `DATABASE_URL_AGENT_DOCKER`, da impostare solo se hai cambiato le password).
-
-| Endpoint | |
-|---|---|
-| `POST /indagini` `{"domanda": "..."}` | avvia, `202 {id, stato}` |
-| `GET /indagini?limit&before` | elenco |
-| `GET /indagini/{id}` | stato, risposta, errore, utilizzo |
-| `GET /indagini/{id}/eventi` | SSE: replay + coda live (`Last-Event-ID` / `?dopo=<seq>`) |
-| `POST /indagini/{id}/stop` | ferma l'indagine |
-| `GET /fonti/{id}` | apre una fonte citata (campi, tabelle collegate, testo, collegamenti), sola lettura |
-
-Eventi SSE: `tool_call`, `tool_result` (solo conteggi e ID, mai le righe), `tool_retry`, `risposta_scartata`, e i terminali `risposta`, `errore`, `interrotta`. Un'indagine continua anche se si chiude la pagina; con un riavvio del server quelle in corso diventano `interrotta`.
-
-</details>
-
-<details>
-<summary>Test e valutazione</summary>
-
-```bash
-pytest                                  # unit
-pytest -m integration                   # richiede il database e l'indice (python -m agentic_rag.rag.indexer)
-                                        # non reindicizza: circa 6 chiamate a Gemini per corsa
-cd frontend && npm test && npm run build
-
-python -m agentic_rag.eval --dry-run            # valida il ground truth senza chiamare il modello
-python -m agentic_rag.eval --pause 10           # batteria completa
-python -m agentic_rag.eval --ids 1,4 --judge    # alcune domande, con giudice LLM sulla causa
-python -m agentic_rag.eval --senza-semantica  # batteria senza ricerca semantica
-
-# esperimento: crea
-python -m agentic_rag.eval.esperimento esegui --etichetta esp --variante con:semantica=1 --variante senza:semantica=0 --ripetizioni 5 --judge --criterio "task_success_rate:con-senza>=10"
-# ripresa dopo un'interruzione: solo l'etichetta (con --variante, --ids, --criterio o --timeout rifiuta)
-python -m agentic_rag.eval.esperimento esegui --etichetta esp
-python -m agentic_rag.eval.esperimento riepilogo --etichetta esp     # metriche, confronti, verdetto
-python -m agentic_rag.eval.esperimento etichette --etichetta esp --campione 30   # foglio privato
-python -m agentic_rag.eval.esperimento kappa --etichetta esp         # accordo umano/giudice
-```
-
-Opzioni: `--ids`, `--storia`, `--modalita`, `--model`, `--judge-model`, `--pause`, `--timeout`, `--senza-semantica`, `--etichetta`, `--gt`, `--out`. Gli errori di rete e del provider si rieseguono una volta; credito esaurito o chiave non valida (401/402/403) fermano batteria ed esperimento, che si riprende dopo la ricarica; un'esecuzione senza verdetto del giudice resta da rifare; il timeout (300 s di lavoro, attese del limitatore escluse) conta come fallimento dell'agente. Gli esperimenti scrivono in `eval/reports/esperimenti/<etichetta>/` (pubblico) e in `eval/reports/private/esperimenti/<etichetta>/`. Limiti opzionali di richieste e token al minuto: `AGENT_RPM`, `AGENT_TPM`, `JUDGE_RPM`, `JUDGE_TPM`. Due report: pubblico in `eval/reports/` e privato (con ground truth) in `eval/reports/private/`, ignorato da git.
-
-</details>
-
-## Limiti
-
-- Dati **sintetici**: un'azienda inventata di piccole dimensioni (~300 fatture, ~1.700 scritture, una sessantina di documenti), costruita per contenere eventi da trovare.
-- **Prototipo**, non software contabile di produzione; nessuna integrazione con gestionali reali.
-- Documenti in Markdown; nessun parsing di PDF, scansioni o allegati.
-- Il ragionamento dipende dall'LLM: la stessa domanda può prendere percorsi diversi e le conclusioni non sono deterministiche (i numeri sì, perché vengono dalle query).
-- Valutazione piccola e preliminare; la soglia di pertinenza della ricerca semantica è calibrata a mano.
-- Nessuna autenticazione né isolamento tra clienti.
-
-## Sviluppi possibili
-
-- Connettori a gestionali/ERP reali al posto dei CSV.
-- Revisione umana (human-in-the-loop) con conferma o rifiuto delle conclusioni.
-- Valutazione più ampia, con più esecuzioni per domanda per misurarne la varianza.
-- Ranking delle prove migliore (re-ranking) e soglie di pertinenza apprese.
-- Autenticazione e isolamento per tenant.
-- Altri formati di documento (PDF, scansioni con OCR).
-
-## Filosofia
-
-Il progetto esplora come integrare un agente AI in un flusso di lavoro professionale: il modello indaga e collega le informazioni, sistemi deterministici forniscono i dati e i calcoli, e il professionista resta responsabile della verifica e delle decisioni.
+- Synthetic data: one small company, about 300 invoices and 60 documents.
+- A prototype, not production accounting software; no authentication.
+- Evaluated with one dataset and one model. Scores on the test set (94%) are well above the development set (67%), so the new questions may be easier.
+- The LLM judge is not validated, and the scoring rules are heuristics.

@@ -1,0 +1,17 @@
+# STORIE DEL TEST SET FINALE - OMNIDEN DYNAMICS S.R.L.
+# Stesse storie del set di sviluppo; le domande del test set sono diverse.
+# Le domande senza storia usano uno storia_id descrittivo (contratti, ricavi, ...).
+
+storie:
+  - id: "ST-01"
+    titolo: "Aumento del canone software Nimbus DevOps Enterprise"
+  - id: "ST-02"
+    titolo: "Costo straordinario una tantum per due diligence legale M&A a marzo"
+  - id: "ST-03"
+    titolo: "Riduzione persistente del fatturato del cliente dominante Barilli Logistica da ottobre"
+  - id: "ST-04"
+    titolo: "Variazione non documentata dei costi per trasferte e viaggi a novembre"
+  - id: "ST-05"
+    titolo: "Adeguamento ISTAT ordinario e legittimo del canone di locazione a ottobre"
+  - id: "ST-06"
+    titolo: "Fattura hardware duplicata e saldata due volte a ottobre"

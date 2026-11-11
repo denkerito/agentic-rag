@@ -1,71 +1,71 @@
-# Tentativi del provider nel wrapper del modello: piano di implementazione
+# Provider retries in the model wrapper: implementation plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** il tempo perso per colpa del provider (pause fra i tentativi e durata dei tentativi falliti su 429/5xx/rete) non consuma più il tempo di lavoro dell'eval, quindi un provider instabile non produce più esecuzioni `fallita_agente`.
+**Goal:** the time lost because of the provider (pauses between attempts and the duration of failed attempts on 429/5xx/network) no longer eats into the eval's working time, so an unstable provider no longer produces `fallita_agente` runs.
 
-**Architecture:** il client Gemini smette di ritentare (`GoogleProvider` senza `retry_options`). I tentativi passano in un `WrapperModel` di Pydantic AI (`ModelloGestito`), applicato sempre da `build_model` sia per l'API sia per l'eval. Il wrapper fa passare ogni tentativo dal limitatore RPM/TPM e somma in `MisuraAttese` sia la durata del tentativo fallito sia la pausa successiva. Il watchdog `entro_il_tempo` già sottrae `misura.secondi`, quindi non cambia.
+**Architecture:** the Gemini client stops retrying (`GoogleProvider` without `retry_options`). Retries move into a Pydantic AI `WrapperModel` (`ModelloGestito`), always applied by `build_model` for both the API and the eval. The wrapper sends every attempt through the RPM/TPM limiter and adds to `MisuraAttese` both the duration of the failed attempt and the following pause. The `entro_il_tempo` watchdog already subtracts `misura.secondi`, so it does not change.
 
 **Tech Stack:** Python ≥ 3.13, pydantic-ai 2.54 (`WrapperModel`, `FunctionModel`, `ModelHTTPError`), google-genai 2.28, httpx, pytest.
 
-**Spec:** decisioni prese in chat il 2026-10-20 (riportate sotto), da leggere insieme a `docs/superpowers/specs/2026-10-19-harness-esperimenti-design.md`. La sezione «Riletture del provider» di quel design viene aggiornata nel Task 4.
+**Spec:** decisions taken in chat on 2026-10-20 (reported below), to be read together with `docs/superpowers/specs/2026-10-19-harness-esperimenti-design.md`. The "Provider retries" section of that design is updated in Task 4.
 
-### Decisioni (dalla chat)
+### Decisions (from the chat)
 
-1. **Approccio A:** i tentativi stanno nel wrapper del modello, non nel client HTTP. Non c'è riclassificazione euristica.
-2. Dal tempo di lavoro si escludono **sia la pausa sia la durata del tentativo fallito**.
-3. Il comportamento vale **anche per l'API**: `build_model` è uno solo.
+1. **Approach A:** retries live in the model wrapper, not in the HTTP client. There is no heuristic reclassification.
+2. **Both the pause and the duration of the failed attempt** are excluded from working time.
+3. The behaviour applies **to the API too**: there is a single `build_model`.
 
-### Scelte mie (da confermare in revisione)
+### My choices (to confirm in review)
 
-- **Cadenza:** identica a quella di oggi, cioè 5 tentativi in totale con pause di 10, 20, 40 e 60 s più un jitter fra 0 e 1 s. Si ritentano gli stessi errori di oggi: HTTP 429, 500, 502, 503 e 504, più `httpx.TimeoutException` e `httpx.ConnectError`.
-- **Timeout per tentativo:** 120 s (`asyncio.wait_for`), anch'esso ritentabile. Senza questo limite, una richiesta bloccata arriverebbe al timeout HTTP di pydantic-ai (600 s) e farebbe scattare `TempoScaduto` (300 s) prima di fallire.
-- **Streaming:** si ritenta solo l'apertura dello stream. Un errore dopo il primo evento si propaga com'è, altrimenti l'interfaccia dell'API vedrebbe eventi duplicati.
-- **Nuovo campo `tentativi_provider`:** contiene il numero di tentativi falliti per esecuzione. Va nelle righe dell'esperimento e nell'efficienza del riepilogo, così si vede se una variante ha subito più instabilità del provider. Il campo `attesa_limitatore_media_s` diventa `attesa_media_s`, perché ora include anche le pause dei tentativi.
+- **Cadence:** the same as today, i.e. 5 attempts in total with pauses of 10, 20, 40 and 60 s plus a jitter between 0 and 1 s. The same errors as today are retried: HTTP 429, 500, 502, 503 and 504, plus `httpx.TimeoutException` and `httpx.ConnectError`.
+- **Per-attempt timeout:** 120 s (`asyncio.wait_for`), also retriable. Without this limit, a stuck request would reach pydantic-ai's HTTP timeout (600 s) and trigger `TempoScaduto` (300 s) before failing.
+- **Streaming:** only opening the stream is retried. An error after the first event propagates as is, otherwise the API's interface would see duplicate events.
+- **New `tentativi_provider` field:** holds the number of failed attempts per run. It goes into the experiment rows and into the summary's efficiency, so you can see whether one variant suffered more provider instability. The `attesa_limitatore_media_s` field becomes `attesa_media_s`, because it now also includes the retry pauses.
 
 ## Global Constraints
 
-- Nomi, docstring, commenti e messaggi di commit in italiano, con lo stile dei file vicini.
-- Codici ritentabili: `CODICI_TEMPORANEI = (429, 500, 502, 503, 504)`.
-- Cadenza: `tentativi=5`, `attesa_iniziale_s=10.0`, `attesa_max_s=60.0`, `jitter_s=1.0`, `timeout_tentativo_s=120.0`.
-- Le attese si sommano in `MisuraAttese` a passi di `PASSO_ATTESA_S` (1 s), già definito in `limiti.py`. Il watchdog deve vederle crescere durante la pausa, non solo alla fine.
-- `asyncio.CancelledError` non si ritenta mai, perché è il modo in cui `entro_il_tempo` ferma l'agente.
-- I test girano con `.venv/Scripts/python.exe -m pytest -q` (gli integration test sono esclusi di default). Il lint gira con `.venv/Scripts/python.exe -m ruff check src tests`.
-- Ogni commit termina con `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
-- Il codice e i test **non leggono** `eval/ground_truth/` (vedi AGENTS.md).
+- Names, docstrings, comments and commit messages in Italian, in the style of the neighbouring files.
+- Retriable codes: `CODICI_TEMPORANEI = (429, 500, 502, 503, 504)`.
+- Cadence: `tentativi=5`, `attesa_iniziale_s=10.0`, `attesa_max_s=60.0`, `jitter_s=1.0`, `timeout_tentativo_s=120.0`.
+- Waits are added to `MisuraAttese` in steps of `PASSO_ATTESA_S` (1 s), already defined in `limiti.py`. The watchdog must see them grow during the pause, not only at the end.
+- `asyncio.CancelledError` is never retried, because it is how `entro_il_tempo` stops the agent.
+- Tests run with `.venv/Scripts/python.exe -m pytest -q` (integration tests are excluded by default). Lint runs with `.venv/Scripts/python.exe -m ruff check src tests`.
+- Every commit ends with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+- Code and tests **do not read** `eval/ground_truth/` (see AGENTS.md).
 
 ## Review Focus
 
-1. **Errore dello stream dopo il primo evento:** non si ritenta e non duplica gli eventi. Test `test_stream_errore_dopo_il_primo_evento_non_si_ritenta` (Task 2).
-2. **Cancellazione durante la pausa** (il watchdog o l'utente fermano l'indagine): il task si ferma subito e non parte nessun altro tentativo. Test `test_cancellazione_durante_la_pausa_si_propaga` (Task 2).
-3. **Errori non temporanei** (400, 404 modello inesistente, `UsageLimitExceeded`, `UnexpectedModelBehavior`): si propagano al primo colpo. Test `test_da_ritentare` (Task 1) e `test_errore_non_temporaneo_non_si_ritenta` (Task 2).
-4. **API senza `misura_attese()` attiva:** il wrapper funziona e non solleva eccezioni. Test `test_senza_misura_attiva_funziona` (Task 2).
-5. **Esperimenti salvati prima di questa modifica,** con righe senza `tentativi_provider`: `riepilogo` non va in errore e conta 0. Test `test_efficienza_righe_senza_tentativi_provider` (Task 4).
+1. **Stream error after the first event:** it is not retried and does not duplicate events. Test `test_stream_errore_dopo_il_primo_evento_non_si_ritenta` (Task 2).
+2. **Cancellation during the pause** (the watchdog or the user stops the investigation): the task stops immediately and no further attempt starts. Test `test_cancellazione_durante_la_pausa_si_propaga` (Task 2).
+3. **Non-transient errors** (400, 404 non-existent model, `UsageLimitExceeded`, `UnexpectedModelBehavior`): they propagate on the first hit. Tests `test_da_ritentare` (Task 1) and `test_errore_non_temporaneo_non_si_ritenta` (Task 2).
+4. **API without an active `misura_attese()`:** the wrapper works and raises no exceptions. Test `test_senza_misura_attiva_funziona` (Task 2).
+5. **Experiments saved before this change,** with rows without `tentativi_provider`: `riepilogo` does not fail and counts 0. Test `test_efficienza_righe_senza_tentativi_provider` (Task 4).
 
 ---
 
-### Task 1: Politica dei tentativi e attese misurate
+### Task 1: Retry policy and measured waits
 
 **Files:**
 - Create: `src/agentic_rag/agent/tentativi.py`
-- Modify: `src/agentic_rag/agent/limiti.py`, che riceve `MisuraAttese`, l'aggiunta delle attese e il nuovo `dormi_misurato`
-- Test: `tests/test_agent_tentativi.py` (nuovo), `tests/test_agent_limiti.py`
+- Modify: `src/agentic_rag/agent/limiti.py`, which gets `MisuraAttese`, the addition of waits and the new `dormi_misurato`
+- Test: `tests/test_agent_tentativi.py` (new), `tests/test_agent_limiti.py`
 
 **Interfaces:**
 - Produces in `limiti.py`:
-  - `MisuraAttese.tentativi_falliti: int = 0`, campo nuovo accanto a `secondi`;
-  - `def aggiungi_attesa(secondi: float) -> None`: somma alla misura attiva, se c'è, altrimenti non fa nulla;
+  - `MisuraAttese.tentativi_falliti: int = 0`, a new field next to `secondi`;
+  - `def aggiungi_attesa(secondi: float) -> None`: adds to the active measurement, if there is one, otherwise does nothing;
   - `def conta_tentativo_fallito() -> None`;
-  - `async def dormi_misurato(secondi: float, dormi: Callable[[float], Awaitable[None]] = asyncio.sleep) -> None`: dorme a passi di `PASSO_ATTESA_S` e chiama `aggiungi_attesa` dopo ogni passo.
-- `Limitatore.attendi` usa `aggiungi_attesa` al posto dell'accesso diretto a `_misura`.
+  - `async def dormi_misurato(secondi: float, dormi: Callable[[float], Awaitable[None]] = asyncio.sleep) -> None`: sleeps in steps of `PASSO_ATTESA_S` and calls `aggiungi_attesa` after each step.
+- `Limitatore.attendi` uses `aggiungi_attesa` instead of accessing `_misura` directly.
 - Produces in `tentativi.py`:
   - `CODICI_TEMPORANEI: tuple[int, ...]`;
-  - `@dataclass(frozen=True) class PoliticaTentativi`, con i campi e i default elencati nei Global Constraints;
+  - `@dataclass(frozen=True) class PoliticaTentativi`, with the fields and defaults listed in the Global Constraints;
   - `POLITICA = PoliticaTentativi()`;
-  - `def pausa(politica: PoliticaTentativi, n: int, casuale: Callable[[], float] = random.random) -> float`: è la pausa dopo l'`n`-esimo tentativo fallito (n parte da 1) e vale `min(attesa_iniziale_s * 2**(n-1), attesa_max_s) + jitter_s * casuale()`;
+  - `def pausa(politica: PoliticaTentativi, n: int, casuale: Callable[[], float] = random.random) -> float`: the pause after the `n`-th failed attempt (n starts at 1), equal to `min(attesa_iniziale_s * 2**(n-1), attesa_max_s) + jitter_s * casuale()`;
   - `def da_ritentare(e: BaseException) -> bool`.
 
-- [ ] **Step 1: Scrivi i test che falliscono**
+- [ ] **Step 1: Write the failing tests**
 
 ```python
 def test_pausa_segue_la_cadenza_di_prima() -> None:
@@ -86,7 +86,7 @@ def test_da_ritentare() -> None:
     assert not da_ritentare(asyncio.CancelledError())
 ```
 
-In `tests/test_agent_limiti.py`, riusando la classe `Orologio` che c'è già:
+In `tests/test_agent_limiti.py`, reusing the existing `Orologio` class:
 
 ```python
 def test_dormi_misurato_somma_a_passi() -> None:
@@ -101,19 +101,19 @@ def test_dormi_misurato_somma_a_passi() -> None:
     assert visti == [0.0, 1.0, 2.0]  # cresce passo per passo, non tutta alla fine
 ```
 
-- [ ] **Step 2: Lancia i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and check that they fail**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/test_agent_tentativi.py tests/test_agent_limiti.py -q`
-Expected: FAIL con `ModuleNotFoundError: agentic_rag.agent.tentativi` / `ImportError: dormi_misurato`.
+Expected: FAIL with `ModuleNotFoundError: agentic_rag.agent.tentativi` / `ImportError: dormi_misurato`.
 
-- [ ] **Step 3: Implementa** il contenuto dell'Interfaces block.
-  - In `da_ritentare`: un `ModelHTTPError` si ritenta se `status_code` è in `CODICI_TEMPORANEI`; un `genai_errors.APIError` se `code` è in `CODICI_TEMPORANEI`; si ritentano anche `httpx.TimeoutException`, `httpx.ConnectError` e `TimeoutError`.
-  - `CancelledError` è una `BaseException` e deve restare esclusa.
+- [ ] **Step 3: Implement** the content of the Interfaces block.
+  - In `da_ritentare`: a `ModelHTTPError` is retried if `status_code` is in `CODICI_TEMPORANEI`; a `genai_errors.APIError` if `code` is in `CODICI_TEMPORANEI`; `httpx.TimeoutException`, `httpx.ConnectError` and `TimeoutError` are retried too.
+  - `CancelledError` is a `BaseException` and must stay excluded.
 
-- [ ] **Step 4: Lancia i test e verifica che passino**
+- [ ] **Step 4: Run the tests and check that they pass**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/test_agent_tentativi.py tests/test_agent_limiti.py -q`
-Expected: PASS (anche i 3 test del limitatore che c'erano già).
+Expected: PASS (including the 3 limiter tests that were already there).
 
 - [ ] **Step 5: Commit**
 
@@ -124,34 +124,34 @@ git commit -m "feat(agent): politica dei tentativi su 429/5xx e attese misurate 
 
 ---
 
-### Task 2: `ModelloGestito`, il wrapper con limitatore e tentativi
+### Task 2: `ModelloGestito`, the wrapper with limiter and retries
 
 **Files:**
-- Modify: `src/agentic_rag/agent/tentativi.py`, dove arriva `ModelloGestito`
-- Modify: `src/agentic_rag/agent/limiti.py`, da cui si rimuove `ModelloLimitato` (lo sostituisce `ModelloGestito`)
+- Modify: `src/agentic_rag/agent/tentativi.py`, where `ModelloGestito` lands
+- Modify: `src/agentic_rag/agent/limiti.py`, from which `ModelloLimitato` is removed (`ModelloGestito` replaces it)
 - Test: `tests/test_agent_tentativi.py`
 
 **Interfaces:**
 - Consumes: `Limitatore`, `aggiungi_attesa`, `conta_tentativo_fallito`, `dormi_misurato` (Task 1); `PoliticaTentativi`, `pausa`, `da_ritentare` (Task 1).
-- Produces: `class ModelloGestito(WrapperModel)` con
+- Produces: `class ModelloGestito(WrapperModel)` with
   `__init__(self, wrapped: Model | KnownModelName, limitatore: Limitatore | None, politica: PoliticaTentativi = POLITICA, orologio: Callable[[], float] = time.monotonic, dormi: Callable[[float], Awaitable[None]] = asyncio.sleep, casuale: Callable[[], float] = random.random)`.
-  Ridefinisce `request` e `request_stream`, con le stesse firme del `ModelloLimitato` attuale.
+  It overrides `request` and `request_stream`, with the same signatures as the current `ModelloLimitato`.
 
-Ogni tentativo segue questi passi:
-1. Se c'è un limitatore, chiama `await limitatore.attendi()`.
-2. Prende `inizio = orologio()`.
-3. Esegue la richiesta interna dentro `asyncio.wait_for(…, politica.timeout_tentativo_s)`.
-4. Su un'eccezione per cui `da_ritentare` è vero chiama `aggiungi_attesa(orologio() - inizio)` e `conta_tentativo_fallito()`. Se era l'ultimo tentativo rilancia l'eccezione, altrimenti chiama `await dormi_misurato(pausa(politica, n, casuale), dormi)` e riprova.
-5. Su qualsiasi altra eccezione la rilancia subito.
-6. Se la richiesta riesce, registra i token nel limitatore come fa oggi.
+Each attempt follows these steps:
+1. If there is a limiter, call `await limitatore.attendi()`.
+2. Take `inizio = orologio()`.
+3. Run the inner request inside `asyncio.wait_for(…, politica.timeout_tentativo_s)`.
+4. On an exception for which `da_ritentare` is true, call `aggiungi_attesa(orologio() - inizio)` and `conta_tentativo_fallito()`. If it was the last attempt, re-raise the exception; otherwise call `await dormi_misurato(pausa(politica, n, casuale), dormi)` and try again.
+5. On any other exception, re-raise it immediately.
+6. If the request succeeds, record the tokens in the limiter as today.
 
-Nello streaming il ciclo avvolge solo l'ingresso nel context manager interno: con `FunctionModel` e `GoogleModel` la risposta HTTP o il primo evento arrivano proprio lì. Dopo il `yield` non si ritenta più.
+In streaming, the loop wraps only the entry into the inner context manager: with `FunctionModel` and `GoogleModel` the HTTP response or the first event arrive right there. After the `yield` there are no more retries.
 
-- [ ] **Step 1: Scrivi i test che falliscono**
+- [ ] **Step 1: Write the failing tests**
 
-Per i test servono:
-- un `Orologio` finto, come in `tests/test_agent_limiti.py`;
-- un `FunctionModel` costruito con una funzione che solleva `ModelHTTPError(503)` per i primi N tentativi e poi restituisce `ModelResponse(parts=[TextPart("ok")])`, facendo avanzare l'orologio finto di 5 s a ogni tentativo fallito;
+The tests need:
+- a fake `Orologio`, as in `tests/test_agent_limiti.py`;
+- a `FunctionModel` built with a function that raises `ModelHTTPError(503)` for the first N attempts and then returns `ModelResponse(parts=[TextPart("ok")])`, advancing the fake clock by 5 s on every failed attempt;
 - `casuale=lambda: 0.0`.
 
 ```python
@@ -199,16 +199,16 @@ def test_senza_misura_attiva_funziona() -> None:
     # come il primo test ma fuori da misura_attese(): risposta "ok", nessuna eccezione
 ```
 
-Per lanciare la richiesta nei test (`richiedi`), chiama `model.request([ModelRequest.user_text_prompt("x")], None, ModelRequestParameters())`. Per lo streaming usa `async with model.request_stream(...) as s` e consuma `s`.
+To make the request in the tests (`richiedi`), call `model.request([ModelRequest.user_text_prompt("x")], None, ModelRequestParameters())`. For streaming, use `async with model.request_stream(...) as s` and consume `s`.
 
-- [ ] **Step 2: Lancia i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and check that they fail**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/test_agent_tentativi.py -q`
-Expected: FAIL con `ImportError: ModelloGestito`.
+Expected: FAIL with `ImportError: ModelloGestito`.
 
-- [ ] **Step 3: Implementa `ModelloGestito`** in `tentativi.py` seguendo il ciclo descritto sopra e rimuovi `ModelloLimitato` da `limiti.py`. Aggiorna la docstring del modulo `limiti.py`, che non contiene più il wrapper.
+- [ ] **Step 3: Implement `ModelloGestito`** in `tentativi.py` following the loop described above, and remove `ModelloLimitato` from `limiti.py`. Update the `limiti.py` module docstring, which no longer contains the wrapper.
 
-- [ ] **Step 4: Lancia i test e verifica che passino**
+- [ ] **Step 4: Run the tests and check that they pass**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/test_agent_tentativi.py tests/test_agent_limiti.py -q`
 Expected: PASS.
@@ -222,7 +222,7 @@ git commit -m "feat(agent): ModelloGestito ritenta 429/5xx passando dal limitato
 
 ---
 
-### Task 3: `build_model` usa sempre `ModelloGestito`, e il client Gemini non ritenta più
+### Task 3: `build_model` always uses `ModelloGestito`, and the Gemini client no longer retries
 
 **Files:**
 - Modify: `src/agentic_rag/agent/model.py`
@@ -230,9 +230,9 @@ git commit -m "feat(agent): ModelloGestito ritenta 429/5xx passando dal limitato
 
 **Interfaces:**
 - Consumes: `ModelloGestito`, `POLITICA` (Task 2); `limitatore_per`.
-- Produces: `build_model(name: str | None = None, ruolo: str = "agente") -> Model`. Restituisce sempre un `ModelloGestito`; il tipo restituito passa da `Model | str` a `Model`. `RETRY_429` viene rimosso.
+- Produces: `build_model(name: str | None = None, ruolo: str = "agente") -> Model`. It always returns a `ModelloGestito`; the return type goes from `Model | str` to `Model`. `RETRY_429` is removed.
 
-- [ ] **Step 1: Scrivi i test che falliscono**
+- [ ] **Step 1: Write the failing tests**
 
 ```python
 def test_build_model_avvolge_sempre_con_i_tentativi() -> None:
@@ -247,22 +247,22 @@ def test_client_gemini_non_ritenta_da_solo(monkeypatch) -> None:
     assert m.wrapped.client._api_client._http_options.retry_options is None
 ```
 
-Se l'attributo per arrivare al client si chiama diversamente in pydantic-ai 2.54, adatta il percorso; l'asserzione resta la stessa.
+If the attribute used to reach the client has a different name in pydantic-ai 2.54, adapt the path; the assertion stays the same.
 
-- [ ] **Step 2: Lancia i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and check that they fail**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/test_agent_unit.py -q -k "build_model or client_gemini"`
-Expected: FAIL (`"test"` restituito come stringa; `retry_options` impostato).
+Expected: FAIL (`"test"` returned as a string; `retry_options` set).
 
-- [ ] **Step 3: Implementa.**
-  - Crea `GoogleProvider(api_key=...)` senza `retry_options`.
-  - Restituisci sempre `ModelloGestito(model, limitatore_per(ruolo, name, rpm, tpm))`.
-  - Aggiorna la docstring del modulo: i tentativi su 429/5xx li fa il wrapper.
+- [ ] **Step 3: Implement.**
+  - Create `GoogleProvider(api_key=...)` without `retry_options`.
+  - Always return `ModelloGestito(model, limitatore_per(ruolo, name, rpm, tpm))`.
+  - Update the module docstring: the 429/5xx retries are done by the wrapper.
 
-- [ ] **Step 4: Lancia tutta la suite unitaria e verifica che passi**
+- [ ] **Step 4: Run the whole unit suite and check that it passes**
 
 Run: `.venv/Scripts/python.exe -m pytest -q`
-Expected: PASS. I test di API ed eval che fanno il monkeypatch di `build_model` non cambiano.
+Expected: PASS. The API and eval tests that monkeypatch `build_model` do not change.
 
 - [ ] **Step 5: Commit**
 
@@ -273,25 +273,25 @@ git commit -m "fix(agent): i tentativi su 429/5xx passano dal wrapper, il client
 
 ---
 
-### Task 4: l'eval registra i tentativi del provider e il riepilogo li riporta
+### Task 4: the eval records the provider retries and the summary reports them
 
 **Files:**
 - Modify: `src/agentic_rag/eval/runner.py` (`RisultatoDomanda`, `esegui_domanda`)
 - Modify: `src/agentic_rag/eval/metriche.py` (`_base`)
-- Modify: `src/agentic_rag/eval/riepilogo.py` (`efficienza`, nota finale di `markdown`)
-- Modify: `docs/superpowers/specs/2026-10-19-harness-esperimenti-design.md`, punto «Riletture del provider»
+- Modify: `src/agentic_rag/eval/riepilogo.py` (`efficienza`, final note of `markdown`)
+- Modify: `docs/superpowers/specs/2026-10-19-harness-esperimenti-design.md`, the "Provider retries" item
 - Test: `tests/test_eval_unit_runner.py`, `tests/test_eval_riepilogo.py`
 
 **Interfaces:**
-- Consumes: `ModelloGestito`, `PoliticaTentativi` (Task 2); `MisuraAttese.tentativi_falliti` (Task 1); `entro_il_tempo` (già presente).
+- Consumes: `ModelloGestito`, `PoliticaTentativi` (Task 2); `MisuraAttese.tentativi_falliti` (Task 1); `entro_il_tempo` (already there).
 - Produces:
-  - `RisultatoDomanda.tentativi_provider: int = 0`, valorizzato da `misura.tentativi_falliti` sia quando l'esecuzione riesce sia quando va in errore;
-  - la chiave `"tentativi_provider"` in `_base`;
-  - in `efficienza`, `"attesa_media_s"` (prima si chiamava `attesa_limitatore_media_s`) e `"tentativi_provider_medi"`, quest'ultimo calcolato con `r.get("tentativi_provider", 0)`.
+  - `RisultatoDomanda.tentativi_provider: int = 0`, filled from `misura.tentativi_falliti` both when the run succeeds and when it errors;
+  - the `"tentativi_provider"` key in `_base`;
+  - in `efficienza`, `"attesa_media_s"` (formerly `attesa_limitatore_media_s`) and `"tentativi_provider_medi"`, the latter computed with `r.get("tentativi_provider", 0)`.
 
-- [ ] **Step 1: Scrivi i test che falliscono**
+- [ ] **Step 1: Write the failing tests**
 
-In `tests/test_eval_unit_runner.py` va il test di regressione della weakness. Il `dormi` finto fa avanzare l'orologio finto **e** aspetta 0,3 s reali, così il watchdog (che controlla ogni 0,2 s reali) osserva davvero la pausa:
+`tests/test_eval_unit_runner.py` gets the regression test for the weakness. The fake `dormi` advances the fake clock **and** waits 0.3 real seconds, so the watchdog (which checks every 0.2 real seconds) really observes the pause:
 
 ```python
 def test_tentativi_del_provider_non_consumano_il_tempo_di_lavoro() -> None:
@@ -318,21 +318,21 @@ def test_efficienza_media_dei_tentativi_provider() -> None:
     assert efficienza(righe, None)["tentativi_provider_medi"] == 1.0
 ```
 
-Se l'helper delle righe di test ha un altro nome, usa quello: costruisce già le righe con `"token_input": 1000` e `"attesa_s": 0.0`.
+If the test-row helper has another name, use that one: it already builds the rows with `"token_input": 1000` and `"attesa_s": 0.0`.
 
-- [ ] **Step 2: Lancia i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and check that they fail**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/test_eval_unit_runner.py tests/test_eval_riepilogo.py -q`
-Expected: FAIL. Se il Task 2 è fatto, il test del runner può già passare, perché il watchdog non cambia: in quel caso resta come test di regressione. I test del riepilogo falliscono con `KeyError: 'tentativi_provider_medi'`.
+Expected: FAIL. If Task 2 is done, the runner test may already pass, because the watchdog does not change: in that case it stays as a regression test. The summary tests fail with `KeyError: 'tentativi_provider_medi'`.
 
-- [ ] **Step 3: Implementa** i campi dell'Interfaces block e aggiorna due testi.
-  - **Nota finale di `markdown`:** sostituisci la frase sui tentativi interni del client con «Pause e tentativi falliti del provider (429/5xx, rete) sono esclusi dal tempo di lavoro e inclusi nell'attesa media.»
-  - **Design, punto «Riletture del provider»:** riscrivilo per dire che i tentativi li fa `ModelloGestito` (con cadenza e codici dai Global Constraints), che la durata dei tentativi falliti e le pause entrano in `attesa_s` e che rimane un limite: un tentativo in corso conta come lavoro finché non fallisce, al massimo 120 s.
+- [ ] **Step 3: Implement** the fields of the Interfaces block and update two texts.
+  - **Final note of `markdown`:** replace the sentence about the client's internal retries with "Pause e tentativi falliti del provider (429/5xx, rete) sono esclusi dal tempo di lavoro e inclusi nell'attesa media."
+  - **Design, "Provider retries" item:** rewrite it to say that retries are done by `ModelloGestito` (with the cadence and codes from the Global Constraints), that the duration of failed attempts and the pauses go into `attesa_s`, and that one limit remains: an attempt in progress counts as work until it fails, at most 120 s.
 
-- [ ] **Step 4: Lancia tutta la suite e il lint e verifica che passino**
+- [ ] **Step 4: Run the whole suite and the lint and check that they pass**
 
-Run: `.venv/Scripts/python.exe -m pytest -q` e `.venv/Scripts/python.exe -m ruff check src tests`
-Expected: PASS, nessun errore di lint.
+Run: `.venv/Scripts/python.exe -m pytest -q` and `.venv/Scripts/python.exe -m ruff check src tests`
+Expected: PASS, no lint errors.
 
 - [ ] **Step 5: Commit**
 
@@ -343,8 +343,8 @@ git commit -m "feat(eval): tentativi del provider fuori dal tempo di lavoro e ri
 
 ---
 
-## Verifica finale (manuale, con il database acceso)
+## Final check (manual, with the database running)
 
-- `.venv/Scripts/python.exe -m pytest -q -m integration`: gli integration test di API ed eval passano.
-- Una domanda reale con `python -m agentic_rag.eval --ids <un id>`: la riga riporta `tentativi_provider` e la durata è coerente.
-- Nota: cambiando `src/`, l'hash del manifesto cambia e gli esperimenti già avviati non si possono riprendere. È voluto: vanno rieseguiti.
+- `.venv/Scripts/python.exe -m pytest -q -m integration`: the API and eval integration tests pass.
+- A real question with `python -m agentic_rag.eval --ids <an id>`: the row reports `tentativi_provider` and the duration is consistent.
+- Note: changing `src/` changes the manifest hash, so experiments already started cannot be resumed. This is intended: they must be rerun.
