@@ -297,6 +297,39 @@ Scritto prima di lanciare `finale` e prima di vedere qualunque risultato del tes
   - errori di infrastruttura oltre il 5% delle esecuzioni di una variante;
   - costo cumulato oltre 6 $.
 
+## Esito dell'esperimento finale (2026-10-26)
+
+`finale`: 50 domande × 2 varianti × 3 ripetizioni = 300 esecuzioni, tutte chiuse. Nessuna esclusa, 0 errori di infrastruttura, ogni esecuzione con il verdetto del giudice. Costo 2,90 $ (0,0048 $ per indagine più 0,005 $ per verdetto).
+
+| | `senza` | `con` | `con − senza` (IC 95%) |
+|---|---|---|---|
+| Task Success Rate | 93,3% | 94,0% | +0,7 [−2,0, +3,3] |
+| Answer Accuracy | 92,3% | 93,3% | +1,0 [−4,0, +6,0] |
+| pass^3 | 88% | 90% | |
+| Cause inventate | 0/29 | 0/29 | |
+
+- **Criterio** (`con − senza ≥ 10` punti di Task Success Rate): **non superato**.
+- **Non-inferiorità:** dimostrata. Il limite superiore dell'IC è +3,3, sotto i 10 punti.
+- **Prodotto:** la ricerca semantica resta, per scelta di prodotto (vedi la fase 7).
+- **Giudice:** campione di 30 risposte etichettate alla cieca. κ −0,05 sia a 3 classi sia binario, accordo 87%: per la regola fissata prima (κ ≥ 0,6), il giudice **non è validato**.
+
+## Analisi dopo l'esperimento finale (2026-11-11)
+
+Fatta dopo aver tolto il divieto, sui report privati e sul set. Non si è corretto nulla: il set non serve più a misurare, e cambiare metriche o agente adesso altererebbe a posteriori i numeri dell'esperimento.
+
+- **False Abstention Rate al 65%: è un artefatto della metrica.** La metrica considera «causa documentata attesa» ogni domanda normale che ha un documento tra le fonti attese. Le 76 astensioni su 117 cadono su 15 domande, quasi tutte senza una causa da spiegare:
+  - recuperi semplici (#4, #12, #46, #47);
+  - contratti (#19-#22, #24);
+  - verifiche con risposta «no» (#3, #18, #37, #43, #44).
+
+  Lì «causa non documentata» non è un errore, e 75 di quelle 76 esecuzioni sono `ok`. Sulle domande che chiedono davvero una causa (#2, #6) l'agente si astiene 1 volta su 12. *Lavoro futuro:* applicare la metrica solo alle domande con una causa da spiegare (per esempio dal campo `tipo`).
+- **Le 5 esecuzioni fallite** sono tutte `UnexpectedModelBehavior`, cioè risposte rifiutate dal validatore finché i tentativi si esauriscono. I rifiuti sono per fonti mai viste, numeri senza fonti e assenze non provate.
+  - #37 (verifica con risposta «no» sul costo del personale): 3 esecuzioni su 6 fallite, in entrambe le varianti.
+  - #48 e #50 (non rispondibili): 1 esecuzione ciascuna.
+
+  Il validatore fa il suo lavoro: l'agente non riesce a sostenere con le fonti una risposta che non trova nei dati.
+- **I 4 disaccordi tra umano e giudice.** Riletti, l'errore era dell'etichettatura umana. In 3 casi il giudice è più severo: dà «parziale» dove l'umano aveva dato «corretta», per un numero contraddittorio (#48), una premessa contraddetta (#34) e documenti pertinenti omessi (#50). Nel quarto (#45) è più indulgente. Quindi il giudice non gonfia i risultati, e il Task Success Rate (che boccia solo le `errata`) non ne risente. La rilettura è avvenuta conoscendo i verdetti, quindi il κ ufficiale resta −0,05.
+
 ## Budget
 
 | Voce | Stima |

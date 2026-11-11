@@ -122,7 +122,7 @@ flowchart TD
 
 **Prove verificabili.** Le conclusioni sono tracciabili a ID di fonti (`FATT-*`, `MOV-*`, `SCR-*`, `CTR-*`, `DOC-*`, ...). L'obiettivo non è «l'AI dice X» ma «l'AI ha trovato X, ed ecco cosa ha usato». Il vincolo non è solo nel prompt: un *output validator* rifiuta la risposta (e fa riprovare il modello) se cita un ID mai comparso nei risultati dei tool, se un numero non ha fonti, o se dichiara `causa_documentata=true` senza citare almeno un `DOC-*`/`CTR-*` aperto con `apri_documento` (un frammento di ricerca non basta).
 
-**Ricerca nei documenti: decide l'agente.** Tre strumenti semplici invece di una pipeline di retrieval: l'elenco per metadati e la ricerca full-text sono deterministici (un documento c'è o non c'è, senza soglie), la ricerca semantica copre le parafrasi. È l'agente a scegliere quale usare, come sceglie quale query SQL scrivere. Una ricerca ibrida in un solo tool (fusione RRF di full-text e vettori) sarebbe più robusta con un modello piccolo, ma nasconderebbe la strategia dentro lo strumento; la scelta e i trade-off sono nel [documento di design](docs/superpowers/specs/2026-10-16-ricerca-documenti-opzione-a-design.md). Se la ricerca semantica serva davvero lo decide un esperimento (vedi [Valutazione](#valutazione)).
+**Ricerca nei documenti: decide l'agente.** Tre strumenti semplici invece di una pipeline di retrieval: l'elenco per metadati e la ricerca full-text sono deterministici (un documento c'è o non c'è, senza soglie), la ricerca semantica copre le parafrasi. È l'agente a scegliere quale usare, come sceglie quale query SQL scrivere. Una ricerca ibrida in un solo tool (fusione RRF di full-text e vettori) sarebbe più robusta con un modello piccolo, ma nasconderebbe la strategia dentro lo strumento; la scelta e i trade-off sono nel [documento di design](docs/superpowers/specs/2026-10-16-ricerca-documenti-opzione-a-design.md). Quanto bene i due strumenti di ricerca trovano i documenti giusti lo misura un benchmark del recupero (vedi [Valutazione](#valutazione)).
 
 **Trasparenza.** Query, ricerche e documenti aperti sono eventi visibili (tool call, tool result, risposte scartate), salvati e rivedibili.
 
@@ -145,22 +145,52 @@ I meccanismi: un risultato negativo viene da ricerche riproducibili (l'elenco de
 
 ## Valutazione
 
-Un harness (`python -m agentic_rag.eval`) esegue un set di domande con lo stesso agente dell'API e le confronta con un ground truth riservato:
+Un harness (`python -m agentic_rag.eval`) esegue un set di domande con lo stesso agente dell'API e le confronta con un ground truth:
 
-- **Dataset:** 12 domande su 6 «storie» (eventi sepolti nei dati: cambi di listino, perdita di un cliente, picchi di spesa, ...) più domande fuori storia, in quattro modalità: normale, *onesta* (causa non documentata), *non rispondibile* (i dati non lo permettono), *regolare* (nessuna anomalia).
+- **Due set di domande**, in quattro modalità: normale, *onesta* (causa non documentata), *non rispondibile* (i dati non lo permettono), *regolare* (nessuna anomalia).
+  - **Sviluppo** ([`eval/ground_truth/`](eval/ground_truth/)): 12 domande su 6 «storie», cioè eventi sepolti nei dati (cambi di listino, perdita di un cliente, picchi di spesa, ...). Servono a tarare agente, validatore e harness, quindi non misurano.
+  - **Test** ([`eval/ground_truth_finale/`](eval/ground_truth_finale/)): 50 domande nuove sullo stesso dataset, scritte a mano e rimaste nascoste all'assistente di sviluppo fino alla fine dell'esperimento. Il risultato citabile viene solo da qui.
 - **Ground truth:** per ciascuna domanda, le fonti che un'indagine corretta deve citare, la query SQL i cui valori sono la risposta numerica attesa, e il comportamento atteso nei casi onesti/non rispondibili. La query attesa gira su un SQLite costruito da `data/csv`, indipendente dall'agente.
 - **Successo:** fonti attese citate, numeri attesi ritrovati nella risposta, nessuna fonte citata mai vista, comportamento corretto nei casi onesti/non rispondibili; opzionalmente un giudice LLM sulla causa.
-- **Separazione:** il ground truth non è mai accessibile all'agente né a chi lo sviluppa. Prompt, soglie e tool non vanno ritoccati guardando il test set.
+- **Separazione:** il ground truth non è mai accessibile all'agente. Prompt, soglie e tool non si ritoccano guardando il test set.
 
 I report pubblici di ogni esecuzione (risposte, query SQL dell'agente, conteggi per domanda) sono in [`eval/reports/`](eval/reports/); i report di ottobre 2026 usano `gemini-3.5-flash-lite`, senza giudice, con ~9 richieste al modello per domanda. L'agente ora gira su Claude Haiku 5.5 e il giudice su Claude Sonnet 5.5, entrambi via OpenRouter; il riepilogo degli esperimenti riporta il costo reale dichiarato da OpenRouter (agente e giudice) e la quota di input servita dalla cache.
 
-**Esperimenti.** Oltre alla batteria singola, `python -m agentic_rag.eval.esperimento` esegue varianti × ripetizioni × domande (le varianti sono configurazioni: modello, ricerca semantica sì/no). Ogni esecuzione è salvata appena conclusa e un'interruzione si riprende rilanciando `esegui` con la sola `--etichetta` (varianti, domande, criterio e timeout vengono dal manifesto); un manifesto lega l'esperimento al codice (`src/`) e al ground truth (solo l'hash), e la ripresa rifiuta se sono cambiati. Gli errori di infrastruttura (rete, 429, 5xx) non contano come fallimenti: la combinazione si ritenta in un passaggio finale e, se resta fallita, è esclusa e riportata; il confronto tra varianti usa solo le combinazioni concluse in entrambe, e oltre il 10% di escluse (o con esclusioni sbilanciate) l'esperimento è dichiarato non valido.
+**Esperimenti.** Oltre alla batteria singola, `python -m agentic_rag.eval.esperimento` esegue varianti × ripetizioni × domande (le varianti sono configurazioni: modello, strumenti). Ogni esecuzione è salvata appena conclusa e un'interruzione si riprende rilanciando `esegui` con la sola `--etichetta` (varianti, domande, criterio e timeout vengono dal manifesto); un manifesto lega l'esperimento al codice (`src/`) e al ground truth (solo l'hash), e la ripresa rifiuta se sono cambiati. Gli errori di infrastruttura (rete, 429, 5xx) non contano come fallimenti: la combinazione si ritenta in un passaggio finale e, se resta fallita, è esclusa e riportata; il confronto tra varianti usa solo le combinazioni concluse in entrambe, e oltre il 10% di escluse (o con esclusioni sbilanciate) l'esperimento è dichiarato non valido.
 
 Metriche, ognuna con il suo denominatore e un intervallo di confidenza al 95% (bootstrap sulle domande): **Task Success Rate**, **Answer Accuracy** (LLM-as-a-judge, validato con il κ di Cohen su un campione etichettato a mano alla cieca), **pass^3** (tutte e tre le esecuzioni corrette), **Source Citation Recall**, **Numeric Exact Match Recall**, **False Acceptance Rate** (cause inventate dove non sono documentate) e **False Abstention Rate** (rinunce dove lo sono), **Guardrail Intervention Rate** (risposte bloccate dal validatore delle fonti), **Session Evidence Recall** (documenti attesi effettivamente recuperati), più token, costo e latenza p50/p95 per indagine. Definizioni nel [documento di design dell'harness](docs/superpowers/specs/2026-10-19-harness-esperimenti-design.md).
 
-**Esperimento sulla ricerca semantica.** Per decidere se tenere i vettori si confrontano le varianti con e senza `cerca_semantica`, stesso modello e stesso prompt, 5 ripetizioni, giudice acceso, con un criterio fissato prima di eseguirlo (i vettori restano solo con almeno 10 punti di Task Success Rate in più). Risultati: in attesa della scelta del modello definitivo.
+### Risultati sul test set
 
-La valutazione è **preliminare**: 12 domande sono un segnale, non una misura statistica, e gli esiti sono euristiche (soglie in `eval/valutazione.py`) che possono penalizzare risposte corrette ma formulate diversamente.
+Esperimento `finale`: 50 domande × 3 ripetizioni, codice congelato al tag `eval-v1`, giudice Claude Sonnet 5.5, nessuna esecuzione esclusa ([riepilogo](eval/reports/esperimenti/finale/riepilogo.md)).
+
+| Metrica | Agente (Claude Haiku 5.5) |
+|---|---|
+| Task Success Rate | 94,0% [88,0 – 98,7] |
+| Answer Accuracy (giudice LLM) | 93,3% [87,3 – 98,0] |
+| pass^3 (tutte e tre le esecuzioni corrette) | 90,0% [80,0 – 98,0] |
+| Cause inventate (False Acceptance Rate) | 0 su 29 |
+| Source Citation Recall | 100% |
+| Numeric Exact Match Recall | 96,8% [90,7 – 100] |
+| Session Evidence Recall | 100% |
+| Costo per indagine | 0,0047 $ agente + 0,0050 $ giudice |
+| Tempo di lavoro per indagine | p50 29 s · p95 56 s |
+
+Intervalli al 95% con bootstrap sulle domande.
+
+- **Giudice:** su 30 risposte etichettate a mano alla cieca, l'accordo è dell'87% ma il κ di Cohen è −0,05. È sotto la soglia fissata prima (0,6), quindi il giudice non è validato e l'Answer Accuracy va letta con cautela. Nella rilettura successiva, nei 4 disaccordi l'errore era dell'etichettatura umana, e in 3 casi il giudice era il più severo.
+- **False Abstention Rate** (66,7%) non è in tabella perché la metrica la sovrastima. Conta come rinuncia ogni «causa non documentata» su una domanda con un documento tra le fonti, anche quando la domanda chiede un dato e non una causa (una scadenza, un importo). Sulle domande che chiedono davvero una causa le rinunce sono 1 su 6 esecuzioni ([analisi](docs/superpowers/specs/2026-10-21-percorso-valutazione-openrouter-design.md#analisi-dopo-lesperimento-finale-2026-11-11)).
+
+**Recupero.** Il benchmark del recupero (`python -m agentic_rag.eval.recupero`) misura i due strumenti di ricerca da soli. La ricerca è il testo della domanda, i pertinenti sono i documenti attesi, e le domande sono le 25 del test set con documenti tra le fonti ([report](eval/reports/recupero/finale.md)):
+
+| | Semantica | Testuale (full-text) |
+|---|---|---|
+| precision@1 | 0,84 | 0,64 |
+| recall@3 | 0,93 | 0,74 |
+| recall@5 | 0,99 | 0,89 |
+| MRR@10 | 0,90 | 0,75 |
+
+Sul set di sviluppo (9 domande, [report](eval/reports/recupero/sviluppo.md)) le due ricerche sono alla pari. Sono numeri del componente: l'agente riformula le ricerche e ne fa più d'una.
 
 ## Struttura del progetto
 
@@ -230,18 +260,18 @@ cd frontend && npm test && npm run build
 python -m agentic_rag.eval --dry-run            # valida il ground truth senza chiamare il modello
 python -m agentic_rag.eval --pause 10           # batteria completa
 python -m agentic_rag.eval --ids 1,4 --judge    # alcune domande, con giudice LLM sulla causa
-python -m agentic_rag.eval --senza-semantica  # batteria senza ricerca semantica
 
 # esperimento: crea
-python -m agentic_rag.eval.esperimento esegui --etichetta esp --variante con:semantica=1 --variante senza:semantica=0 --ripetizioni 5 --judge --criterio "task_success_rate:con-senza>=10"
+python -m agentic_rag.eval.esperimento esegui --etichetta esp --variante haiku --ripetizioni 3 --judge
 # ripresa dopo un'interruzione: solo l'etichetta (con --variante, --ids, --criterio o --timeout rifiuta)
 python -m agentic_rag.eval.esperimento esegui --etichetta esp
 python -m agentic_rag.eval.esperimento riepilogo --etichetta esp     # metriche, confronti, verdetto
 python -m agentic_rag.eval.esperimento etichette --etichetta esp --campione 30   # foglio privato
 python -m agentic_rag.eval.esperimento kappa --etichetta esp         # accordo umano/giudice
+python -m agentic_rag.eval.recupero --gt eval/ground_truth_finale --nome finale   # precision@k, recall@k, MRR
 ```
 
-Opzioni: `--ids`, `--storia`, `--modalita`, `--model`, `--judge-model`, `--pause`, `--timeout`, `--senza-semantica`, `--etichetta`, `--gt`, `--out`. Gli errori di rete e del provider si rieseguono una volta; credito esaurito o chiave non valida (401/402/403) fermano batteria ed esperimento, che si riprende dopo la ricarica; un'esecuzione senza verdetto del giudice resta da rifare; il timeout (300 s di lavoro, attese del limitatore escluse) conta come fallimento dell'agente. Gli esperimenti scrivono in `eval/reports/esperimenti/<etichetta>/` (pubblico) e in `eval/reports/private/esperimenti/<etichetta>/`. Limiti opzionali di richieste e token al minuto: `AGENT_RPM`, `AGENT_TPM`, `JUDGE_RPM`, `JUDGE_TPM`. Due report: pubblico in `eval/reports/` e privato (con ground truth) in `eval/reports/private/`, ignorato da git.
+Opzioni: `--ids`, `--storia`, `--modalita`, `--model`, `--judge-model`, `--pause`, `--timeout`, `--etichetta`, `--gt`, `--out`. Gli errori di rete e del provider si rieseguono una volta; credito esaurito o chiave non valida (401/402/403) fermano batteria ed esperimento, che si riprende dopo la ricarica; un'esecuzione senza verdetto del giudice resta da rifare; il timeout (300 s di lavoro, attese del limitatore escluse) conta come fallimento dell'agente. Gli esperimenti scrivono in `eval/reports/esperimenti/<etichetta>/` (pubblico) e in `eval/reports/private/esperimenti/<etichetta>/`. Limiti opzionali di richieste e token al minuto: `AGENT_RPM`, `AGENT_TPM`, `JUDGE_RPM`, `JUDGE_TPM`. Due report: pubblico in `eval/reports/` e privato (con ground truth) in `eval/reports/private/`, ignorato da git.
 
 </details>
 
@@ -251,7 +281,9 @@ Opzioni: `--ids`, `--storia`, `--modalita`, `--model`, `--judge-model`, `--pause
 - **Prototipo**, non software contabile di produzione; nessuna integrazione con gestionali reali.
 - Documenti in Markdown; nessun parsing di PDF, scansioni o allegati.
 - Il ragionamento dipende dall'LLM: la stessa domanda può prendere percorsi diversi e le conclusioni non sono deterministiche (i numeri sì, perché vengono dalle query).
-- Valutazione piccola e preliminare; la soglia di pertinenza della ricerca semantica è calibrata a mano.
+- Valutazione su un solo dataset sintetico (62 documenti) e con un solo modello. Il 94% del test set contro il 67% del set di sviluppo fa pensare che le domande nuove siano più facili (effetto soffitto).
+- Il giudice LLM non è validato (κ −0,05), e gli esiti dell'harness sono euristiche (soglie in `eval/valutazione.py`) che possono penalizzare risposte corrette ma formulate diversamente.
+- La soglia di pertinenza della ricerca semantica è calibrata a mano.
 - Nessuna autenticazione né isolamento tra clienti.
 
 ## Sviluppi possibili
