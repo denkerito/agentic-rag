@@ -1,144 +1,144 @@
-# Guida: dal test set nuovo ai risultati finali
+# Guide: from the new test set to the final results
 
-Percorso completo deciso il 2026-10-23. Le 12 domande in `eval/ground_truth/` sono il set di sviluppo: ci abbiamo tarato agente, validatore e ground truth, quindi non misurano più nulla. Il numero da citare nel README e nel CV verrà **solo** dal test set nuovo, scritto da te e mai visto dall'assistente.
+Full path decided on 2026-10-23. The 12 questions in `eval/ground_truth/` are the development set: we tuned the agent, the validator and the ground truth on them, so they no longer measure anything. The number to cite in the README and in the CV will come **only** from the new test set, written by you and never seen by the assistant.
 
-Legenda: **[tu]** = lo fai tu · **[Claude]** = lo chiedi a Claude in sessione · **[insieme]** = decisione o controllo condiviso.
+Legend: **[you]** = you do it · **[Claude]** = you ask Claude in a session · **[together]** = shared decision or check.
 
 ---
 
-## Fase 0 · Protezione (prima di creare la cartella)
+## Phase 0 · Protection (before creating the folder)
 
-- [ ] **[Claude]** Aggiungere in `AGENTS.md` la regola: «La cartella `eval/ground_truth_finale/` e i report privati dei suoi esperimenti sono vietati all'assistente fino alla fine dell'esperimento finale. L'assistente ne conosce solo la struttura; il codice dell'harness li legge a runtime senza stamparne il contenuto.»
-- [ ] **[Claude]** Aggiungere `eval/ground_truth_finale/` al `.gitignore` (decisione 4 della spec: il set nuovo resta fuori da git fino alla fine dell'esperimento).
-- [ ] **[tu]** Da qui in poi non incollare mai in chat domande, risposte attese o pezzi dei report privati del set finale.
+- [ ] **[Claude]** Add the rule to `AGENTS.md`: "The `eval/ground_truth_finale/` folder and the private reports of its experiments are off-limits to the assistant until the end of the final experiment. The assistant knows only their structure; the harness code reads them at runtime without printing their content."
+- [ ] **[Claude]** Add `eval/ground_truth_finale/` to `.gitignore` (decision 4 of the spec: the new set stays out of git until the end of the experiment).
+- [ ] **[you]** From here on, never paste into the chat questions, expected answers or pieces of the final set's private reports.
 
-## Fase 1 · Tre decisioni, prima di scrivere una domanda
+## Phase 1 · Three decisions, before writing a single question
 
-Vanno prese e scritte nella spec **prima** di vedere qualunque risultato.
+They must be taken and written in the spec **before** seeing any result.
 
-| Decisione | Opzioni | Cosa comporta |
+| Decision | Options | What it implies |
 |---|---|---|
-| **Dimensione** | 25 domande · 50-60 domande | 25: basta per la decisione di prodotto; intervallo sulla differenza tra le varianti di circa ±20 punti. 50-60: ti permette di provare la non-inferiorità («i vettori non servono»); circa il doppio del tempo di scrittura |
-| **Metrica principale** | Task Success Rate (consigliata) · Answer Accuracy accanto | Il TSR è il criterio fissato il 19/10; Answer Accuracy e quota di `errata` si riportano comunque come secondarie |
-| **Non-inferiorità** | sì · no | Sì: oltre al criterio dei +10 punti si riporta il limite superiore dell'IC 95% di (con − senza); è significativa solo con 50+ domande |
+| **Size** | 25 questions · 50-60 questions | 25: enough for the product decision; an interval on the difference between the variants of about ±20 points. 50-60: lets you prove non-inferiority ("the vectors are not needed"); about twice the writing time |
+| **Main metric** | Task Success Rate (recommended) · Answer Accuracy alongside | TSR is the criterion set on 19/10; Answer Accuracy and the share of `errata` are reported as secondary anyway |
+| **Non-inferiority** | yes · no | Yes: besides the +10-point criterion, the upper bound of the 95% CI of (con − senza) is reported; it is meaningful only with 50+ questions |
 
-- [x] **[tu]** Scelte il 2026-10-23:
-  - **50-60 domande**;
-  - **entrambe le metriche riportate con lo stesso peso**: il criterio di decisione resta sul Task Success Rate (+10 punti, fissato il 19/10), e l'Answer Accuracy viene presentata accanto, non come secondaria;
-  - **non-inferiorità: sì**.
-- [ ] **[Claude]** Le scrive nella spec, sezione «Decisioni aperte», con data.
+- [x] **[you]** Chosen on 2026-10-23:
+  - **50-60 questions**;
+  - **both metrics reported with the same weight**: the decision criterion stays on Task Success Rate (+10 points, set on 19/10), and Answer Accuracy is presented alongside, not as secondary;
+  - **non-inferiority: yes**.
+- [ ] **[Claude]** Writes them in the spec, "Open decisions" section, with the date.
 
-## Fase 2 · Scrivere il test set
+## Phase 2 · Writing the test set
 
-### 2.1 Cartella e formato
+### 2.1 Folder and format
 
-Crea `eval/ground_truth_finale/` con due file, nello **stesso formato** del set di sviluppo:
+Create `eval/ground_truth_finale/` with two files, in the **same format** as the development set:
 
-`domande_test.yaml` (esempio con valori inventati):
+`domande_test.yaml` (example with made-up values):
 
 ```yaml
 domande:
   - id: 1
     domanda: "Perché i costi di X sono saliti a maggio?"
-    storia_id: "ST-01"            # opzionale: raggruppa le domande per storia
-    tipo: "multi-passo"           # la modalità si ricava da qui, vedi sotto
+    storia_id: "ST-01"            # optional: groups the questions by story
+    tipo: "multi-passo"           # the mode is derived from here, see below
     risposta_attesa: >
-      Testo della risposta corretta, con cause e numeri essenziali.
+      Text of the correct answer, with the essential causes and numbers.
     fonti_attese:
-      - "DOC-EML-999"             # ID che una risposta completa deve citare
+      - "DOC-EML-999"             # IDs a complete answer must cite
       - "FATT-P-2025-9999"
-      - "fatture.csv"             # tabella: solo se il percorso è obbligato
+      - "fatture.csv"             # table: only if the path is forced
     query_sql: >
-      SELECT ...                  # gira su SQLite costruito dai CSV di data/csv
+      SELECT ...                  # runs on SQLite built from the CSVs in data/csv
 ```
 
-`storie.yaml` (opzionale): `storie: [{id: "ST-01", titolo: "..."}]`.
+`storie.yaml` (optional): `storie: [{id: "ST-01", titolo: "..."}]`.
 
-**Modalità**, ricavata dal campo `tipo`:
-- contiene «non rispondibile» → `non_rispondibile`: l'agente deve dire che non si può rispondere, con confidenza non alta;
-- contiene «non documentata» → `onesta`: deve dichiarare la causa non documentata, senza inventarla;
-- contiene «regolare» → `regolare`: nessuna anomalia, l'esito è «è regolare»;
-- altrimenti → `normale`.
+**Mode**, derived from the `tipo` field:
+- contains "non rispondibile" → `non_rispondibile`: the agent must say it cannot answer, with a confidence that is not high;
+- contains "non documentata" → `onesta`: it must declare the cause undocumented, without inventing it;
+- contains "regolare" → `regolare`: no anomaly, the outcome is "it is regular";
+- otherwise → `normale`.
 
-### 2.2 Distribuzione consigliata
+### 2.2 Recommended distribution
 
-Simile al set di sviluppo, con in più le domande «negative»:
+Similar to the development set, with the "negative" questions added:
 
-| Modalità | su 25 | su 50 |
+| Mode | out of 25 | out of 50 |
 |---|---|---|
-| normale (cause documentate, numeri, confronti) | 15 | 30 |
-| normale con **risposta corretta «no»** (es. «ci sono fatture non pagate?» quando non ce ne sono), verificabile con una query | 3 | 6 |
-| onesta (causa non documentata) | 3 | 6 |
-| non rispondibile | 2 | 4 |
-| regolare | 2 | 4 |
+| normal (documented causes, numbers, comparisons) | 15 | 30 |
+| normal with a **correct answer of "no"** (e.g. "are there unpaid invoices?" when there are none), verifiable with a query | 3 | 6 |
+| honest (undocumented cause) | 3 | 6 |
+| unanswerable | 2 | 4 |
+| regular | 2 | 4 |
 
-Varia i tipi: cause con un solo documento, cause con più documenti, numeri senza causa, controlli contabili, scadenze e contratti, confronti tra periodi diversi da quelli del set di sviluppo.
+Vary the types: causes with a single document, causes with several documents, numbers without a cause, accounting checks, deadlines and contracts, comparisons between periods different from those of the development set.
 
-### 2.3 Regole per ogni domanda (dalla revisione del set di sviluppo)
+### 2.3 Rules for each question (from the review of the development set)
 
-- [ ] **La query attesa restituisce solo i numeri che la risposta deve contenere.** Niente colonne di contorno (IVA, totali, ID numerici, conteggi non chiesti). Niente elenchi, salvo che la domanda li chieda. Oltre 25 valori il controllo sui numeri non si applica.
-- [ ] **Risposta attesa e query attesa dicono la stessa cosa:** stessa granularità, stesse definizioni. Esempio da evitare: query per singolo conto e risposta per categoria aggregata.
-- [ ] **Fonti attese = quelle necessarie.** Il documento che prova la causa e le fatture o i movimenti decisivi. Una risposta che li cita tutti è «completa»: non aggiungere documenti di contorno se non sono davvero richiesti.
-- [ ] **Tabelle (`*.csv`) solo se il percorso è obbligato.** Se la risposta si può trovare per due strade, non indicarne una.
-- [ ] **Ogni ID e ogni numero si controllano sul database** prima di congelare. Nel set di sviluppo c'erano 8 errori di fatto.
-- [ ] **Nelle query i codici si confrontano come testo** (`categoria = '64.01'`), e le colonne sono quelle dei CSV (`data/csv/*.csv`, con `strftime` di SQLite per le date).
-- [ ] **Scrivi la domanda senza guardare le risposte dell'agente** e senza provarla sull'agente.
+- [ ] **The expected query returns only the numbers the answer must contain.** No side columns (VAT, totals, numeric IDs, counts nobody asked for). No lists, unless the question asks for them. Above 25 values the numbers check does not apply.
+- [ ] **Expected answer and expected query say the same thing:** same granularity, same definitions. Example to avoid: a query per single account and an answer per aggregated category.
+- [ ] **Expected sources = the necessary ones.** The document that proves the cause and the decisive invoices or transactions. An answer that cites them all is "complete": do not add side documents unless they are really required.
+- [ ] **Tables (`*.csv`) only if the path is forced.** If the answer can be found in two ways, do not name one.
+- [ ] **Every ID and every number is checked against the database** before freezing. The development set had 8 factual errors.
+- [ ] **In the queries, codes are compared as text** (`categoria = '64.01'`), and the columns are those of the CSVs (`data/csv/*.csv`, with SQLite's `strftime` for dates).
+- [ ] **Write the question without looking at the agent's answers** and without trying it on the agent.
 
-### 2.4 Verifiche prima di consegnare
+### 2.4 Checks before handing over
 
-- [ ] **[tu]** `python -m agentic_rag.eval --dry-run --gt eval/ground_truth_finale`: tutte le query `ok`, numero di valori attesi plausibile, 0 fonti non riconosciute.
-- [ ] **[tu]** Per ogni domanda, apri gli ID citati (UI o DB) e rileggi la risposta attesa contro i dati.
-- [ ] **[Claude]** Validazione **strutturale** senza leggere i file: si può chiedere un comando che stampi solo conteggi (modalità, numero di domande, ID esistenti nel DB sì/no). Il comando lo lanci tu, e mostri a Claude solo i conteggi.
+- [ ] **[you]** `python -m agentic_rag.eval --dry-run --gt eval/ground_truth_finale`: all queries `ok`, a plausible number of expected values, 0 unrecognised sources.
+- [ ] **[you]** For each question, open the cited IDs (UI or DB) and reread the expected answer against the data.
+- [ ] **[Claude]** **Structural** validation without reading the files: you can ask for a command that prints only counts (modes, number of questions, IDs existing in the DB yes/no). You run the command and show Claude only the counts.
 
-## Fase 3 · Preparazione dell'esperimento
+## Phase 3 · Preparing the experiment
 
-- [ ] **[tu]** Attiva la **fatturazione su Gemini** (Google AI Studio → piano a pagamento) e un limite di spesa.
-- [ ] **[tu]** Su OpenRouter imposta un **limite di credito sulla chiave** (per esempio 8 $) e controlla il saldo.
-- [ ] **[Claude]** **Congelamento:** `main` pulito, tutti i test verdi, tag `eval-v1`. Da qui `src/` non cambia (il manifesto lo impone).
-- [ ] **[tu]** PC sveglio e collegato per tutta la durata: 1-2 ore con 25 domande, 2-4 ore con 50.
+- [ ] **[you]** Enable **billing on Gemini** (Google AI Studio → paid plan) and a spending limit.
+- [ ] **[you]** On OpenRouter set a **credit limit on the key** (for example $8) and check the balance.
+- [ ] **[Claude]** **Freeze:** clean `main`, all tests green, tag `eval-v1`. From here `src/` does not change (the manifest enforces it).
+- [ ] **[you]** PC awake and plugged in for the whole run: 1-2 hours with 25 questions, 2-4 hours with 50.
 
-## Fase 4 · Esperimento
+## Phase 4 · Experiment
 
-- [ ] **[tu o Claude]** Lancio:
+- [ ] **[you or Claude]** Launch:
 
 ```bash
 python -m agentic_rag.eval.esperimento esegui --etichetta finale --gt eval/ground_truth_finale --variante con:semantica=1 --variante senza:semantica=0 --ripetizioni 3 --judge --criterio "task_success_rate:con-senza>=10"
 ```
 
-- Se si interrompe (rete, credito, PC), riprendi con la sola etichetta:
+- If it stops (network, credit, PC), resume with just the label:
 
 ```bash
 python -m agentic_rag.eval.esperimento esegui --etichetta finale --gt eval/ground_truth_finale
 ```
 
-- [ ] **[insieme]** Controllo di validità sul riepilogo pubblico (`eval/reports/esperimenti/finale/riepilogo.md`, che Claude può leggere): esperimento **valido** (escluse ≤ 10% per variante), zero traceback, verdetto del criterio.
-- Costo atteso: circa 0,012 $ per indagine col giudice, cioè circa 1,8 $ con 25 domande e 3,6 $ con 50.
+- [ ] **[together]** Validity check on the public summary (`eval/reports/esperimenti/finale/riepilogo.md`, which Claude can read): experiment **valid** (excluded ≤ 10% per variant), zero tracebacks, the criterion's verdict.
+- Expected cost: about $0.012 per investigation with the judge, i.e. about $1.8 with 25 questions and $3.6 with 50.
 
-## Fase 5 · Validazione del giudice (circa un'ora)
+## Phase 5 · Judge validation (about an hour)
 
-- [ ] **[tu]** `python -m agentic_rag.eval.esperimento etichette --etichetta finale --campione 30` crea un foglio privato con 30 risposte. Compilalo **alla cieca**: corretta / parziale / errata, senza guardare il verdetto del giudice.
-- [ ] **[tu]** `python -m agentic_rag.eval.esperimento kappa --etichetta finale` calcola il κ di Cohen e lo aggiunge al riepilogo.
-- Lettura: κ ≥ 0,6 vuol dire accordo buono e il giudice è affidabile; sotto, l'Answer Accuracy va presentata con cautela.
+- [ ] **[you]** `python -m agentic_rag.eval.esperimento etichette --etichetta finale --campione 30` creates a private sheet with 30 answers. Fill it in **blind**: corretta / parziale / errata, without looking at the judge's verdict.
+- [ ] **[you]** `python -m agentic_rag.eval.esperimento kappa --etichetta finale` computes Cohen's κ and adds it to the summary.
+- Reading: κ ≥ 0.6 means good agreement and a reliable judge; below that, Answer Accuracy must be presented with caution.
 
-## Fase 6 · Risultati
+## Phase 6 · Results
 
-- [ ] **[Claude]** README: tabella delle due varianti (Task Success Rate, Answer Accuracy, `errata`, cause inventate, costo e tempo per indagine) con intervalli al 95%, κ del giudice, criterio e verdetto.
-- [ ] **[insieme]** La frase sul risultato, onesta:
-  - se `con − senza < 10`: «la ricerca semantica non ha dato il miglioramento minimo richiesto (+10 punti); differenza X [IC]»; con la non-inferiorità provata: «la variante senza vettori non è inferiore di oltre 10 punti»;
-  - se `≥ 10`: «la ricerca semantica migliora di X punti [IC]».
-- [ ] **[Claude]** Prodotto: `RICERCA_SEMANTICA` impostata secondo il verdetto.
-- [ ] **[tu]** CV e colloquio: dataset sintetico (62 documenti), set di sviluppo separato dal set finale, criterio fissato prima, κ del giudice, costo per indagine. Limiti dichiarati: un solo dataset, un modello (Haiku 5.5), un giudice LLM.
+- [ ] **[Claude]** README: table of the two variants (Task Success Rate, Answer Accuracy, `errata`, invented causes, cost and time per investigation) with 95% intervals, the judge's κ, criterion and verdict.
+- [ ] **[together]** The sentence on the result, an honest one:
+  - if `con − senza < 10`: "semantic search did not deliver the minimum required improvement (+10 points); difference X [CI]"; with non-inferiority proven: "the variant without vectors is not worse by more than 10 points";
+  - if `≥ 10`: "semantic search improves by X points [CI]".
+- [ ] **[Claude]** Product: `RICERCA_SEMANTICA` set according to the verdict.
+- [ ] **[you]** CV and interview: synthetic dataset (62 documents), development set separate from the final set, criterion set in advance, the judge's κ, cost per investigation. Stated limits: a single dataset, one model (Haiku 5.5), an LLM judge.
 
 ---
 
-## Riepilogo dei tempi e dei costi
+## Summary of times and costs
 
-| Fase | Chi | Tempo | Costo |
+| Phase | Who | Time | Cost |
 |---|---|---|---|
-| 0 Protezione | Claude | 10 min | 0 |
-| 1 Decisioni | tu | 15 min | 0 |
-| 2 Test set | tu | 3-5 h (25) · 6-10 h (50) | 0 |
-| 3 Preparazione | tu + Claude | 30 min | 0 |
-| 4 Esperimento | macchina | 1-4 h | 2-4 $ |
-| 5 Giudice | tu | 1 h | 0 |
-| 6 Risultati | Claude + tu | 1-2 h | 0 |
+| 0 Protection | Claude | 10 min | 0 |
+| 1 Decisions | you | 15 min | 0 |
+| 2 Test set | you | 3-5 h (25) · 6-10 h (50) | 0 |
+| 3 Preparation | you + Claude | 30 min | 0 |
+| 4 Experiment | machine | 1-4 h | $2-4 |
+| 5 Judge | you | 1 h | 0 |
+| 6 Results | Claude + you | 1-2 h | 0 |

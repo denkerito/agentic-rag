@@ -1,161 +1,161 @@
 # Vision
 
-> Un agente AI che **investiga autonomamente** i dati economici di un'azienda, collegando dati strutturati e documenti, per trasformarli in informazioni che un commercialista può **verificare e utilizzare**.
+> An AI agent that **autonomously investigates** a company's financial data, connecting structured data and documents, to turn them into information an accountant can **verify and use**.
 
 ---
 
-## Il problema
+## The problem
 
-Nello studio di un commercialista le informazioni su un'azienda cliente sono sparpagliate: fatture, movimenti bancari, contratti, scadenze, dati contabili, comunicazioni. Rispondere a una domanda come *"perché il margine è calato ad agosto?"* richiede di:
+In an accounting firm, the information about a client company is scattered: invoices, bank transactions, contracts, deadlines, accounting data, correspondence. Answering a question like *"why did the margin fall in August?"* requires:
 
-1. estrarre i numeri da più fonti;
-2. confrontarli tra periodi;
-3. individuare le voci responsabili;
-4. cercare i documenti che spiegano la variazione;
-5. mettere insieme il tutto in una conclusione difendibile.
+1. extracting the numbers from several sources;
+2. comparing them across periods;
+3. identifying the line items responsible;
+4. looking for the documents that explain the change;
+5. putting it all together into a defensible conclusion.
 
-Il lavoro è lungo, ripetitivo e poco automatizzabile con strumenti tradizionali, perché ogni domanda richiede un percorso di analisi diverso.
+The work is long, repetitive and hard to automate with traditional tools, because each question needs a different line of analysis.
 
-## La proposta
+## The proposal
 
-Un agente che svolge **l'analisi preliminare** al posto del commercialista, e gliela consegna già verificabile.
+An agent that carries out **the preliminary analysis** in place of the accountant, and hands it over already verifiable.
 
 ```
-Commercialista ──► domanda / situazione da analizzare
+Accountant ──► question / situation to analyse
                         │
                         ▼
-                     AGENTE ──► dati strutturati (SQL) + documenti (RAG)
+                     AGENT ──► structured data (SQL) + documents (RAG)
                         │
                         ▼
-                  analisi in più passi
+                  multi-step analysis
                         │
                         ▼
-Commercialista ◄── conclusione + numeri + fonti citate
+Accountant ◄── conclusion + numbers + cited sources
 ```
 
-Non sostituisce il commercialista. Gli fa risparmiare la fase di raccolta e confronto, e lascia a lui la parte che richiede giudizio professionale: **verificare e decidere**.
+It does not replace the accountant. It saves them the gathering and comparing phase, and leaves them the part that needs professional judgement: **checking and deciding**.
 
-### Esempio
+### Example
 
-> **Domanda:** "Perché il margine è diminuito ad agosto?"
+> **Question:** "Why did the margin drop in August?"
 
-L'agente non risponde con una supposizione. Procede così:
+The agent does not answer with a guess. It proceeds like this:
 
-1. recupera ricavi e costi di agosto;
-2. li confronta con luglio;
-3. identifica che i costi sono cresciuti più dei ricavi;
-4. individua le categorie di costo responsabili;
-5. recupera fatture e documenti collegati tramite RAG;
-6. cerca una spiegazione nei documenti;
-7. restituisce la risposta con le fonti.
+1. retrieves August's revenue and costs;
+2. compares them with July;
+3. finds that costs grew more than revenue;
+4. identifies the cost categories responsible;
+5. retrieves the related invoices and documents through RAG;
+6. looks for an explanation in the documents;
+7. returns the answer with its sources.
 
-> **Risposta:** "Il margine è diminuito principalmente per l'aumento dei costi software (+34%). Ho individuato un aumento del canone Microsoft a partire da giugno, supportato dalle fatture X e Y e dal contratto Z."
+> **Answer:** "The margin dropped mainly because of the increase in software costs (+34%). I found an increase in the Microsoft subscription from June, supported by invoices X and Y and by contract Z."
 
-## Cosa rende il progetto diverso da un chatbot sui documenti
+## What sets the project apart from a chatbot over documents
 
-| Chatbot / RAG semplice | Questo progetto |
+| Chatbot / simple RAG | This project |
 |---|---|
-| Cerca testo simile alla domanda | Pianifica un percorso di analisi |
-| Una sola chiamata di recupero | Più passi, ciascuno basato sul risultato del precedente |
-| Il LLM "calcola" i numeri | I numeri vengono **sempre** da query SQL, mai dal modello |
-| Risposta fluida, fonti opzionali | Ogni affermazione è collegata a un dato o a un documento |
-| Risponde sempre | Dice "non ho trovato una causa" quando è il caso |
+| Searches for text similar to the question | Plans a line of analysis |
+| A single retrieval call | Several steps, each based on the previous result |
+| The LLM "calculates" the numbers | Numbers **always** come from SQL queries, never from the model |
+| Fluent answer, optional sources | Every statement is linked to a piece of data or a document |
+| Always answers | Says "I did not find a cause" when that is the case |
 
-L'ultimo punto è centrale: in un contesto contabile una risposta sbagliata ma convincente è peggio di nessuna risposta.
+The last point is central: in an accounting context a wrong but convincing answer is worse than no answer.
 
-## Principi di progetto
+## Design principles
 
-1. **Verificabilità prima di tutto.** Ogni conclusione riporta numeri e fonti (ID fattura, contratto, movimento) che il commercialista può aprire e controllare.
-2. **I numeri non si inventano.** Calcoli e aggregazioni passano da SQL in sola lettura. Il LLM interpreta e collega, non calcola.
-3. **Onestà sull'incertezza.** L'agente espone un livello di confidenza e distingue ciò che è provato dai documenti da ciò che è ipotesi.
-4. **Il ragionamento è visibile.** I passi dell'agente (query eseguite, documenti consultati) sono mostrati nell'interfaccia: è così che il commercialista si fida.
-5. **Human in the loop.** L'agente prepara, l'umano controlla e decide. Nessuna azione viene eseguita in autonomia sui dati.
+1. **Verifiability first.** Every conclusion reports numbers and sources (invoice, contract, transaction IDs) that the accountant can open and check.
+2. **Numbers are never made up.** Calculations and aggregations go through read-only SQL. The LLM interprets and connects; it does not calculate.
+3. **Honesty about uncertainty.** The agent exposes a confidence level and distinguishes what the documents prove from what is a hypothesis.
+4. **Reasoning is visible.** The agent's steps (queries run, documents consulted) are shown in the interface: that is how the accountant comes to trust it.
+5. **Human in the loop.** The agent prepares, the human checks and decides. No action is taken on the data autonomously.
 
-## Ambito dell'MVP
+## MVP scope
 
-### Incluso
+### Included
 
-- Un'azienda fittizia con 12 mesi di dati sintetici (circa 300 movimenti, fatture, contratti).
-- Dati strutturati: movimenti bancari, fatture, fornitori, categorie di costo, scadenze.
-- Documenti non strutturati: contratti e comunicazioni, indicizzati per la ricerca semantica.
-- Un agente con strumenti per interrogare il database, cercare nei documenti, confrontare periodi e aprire un documento specifico.
-- Interfaccia con domanda, passi di ragionamento in tempo reale, risposta e fonti.
-- Un piccolo set di domande di test con risposta attesa, per misurare se l'agente trova ciò che deve trovare.
+- A fictitious company with 12 months of synthetic data (about 300 transactions, invoices, contracts).
+- Structured data: bank transactions, invoices, suppliers, cost categories, deadlines.
+- Unstructured documents: contracts and correspondence, indexed for semantic search.
+- An agent with tools to query the database, search the documents, compare periods and open a specific document.
+- An interface with the question, the reasoning steps in real time, the answer and the sources.
+- A small set of test questions with expected answers, to measure whether the agent finds what it should.
 
-### Escluso (volutamente)
+### Excluded (on purpose)
 
-- Dati reali di clienti: per ragioni di privacy il progetto usa solo dati sintetici.
-- Integrazione con gestionali, SdI o open banking.
-- Autenticazione, multi-azienda, multi-utente.
-- Qualsiasi scrittura sui dati contabili.
-- Modalità proattiva (segnalazione automatica di anomalie): possibile evoluzione futura, non parte dell'MVP.
+- Real client data: for privacy reasons the project uses only synthetic data.
+- Integration with accounting software, the Italian e-invoicing exchange system (SdI) or open banking.
+- Authentication, multiple companies, multiple users.
+- Any writing to the accounting data.
+- Proactive mode (automatic anomaly reporting): a possible future evolution, not part of the MVP.
 
-## Dati sintetici: le "storie nascoste"
+## Synthetic data: the "hidden stories"
 
-La qualità della demo dipende dai dati. Invece di generare numeri casuali, si costruiscono **storie** da far scoprire all'agente, ad esempio:
+The quality of the demo depends on the data. Instead of generating random numbers, we build **stories** for the agent to uncover, for example:
 
-- **Aumento del canone software:** un fornitore alza il canone da giugno; il contratto lo prevede, e le fatture lo confermano.
-- **Costo anomalo non ricorrente:** una consulenza una tantum spiega un picco di costi in un mese.
-- **Calo dei ricavi per un cliente:** un cliente importante riduce gli ordini; la causa è visibile nelle comunicazioni.
-- **Caso senza spiegazione:** una variazione che nei dati non ha una causa documentata, per verificare che l'agente lo ammetta invece di inventare.
+- **Software subscription increase:** a supplier raises its fee from June; the contract allows it, and the invoices confirm it.
+- **One-off anomalous cost:** a one-time consultancy explains a cost spike in one month.
+- **Revenue drop from one customer:** an important customer cuts its orders; the cause is visible in the correspondence.
+- **Case with no explanation:** a change with no documented cause in the data, to check that the agent admits it instead of inventing one.
 
-Ogni storia ha una domanda associata e una risposta attesa: sono il test di valutazione del progetto.
+Each story has an associated question and an expected answer: they are the project's evaluation test.
 
-## Architettura
+## Architecture
 
 ```
 ┌────────────┐     ┌──────────────────────────────────────┐
-│     UI     │◄───►│               Agente                 │
-│ (React)│     │  loop: pianifica → usa tool → valuta │
+│     UI     │◄───►│                Agent                 │
+│  (React)   │     │   loop: plan → use tools → evaluate  │
 └────────────┘     └───────┬───────────┬───────────┬──────┘
                            │           │           │
                   query_sql   cerca_documenti   confronta_periodi
                            │           │
                     ┌──────▼───┐  ┌────▼─────────┐
                     │          │  │ Vector store │
-                    │ (dati    │  │ (contratti,  │
-                    │ struttur)│  │ comunicaz.)  │
+                    │ (struct. │  │ (contracts,  │
+                    │  data)   │  │ correspond.) │
                     └──────────┘  └──────────────┘
 ```
 
-### Stack proposto
+### Proposed stack
 
-| Livello | Scelta | Motivo |
+| Layer | Choice | Reason |
 |---|---|---|
-| Linguaggio | Python | Standard per il lavoro con LLM |
-| Orchestrazione agente | **Pydantic AI** | Il percorso di analisi è deciso dal modello (loop con tool); output tipizzato e validato (fonti obbligatorie, confidenza, causa documentata), dipendenze iniettate nei tool, test senza chiamate LLM (`TestModel`). Se in futuro servirà un flusso fisso, human-in-the-loop o modalità proattiva, si può passare a `pydantic-graph` o rivalutare LangGraph |
-| LLM | Gemini (API gratuita), default `gemini-3.5-flash-lite`, configurabile con `AGENT_MODEL` | Costo zero per l'MVP; i limiti del piano gratuito vanno verificati in AI Studio |
-| Dati strutturati | PostgreSQL |  |
+| Language | Python | The standard for working with LLMs |
+| Agent orchestration | **Pydantic AI** | The line of analysis is decided by the model (a loop with tools); typed, validated output (mandatory sources, confidence, documented cause), dependencies injected into the tools, tests without LLM calls (`TestModel`). If a fixed flow, human-in-the-loop or a proactive mode is needed later, we can move to `pydantic-graph` or reconsider LangGraph |
+| LLM | Gemini (free API), default `gemini-3.5-flash-lite`, configurable with `AGENT_MODEL` | Zero cost for the MVP; the free-tier limits must be checked in AI Studio |
+| Structured data | PostgreSQL |  |
 | Vector store | pgvector |  |
-| Backend | FastAPI | Espone l'agente e fa lo streaming dei passi |
-| Frontend | React | Il più rapido per un'interfaccia con stream dei passi; il frontend non è il punto del progetto |
-| Osservabilità | Logfire (piano gratuito, integrazione nativa con Pydantic AI) o log strutturati | Rende visibile il ragionamento, utile anche nel portfolio |
+| Backend | FastAPI | Exposes the agent and streams its steps |
+| Frontend | React | The fastest option for an interface with streamed steps; the frontend is not the point of the project |
+| Observability | Logfire (free tier, native Pydantic AI integration) or structured logs | Makes the reasoning visible, also useful for the portfolio |
 
-### Definizione di margine
+### Definition of margin
 
-Il margine è **ricavi − costi per competenza**, calcolato dalle `scritture_contabili` sui conti Costi/Ricavi del piano dei conti (viste `v_economico*`, `v_margine_mensile`): le righe fattura non bastano perché stipendi, oneri INPS e commissioni bancarie compaiono solo nelle scritture.
+The margin is **revenue − costs on an accrual basis**, computed from `scritture_contabili` (journal entries) on the Costs/Revenue accounts of the chart of accounts (views `v_economico*`, `v_margine_mensile`). Invoice lines are not enough because salaries, social security contributions and bank fees appear only in the journal entries.
 
-## Come si misura il successo
+## How success is measured
 
-- **Recall sulle storie nascoste:** su N domande di test, quante volte l'agente individua la causa corretta.
-- **Accuratezza dei numeri:** i valori citati coincidono con quelli del database (dovrebbe essere sempre, per costruzione).
-- **Qualità delle fonti:** ogni fonte citata esiste e supporta davvero l'affermazione.
-- **Onestà:** sul caso senza spiegazione, l'agente dichiara di non averla trovata.
-- **Costo per domanda:** numero di chiamate al modello per investigazione, per restare dentro i limiti gratuiti.
+- **Recall on the hidden stories:** out of N test questions, how often the agent identifies the correct cause.
+- **Accuracy of the numbers:** the values cited match those in the database (they always should, by construction).
+- **Quality of the sources:** every cited source exists and really supports the statement.
+- **Honesty:** on the case with no explanation, the agent says it did not find one.
+- **Cost per question:** number of model calls per investigation, to stay within the free limits.
 
 ## Roadmap
 
-| Giorno | Obiettivo |
+| Day | Goal |
 |---|---|
-| 1 | Generatore di dati sintetici con le storie nascoste; schema del database |
-| 2 | Parsing fatture XML, indicizzazione dei documenti |
-| 3 | Agente con strumenti; caso "margine di agosto" funzionante end to end |
-| 4 | Citazione delle fonti, gestione dell'incertezza, interfaccia con passi in tempo reale |
-| 5 | Valutazione sulle domande di test, rifinitura, README, demo registrata |
+| 1 | Synthetic data generator with the hidden stories; database schema |
+| 2 | XML invoice parsing, document indexing |
+| 3 | Agent with tools; the "August margin" case working end to end |
+| 4 | Source citation, uncertainty handling, interface with live steps |
+| 5 | Evaluation on the test questions, polishing, README, recorded demo |
 
-## Evoluzioni possibili
+## Possible evolutions
 
-- **Modalità proattiva:** l'agente analizza i dati senza domanda e segnala anomalie (fatture duplicate, movimenti senza fattura, scadenze senza liquidità).
-- **Verifica contratto contro realtà:** confronto sistematico tra clausole contrattuali e importi effettivamente fatturati.
-- **Multi-azienda** e memoria delle investigazioni precedenti.
-- **Integrazione con un gestionale reale** tramite i suoi export.
+- **Proactive mode:** the agent analyses the data without a question and reports anomalies (duplicate invoices, transactions without an invoice, deadlines without liquidity).
+- **Contract versus reality check:** a systematic comparison between contract clauses and the amounts actually invoiced.
+- **Multiple companies** and memory of previous investigations.
+- **Integration with a real accounting system** through its exports.

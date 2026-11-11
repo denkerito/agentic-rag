@@ -1,185 +1,188 @@
-# Ricerca nei documenti: navigazione per metadati + full-text + semantica (opzione A)
+# Document search: metadata browsing + full-text + semantic (option A)
 
-Stato: approvato · 2026-10-16
+Status: approved · 2026-10-16
 
-## Perché
+## Why
 
-Oggi l'agente trova i documenti con un solo canale: la ricerca vettoriale (`cerca_documenti`) con una soglia di
-distanza coseno fissa (0.38, calibrata a mano). Due conseguenze:
+Today the agent finds documents through a single channel: vector search (`cerca_documenti`) with a fixed cosine
+distance threshold (0.38, calibrated by hand). Two consequences:
 
-- **Un risultato negativo non è dimostrabile.** «Nessun chunk sotto soglia» è un'affermazione sulla soglia, non
-  sui documenti. Proprio il caso in cui il progetto promette onestà («la causa non è documentata») poggia sul canale
-  meno verificabile.
-- **Debolezza su termini esatti** (nomi, codici, importi) e nessun modo per l'agente di dire «ho guardato tutti i
-  documenti di questo fornitore in questo periodo».
+- **A negative result cannot be proven.** "No chunk under the threshold" is a statement about the threshold, not
+  about the documents. The very case where the project promises honesty ("the cause is not documented") rests on the
+  least verifiable channel.
+- **Weak on exact terms** (names, codes, amounts), and no way for the agent to say "I looked at all of this
+  supplier's documents in this period".
 
-L'opzione A dà all'agente strumenti di ricerca semplici e deterministici, e lascia a lui la strategia, coerentemente
-con la tesi del progetto («l'agente decide il percorso in base a ciò che scopre»). La ricerca semantica resta come
-canale per le parafrasi; un esperimento successivo decide se tenerla.
+Option A gives the agent simple, deterministic search tools and leaves the strategy to it, in line with the
+project's thesis ("the agent decides the path based on what it uncovers"). Semantic search stays as a channel for
+paraphrases; a later experiment decides whether to keep it.
 
-## Obiettivi
+## Goals
 
-1. L'agente può **elencare i documenti per metadati** (tipo, periodo, cliente, fornitore) senza soglie.
-2. L'agente può **cercare parole nel testo** (full-text italiano, con stemming), con un risultato binario:
-   un documento contiene i termini oppure no.
-3. La **ricerca semantica** resta disponibile come tool separato e **si può spegnere da configurazione**, senza
-   cambiare prompt né altri tool, per l'ablazione.
-4. L'architettura è **credibile con migliaia di documenti**: indici veri, risultati paginati o limitati, mai testi
-   completi in massa nel contesto.
-5. Ogni ricerca è un **passo distinto e leggibile** nella UI e nello storico.
-6. Un **esperimento con criterio fissato in anticipo** decide se i vettori restano.
+1. The agent can **list documents by metadata** (type, period, customer, supplier), with no thresholds.
+2. The agent can **search for words in the text** (Italian full-text, with stemming), with a binary result:
+   a document either contains the terms or it does not.
+3. **Semantic search** stays available as a separate tool and **can be switched off by configuration**, without
+   changing the prompt or other tools, for the ablation.
+4. The architecture is **credible with thousands of documents**: real indexes, paginated or limited results, never
+   full texts in bulk in the context.
+5. Every search is a **distinct, readable step** in the UI and in the history.
+6. An **experiment with a criterion set in advance** decides whether the vectors stay.
 
-## Non obiettivi
+## Non-goals
 
-- Ricerca ibrida con fusione (RRF) o re-ranker: valutata e scartata per questa iterazione (vedi «Alternative»).
-- Estrazione strutturata dei documenti con LLM in ingestione: esclusa (introdurrebbe dati generati da LLM nel DB).
-- Indice dei documenti nel prompt: non scala.
-- Modifiche a `query_sql`, alle viste, al validatore delle fonti, al runner, all'autenticazione.
-- Vincolo nel validatore «`causa_documentata=false` richiede almeno una ricerca testuale»: possibile passo
-  successivo, non in questa iterazione.
+- Hybrid search with fusion (RRF) or a re-ranker: considered and dropped for this iteration (see "Alternatives").
+- Structured extraction of documents with an LLM at ingestion: excluded (it would put LLM-generated data in the DB).
+- A document index in the prompt: it does not scale.
+- Changes to `query_sql`, the views, the source validator, the runner, authentication.
+- A validator constraint "`causa_documentata=false` requires at least one full-text search": a possible next step,
+  not in this iteration.
 
-## Anti-obiettivi (fallimento anche se funziona)
+## Anti-goals (failure even if it works)
 
-- Ritoccare prompt, docstring o soglie **dopo** aver visto i risultati dell'eval per far passare le domande
-  (vietato da `AGENTS.md`).
-- Una variante «senza vettori» penalizzata da dettagli dell'harness invece che dalla qualità delle risposte.
-- Il prompt che nomina i tool di ricerca: renderebbe l'ablazione un cambio di due variabili.
+- Tuning the prompt, docstrings or thresholds **after** seeing the eval results to make questions pass
+  (forbidden by `AGENTS.md`).
+- A "no vectors" variant penalised by details of the harness rather than by the quality of the answers.
+- A prompt that names the search tools: it would turn the ablation into a change of two variables.
 
-## Vincoli
+## Constraints
 
-- Modello di default invariato (`AGENT_MODEL`, oggi `google:gemini-3.5-flash-lite`); il design funziona con
-  qualsiasi modello configurato.
-- Tutto in PostgreSQL 17 + pgvector già presenti; nessuna nuova infrastruttura.
-- Il ruolo `agent_ro` resta l'unico con cui l'agente legge i dati.
-- Il ground truth in `eval/ground_truth/` non viene aperto da chi sviluppa (vedi `AGENTS.md`).
+- Default model unchanged (`AGENT_MODEL`, today `google:gemini-3.5-flash-lite`); the design works with any
+  configured model.
+- Everything in the existing PostgreSQL 17 + pgvector; no new infrastructure.
+- The `agent_ro` role stays the only one the agent reads data with.
+- The ground truth in `eval/ground_truth/` is not opened by whoever develops the agent (see `AGENTS.md`).
 
 ## Design
 
-### Tool dell'agente
+### Agent tools
 
-| Tool | Stato | Ruolo |
+| Tool | Status | Role |
 |---|---|---|
-| `query_sql` | invariato | numeri |
-| `elenca_documenti` | **nuovo** | indice dei documenti per metadati, paginato |
-| `cerca_testo` | **nuovo** | full-text italiano su titolo e contenuto |
-| `cerca_semantica` | **rinominato** da `cerca_documenti`, logica invariata | parafrasi; disattivabile |
-| `apri_documento` | invariato | lettura del documento |
+| `query_sql` | unchanged | numbers |
+| `elenca_documenti` | **new** | document index by metadata, paginated |
+| `cerca_testo` | **new** | Italian full-text over title and content |
+| `cerca_semantica` | **renamed** from `cerca_documenti`, same logic | paraphrases; can be switched off |
+| `apri_documento` | unchanged | reads the document |
 
 **`elenca_documenti(tipo?, data_da?, data_a?, cliente_id?, fornitore_id?, pagina=1)`**
-- Restituisce `totale`, `pagina`, `pagine` e, per ogni documento: `doc_id`, `tipo`, `data`, `titolo`,
-  `cliente_id`/`fornitore_id` con la denominazione della controparte. Nessun testo.
-- 30 documenti per pagina, ordinati per data (poi `doc_id`).
-- **Non** aggiunge gli ID a `seen_ids`: un documento visto solo per titolo non è citabile. Diventa citabile quando
-  viene aperto o compare in una ricerca con il suo testo. Come **causa** (`causa_documentata=true`) conta invece
-  solo un documento citato e **aperto** con `apri_documento`: un frammento trovato per parole (o per vicinanza
-  semantica) dice dove guardare, non prova la causa. La regola è la stessa per le due ricerche, così l'ablazione
-  con e senza semantica non dà una scorciatoia a una sola variante (motivo di rifiuto `causa_non_letta`).
+- Returns `totale`, `pagina`, `pagine` and, for each document: `doc_id`, `tipo`, `data`, `titolo`,
+  `cliente_id`/`fornitore_id` with the counterparty's name. No text.
+- 30 documents per page, ordered by date (then `doc_id`).
+- Does **not** add the IDs to `seen_ids`: a document seen only by title cannot be cited. It becomes citable when it
+  is opened or appears in a search together with its text. As a **cause** (`causa_documentata=true`), on the other
+  hand, only a document cited and **opened** with `apri_documento` counts: a snippet found by words (or by semantic
+  proximity) tells you where to look, it does not prove the cause. The rule is the same for both searches, so the
+  ablation with and without semantic search gives no shortcut to just one variant (rejection reason
+  `causa_non_letta`).
 
 **`cerca_testo(query, tipo?, data_da?, data_a?, cliente_id?, fornitore_id?, k=5)`**
-- `websearch_to_tsquery('italian', query)`: il modello può usare `or`, frasi tra virgolette e `-escludi`. La
-  docstring insegna a usare `or` tra sinonimi (di default le parole sono in AND).
-- Corrispondenza su una colonna `tsvector` di `documenti`: titolo con peso A, contenuto con peso B (generata,
-  indice GIN). Il livello è il **documento**, non il chunk: non serve allinearsi ai vettori (in A i canali sono
-  separati) e la ricerca testuale non dipende dalla pipeline di embedding, che nella variante senza vettori non serve.
-- Restituisce `totale` (numero di documenti con corrispondenza) e i primi `k` (max 8) ordinati per `ts_rank_cd`,
-  ciascuno con `doc_id`, `titolo`, `tipo`, `data` e 1–2 frammenti evidenziati (`ts_headline`).
-- **Pertinente = contiene i termini**: nessuna soglia.
-- Zero risultati → nota esplicita: provare sinonimi o togliere filtri prima di concludere che non è documentato.
-- Query che dopo l'analisi non contiene termini utili (solo stopword) → `ModelRetry` con messaggio chiaro.
-- I `doc_id` restituiti entrano in `seen_ids` (come oggi per la ricerca semantica), non tra i documenti aperti.
+- `websearch_to_tsquery('italian', query)`: the model can use `or`, quoted phrases and `-exclude`. The docstring
+  teaches it to use `or` between synonyms (by default words are ANDed).
+- Matching on a `tsvector` column of `documenti`: title with weight A, content with weight B (generated, GIN index).
+  The level is the **document**, not the chunk: there is no need to align with the vectors (in A the channels are
+  separate), and full-text search does not depend on the embedding pipeline, which the no-vectors variant does not
+  need.
+- Returns `totale` (number of matching documents) and the first `k` (max 8) ordered by `ts_rank_cd`, each with
+  `doc_id`, `titolo`, `tipo`, `data` and 1–2 highlighted snippets (`ts_headline`).
+- **Relevant = contains the terms**: no threshold.
+- Zero results → explicit note: try synonyms or remove filters before concluding that it is not documented.
+- A query with no useful terms after parsing (stopwords only) → `ModelRetry` with a clear message.
+- The returned `doc_id`s go into `seen_ids` (as semantic search does today), not among the opened documents.
 
-**`cerca_semantica`**: il `cerca_documenti` di oggi, con il nuovo nome e la docstring che ne chiarisce il ruolo
-(concetti e parafrasi, non nomi o codici). Inoltre, per la credibilità con filtri a scala, abilitare la scansione
-iterativa HNSW di pgvector (`hnsw.iterative_scan`) se la versione installata la supporta (≥ 0.8).
+**`cerca_semantica`**: today's `cerca_documenti`, with the new name and a docstring that clarifies its role
+(concepts and paraphrases, not names or codes). In addition, for credibility with filters at scale, enable pgvector's
+iterative HNSW scan (`hnsw.iterative_scan`) if the installed version supports it (≥ 0.8).
 
-### Accesso ai documenti solo tramite tool (scelta mia)
+### Documents reachable only through tools (my call)
 
-`documenti` viene esclusa dalle relazioni interrogabili da `query_sql` e dal DDL nel prompt, come già
-`documenti_chunks`. Motivi: ogni accesso ai documenti passa da un tool tracciato e mostrato nella UI; a scala,
-`SELECT contenuto ...` riempirebbe il contesto; nessun canale lessicale «di riserva» via `ILIKE` falsa l'ablazione.
+`documenti` is excluded from the relations `query_sql` can query and from the DDL in the prompt, as `documenti_chunks`
+already is. Reasons: every access to documents goes through a tracked tool shown in the UI; at scale,
+`SELECT contenuto ...` would flood the context; and no "backup" lexical channel through `ILIKE` skews the ablation.
 
-### Configurazione e ablazione
+### Configuration and ablation
 
-- Nuova variabile `RICERCA_SEMANTICA` (default attiva). Spenta, `cerca_semantica` non viene registrato tra i tool.
-- `open_session` accetta il parametro corrispondente, così API, CLI ed eval usano lo stesso percorso.
-- Il **prompt di sistema non nomina i tool di ricerca nei documenti**: le indicazioni specifiche stanno nelle
-  docstring. Il prompt mantiene un principio indipendente dai tool, per esempio: «prima di dichiarare una causa non
-  documentata, cerca con più formulazioni e sinonimi e usa i filtri di periodo e controparte». Il principio 3, che
-  oggi cita `cerca_documenti`, va riformulato.
+- New variable `RICERCA_SEMANTICA` (on by default). When off, `cerca_semantica` is not registered among the tools.
+- `open_session` accepts the corresponding parameter, so API, CLI and eval use the same path.
+- The **system prompt does not name the document search tools**: the specific guidance lives in the docstrings. The
+  prompt keeps a tool-independent principle, for example: "before declaring a cause undocumented, search with several
+  phrasings and synonyms and use the period and counterparty filters". Principle 3, which today mentions
+  `cerca_documenti`, must be reworded.
 
-### API, eventi, UI
+### API, events, UI
 
-- `events.py`: traduzione dei risultati dei nuovi tool in `tool_result` (ID e conteggi, mai il testo). Serve un
-  campo `totale` in `ToolResult` per `elenca_documenti` e `cerca_testo`.
-- Frontend (`Passi.tsx`): titolo, icona, riepilogo e argomenti per i tre tool di ricerca. Esempi di riepilogo:
-  «12 documenti (pagina 1 di 1)», «3 documenti con corrispondenza su 3», «Nessuna corrispondenza».
-- **Storico**: le indagini già salvate contengono eventi `cerca_documenti`; la UI continua a mostrarli
-  (etichetta legacy). Lo stesso vale per la mappa `TABELLE_PER_TOOL` dell'eval.
+- `events.py`: translation of the new tools' results into `tool_result` (IDs and counts, never the text). A `totale`
+  field in `ToolResult` is needed for `elenca_documenti` and `cerca_testo`.
+- Frontend (`Passi.tsx`): title, icon, summary and arguments for the three search tools. Example summaries:
+  "12 documenti (pagina 1 di 1)", "3 documenti con corrispondenza su 3", "Nessuna corrispondenza".
+- **History**: investigations already saved contain `cerca_documenti` events; the UI keeps showing them (legacy
+  label). The same applies to the eval's `TABELLE_PER_TOOL` map.
 
-### Dati e migrazione
+### Data and migration
 
-- Colonna generata e indice GIN in `schema.sql`.
-- Per un database già inizializzato serve un modo di applicarli senza `--reset` (che cancella anche gli embedding),
-  sullo stile di `--comments-only`; in alternativa documentare `--reset` + reindicizzazione (economica: 62 documenti).
-  Scelta lasciata a chi implementa.
+- Generated column and GIN index in `schema.sql`.
+- An already initialised database needs a way to apply them without `--reset` (which also deletes the embeddings),
+  in the style of `--comments-only`; alternatively, document `--reset` + reindexing (cheap: 62 documents). Left to
+  the implementer.
 
 ### Eval
 
-- Nuova opzione dell'harness per spegnere la ricerca semantica; il valore finisce nel `meta` dei report.
-- `TABELLE_PER_TOOL`: `elenca_documenti` e `cerca_testo` → `documenti`; `cerca_semantica` → `documenti`,
-  `documenti_chunks`; chiave legacy `cerca_documenti` mantenuta.
-- Script di confronto sui **report pubblici** JSON: raggruppa per (modello, ricerca semantica) e riporta per
-  domanda e in totale il numero di esiti `ok`, le richieste medie e la durata media.
+- A new harness option to switch semantic search off; the value ends up in the reports' `meta`.
+- `TABELLE_PER_TOOL`: `elenca_documenti` and `cerca_testo` → `documenti`; `cerca_semantica` → `documenti`,
+  `documenti_chunks`; legacy key `cerca_documenti` kept.
+- A comparison script over the JSON **public reports**: groups by (model, semantic search) and reports, per question
+  and in total, the number of `ok` outcomes, the average requests and the average duration.
 
-### Protocollo dell'esperimento (fissato prima di eseguirlo)
+### Experiment protocol (set before running it)
 
-> Aggiornamento 2026-10-19: l'esperimento si esegue con l'harness descritto in
-> `2026-10-19-harness-esperimenti-design.md` (ripresa, esclusioni appaiate, soglie di validità). Il criterio
-> dei 10 punti di Task Success Rate resta; il modello sarà quello scelto come definitivo.
+> Update 2026-10-19: the experiment runs with the harness described in
+> `2026-10-19-harness-esperimenti-design.md` (resume, paired exclusions, validity thresholds). The 10-point Task
+> Success Rate criterion stays; the model will be the one chosen as final.
 
-- Due varianti: **A completa** (con `cerca_semantica`) e **A senza semantica**. Stesso modello, stesso prompt,
-  stessa versione del codice.
-- Modello: `google:gemini-3.5-flash-lite` per tutte le esecuzioni (modelli più grandi solo per prove isolate,
-  fuori dall'esperimento).
-- Giudice LLM acceso (`--judge`), con lo stesso modello flash-lite: con il giudice, `ok` richiede anche un verdetto
-  diverso da `errata`.
-- 5 esecuzioni complete dell'harness per variante.
-- Criterio: **i vettori restano solo se la variante completa ottiene almeno 10 punti percentuali in più di esiti
-  `ok`** sul totale delle 60 esecuzioni (12 domande × 5). Altrimenti vince la variante più semplice e la ricerca
-  semantica viene rimossa (tool, indice, indicizzatore) in un cambiamento successivo.
-- Nessuna modifica a prompt, docstring o limiti tra le esecuzioni né dopo, in funzione dei risultati.
-- Limiti invariati: 25 richieste per domanda, timeout di 300 s per domanda. *(scelta mia)*
-- Esiti `errore` *(scelta mia)*: `UsageLimitExceeded` conta come non `ok` (è un fallimento della strategia di
-  ricerca, non dell'infrastruttura). Errori del provider (HTTP 429/5xx) e timeout vengono rieseguiti una volta; se
-  falliscono ancora contano come non `ok` e sono riportati a parte dallo script di confronto.
-- L'esecuzione dell'esperimento fa parte del lavoro (ultima fase), così come l'aggiornamento del README con i
-  risultati. Se durante l'esperimento emerge un bug che tocca il comportamento dell'agente, lo si corregge e si
-  rieseguono **tutte** le esecuzioni di entrambe le varianti. *(scelta mia)*
-- Limite dichiarato: 12 domande e 62 documenti misurano la qualità, non la tenuta a scala. La scala si argomenta
-  con il design (indici, paginazione, limiti).
+- Two variants: **full A** (with `cerca_semantica`) and **A without semantic search**. Same model, same prompt, same
+  version of the code.
+- Model: `google:gemini-3.5-flash-lite` for all runs (larger models only for isolated trials, outside the
+  experiment).
+- LLM judge on (`--judge`), with the same flash-lite model: with the judge, `ok` also requires a verdict other than
+  `errata`.
+- 5 full harness runs per variant.
+- Criterion: **the vectors stay only if the full variant gets at least 10 percentage points more `ok` outcomes**
+  over the total of 60 runs (12 questions × 5). Otherwise the simpler variant wins and semantic search is removed
+  (tool, index, indexer) in a later change.
+- No changes to the prompt, docstrings or limits between runs or afterwards, depending on the results.
+- Limits unchanged: 25 requests per question, 300 s timeout per question. *(my call)*
+- `errore` outcomes *(my call)*: `UsageLimitExceeded` counts as not `ok` (it is a failure of the search strategy, not
+  of the infrastructure). Provider errors (HTTP 429/5xx) and timeouts are rerun once; if they fail again they count as
+  not `ok` and are reported separately by the comparison script.
+- Running the experiment is part of the work (last phase), as is updating the README with the results. If a bug that
+  affects the agent's behaviour shows up during the experiment, it is fixed and **all** runs of both variants are
+  repeated. *(my call)*
+- Stated limit: 12 questions and 62 documents measure quality, not behaviour at scale. Scale is argued through the
+  design (indexes, pagination, limits).
 
-### Test
+### Tests
 
-- Unit: traduzione degli eventi dei nuovi tool; registrazione condizionale di `cerca_semantica`; il prompt non
-  nomina i tool di ricerca nei documenti.
-- Integrazione (DB): stemming italiano (forma flessa che trova la base), filtri, `totale`, nota sui risultati vuoti,
-  retry sulla query vuota; `elenca_documenti` con paginazione e senza effetti su `seen_ids`; `documenti` non
-  interrogabile da `query_sql`.
+- Unit: event translation for the new tools; conditional registration of `cerca_semantica`; the prompt does not name
+  the document search tools.
+- Integration (DB): Italian stemming (an inflected form finds the base), filters, `totale`, the note on empty
+  results, retry on an empty query; `elenca_documenti` with pagination and no effect on `seen_ids`; `documenti` not
+  queryable from `query_sql`.
 
-### Documentazione
+### Documentation
 
-README: architettura, elenco dei tool, «Scelte di progetto» (perché A e non l'ibrida), sezione «Quando le prove non
-ci sono» aggiornata; risultati dell'esperimento quando disponibili.
+README: architecture, list of tools, "Design choices" (why A and not the hybrid), updated "When the evidence is
+missing" section; the experiment's results when available.
 
-## Alternative considerate
+## Alternatives considered
 
-- **Ricerca ibrida in un solo tool (RRF)**: più robusta con modelli piccoli e ablazione più pulita, ma incorpora
-  la strategia nello strumento (contro la tesi «decide l'agente») e richiede una regola di pertinenza composta.
-  Sarebbe la scelta con un modello piccolo fisso.
-- **Solo metadati + indice nel prompt**: non copre i documenti senza controparte (14 su 62) e non scala.
-- **Vettori migliorati (re-ranker, soglie per tipo)**: non rende verificabile un risultato negativo.
+- **Hybrid search in a single tool (RRF)**: sturdier with small models and a cleaner ablation, but it builds the
+  strategy into the tool (against the "the agent decides" thesis) and needs a composite relevance rule. It would be
+  the choice with a fixed small model.
+- **Metadata only + index in the prompt**: does not cover documents without a counterparty (14 out of 62) and does
+  not scale.
+- **Improved vectors (re-ranker, per-type thresholds)**: does not make a negative result verifiable.
 
-## Lasciato a chi implementa
+## Left to the implementer
 
-Normalizzazione del ranking (`ts_rank_cd`), opzioni di `ts_headline`, icone e testi della UI, meccanismo di
-migrazione, forma dello script di confronto, dettagli dei test.
+Ranking normalisation (`ts_rank_cd`), `ts_headline` options, UI icons and texts, migration mechanism, shape of the
+comparison script, test details.
