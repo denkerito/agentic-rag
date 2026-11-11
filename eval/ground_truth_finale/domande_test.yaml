@@ -1,0 +1,828 @@
+# TEST SET FINALE - 50 DOMANDE CON RISPOSTA ATTESA, FONTI E QUERY
+# Progetto: OmniDen Dynamics S.r.l. - esperimento finale (con e senza ricerca semantica)
+# Distribuzione: 30 normali, 6 normali con risposta «no», 6 onesta, 4 non rispondibili, 4 regolari.
+# Le query restituiscono solo i numeri che la risposta deve contenere, sempre positivi
+# (i cali si verificano con i due estremi, non con la differenza).
+
+domande:
+  # --- ST-01 Nimbus ---------------------------------------------------------------------------
+  - id: 1
+    domanda: "Quanto è costato in più nel 2025 il nuovo canone Nimbus, al netto dell'IVA?"
+    storia_id: "ST-01"
+    tipo: "recupero + numero"
+    risposta_attesa: >
+      Nel 2025 il nuovo canone Nimbus DevOps Enterprise è costato 6.800,00 € in più (imponibile): da
+      agosto a dicembre il canone è passato da 4.000,00 € a 5.360,00 € + IVA, cioè 1.360,00 € in più per
+      5 mensilità. Contesto (non richiesto dalla domanda): sono le fatture da FATT-P-2025-0008 a
+      FATT-P-2025-0012; l'aumento è stato comunicato da Nimbus con la lettera del 10 giugno 2025
+      (DOC-LET-001), con decorrenza 1° agosto 2025.
+    fonti_attese: []
+    query_sql: >
+      SELECT ROUND(SUM(imponibile - 4000), 2) AS maggior_costo_2025
+      FROM fatture
+      WHERE controparte_id = 'FOR-001' AND imponibile > 4000;
+
+  - id: 2
+    domanda: "Cosa ha risposto Nimbus quando OmniDen ha chiesto di contenere il nuovo canone?"
+    storia_id: "ST-01"
+    tipo: "causa documentata: un documento"
+    risposta_attesa: >
+      Ha rifiutato. Il 18 giugno 2025 Nimbus (DOC-EML-003) ha risposto che il nuovo canone di
+      5.360,00 € + IVA riflette l'aggiornamento globale del listino Enterprise e che i pacchetti sono
+      standardizzati e non frazionabili per il profilo contrattuale CTR-001. Nimbus ha confermato che il
+      nuovo corrispettivo sarebbe stato fatturato dal rateo di agosto 2025 e ha solo proposto una
+      sessione con i propri solution architect a settembre. Contesto (non richiesto dalla domanda): la
+      richiesta di OmniDen, del 15 giugno 2025 (DOC-EML-002), era di scorporare moduli opzionali o
+      rimodulare il numero di runner paralleli di CI/CD per contenere il canone.
+    fonti_attese:
+      - "DOC-EML-003"
+    query_sql: >
+      SELECT DISTINCT imponibile AS canone_da_agosto
+      FROM fatture
+      WHERE controparte_id = 'FOR-001' AND data >= '2025-08-01';
+
+  - id: 3
+    domanda: "OmniDen ha esercitato il recesso dal contratto Nimbus dopo la comunicazione dell'aumento?"
+    storia_id: "ST-01"
+    tipo: "verifica: risposta negativa"
+    risposta_attesa: >
+      No. L'art. 7.3 del contratto CTR-001 consentiva di recedere senza penali entro 30 giorni dal
+      ricevimento della comunicazione del 10 giugno 2025 (DOC-LET-001), ma non risulta alcun recesso:
+      OmniDen ha solo chiesto di contenere il canone (DOC-EML-002) e da agosto ha continuato a ricevere
+      e pagare le fatture al nuovo canone di 5.360,00 € + IVA (a partire da FATT-P-2025-0008). Le nuove
+      condizioni si intendono quindi accettate.
+    fonti_attese:
+      - "CTR-001"
+    query_sql: ""
+
+  # --- ST-02 Due diligence --------------------------------------------------------------------
+  - id: 4
+    domanda: "A quanto ammontavano i debiti previdenziali della società da acquisire emersi dalla due diligence?"
+    storia_id: "ST-02"
+    tipo: "recupero semplice: un documento"
+    risposta_attesa: >
+      Oltre 180.000 € di debiti previdenziali e contributivi pregressi verso l'INPS, con cartelle
+      esattoriali già notificate e non menzionate nelle scritture fornite inizialmente dalla società
+      target. Il dato è nell'email dello Studio Legale Ferraris del 24 marzo 2025 (DOC-EML-005).
+      Contesto (non richiesto dalla domanda): la società target è Brescia Software Lab S.r.l.
+      (DOC-NOT-001).
+    fonti_attese:
+      - "DOC-EML-005"
+    query_sql: ""
+
+  - id: 5
+    domanda: "La parcella dello Studio Ferraris per la due diligence è stata pagata nei termini?"
+    storia_id: "ST-02"
+    tipo: "controllo contabile: pagamento"
+    risposta_attesa: >
+      Sì. La fattura FATT-P-2025-0037 (n. FERR-2025-042 del 25/03/2025, 14.640,00 € IVA inclusa) è
+      stata pagata il 07/04/2025 con il bonifico MOV-000069, 13 giorni dopo l'emissione, prima della
+      scadenza indicata in fattura (20/04/2025).
+    fonti_attese:
+      - "FATT-P-2025-0037"
+      - "MOV-000069"
+    query_sql: >
+      SELECT ABS(importo) AS importo_pagato
+      FROM movimenti_bancari
+      WHERE fattura_id = 'FATT-P-2025-0037';
+
+  - id: 6
+    domanda: "Per quali motivi il CdA ha rinunciato all'acquisizione di Brescia Software Lab?"
+    storia_id: "ST-02"
+    tipo: "causa documentata: un documento"
+    risposta_attesa: >
+      Il CdA del 28 marzo 2025 (verbale DOC-NOT-001) ha deliberato all'unanimità di interrompere le
+      trattative perché la due diligence legale ha fatto emergere tre criticità non sanabili: una
+      rilevante esposizione debitoria pregressa verso gli enti previdenziali, non dichiarata; la
+      mancanza delle cessioni dei diritti d'autore e della proprietà intellettuale sui principali
+      software da parte di ex collaboratori; una clausola risolutiva per cambio di controllo nel
+      contratto con il committente che genera oltre il 40% del fatturato del target. Il profilo di
+      rischio è stato giudicato inaccettabile.
+    fonti_attese:
+      - "DOC-NOT-001"
+    query_sql: ""
+
+  # --- ST-03 Barilli --------------------------------------------------------------------------
+  - id: 7
+    domanda: "Di quanto si è ridotto il fatturato verso Barilli Logistica nel quarto trimestre rispetto al terzo?"
+    storia_id: "ST-03"
+    tipo: "confronto tra trimestri"
+    risposta_attesa: >
+      Di 42.500,00 € (imponibile): da 78.500,00 € nel terzo trimestre (28.500 € a luglio, 22.000 € ad
+      agosto, 28.000 € a settembre) a 36.000,00 € nel quarto (12.000 € al mese). Contesto (non
+      richiesto dalla domanda): la causa è l'internalizzazione dello sviluppo da parte di Barilli dal
+      1° ottobre 2025, comunicata formalmente il 15 settembre (DOC-EML-008): da ottobre Barilli
+      acquista solo il presidio L3 a 12.000 € + IVA al mese.
+    fonti_attese: []
+    query_sql: >
+      SELECT
+        SUM(CASE WHEN strftime('%m', data) IN ('07', '08', '09') THEN imponibile ELSE 0 END) AS terzo_trimestre,
+        SUM(CASE WHEN strftime('%m', data) IN ('10', '11', '12') THEN imponibile ELSE 0 END) AS quarto_trimestre
+      FROM fatture
+      WHERE controparte_id = 'CLI-001';
+
+  - id: 8
+    domanda: "Quali servizi continua ad acquistare Barilli Logistica da OmniDen dopo il 1° ottobre 2025, e a quale canone mensile?"
+    storia_id: "ST-03"
+    tipo: "recupero + numero: un documento"
+    risposta_attesa: >
+      Dal 1° ottobre 2025 e fino alla scadenza del contratto (31/12/2025) Barilli acquista solo il
+      presidio continuativo di terzo livello (L3), la manutenzione correttiva infrastrutturale e il
+      supporto specialistico alle proprie risorse interne, per un canone forfettario di 12.000,00 € + IVA
+      al mese. Lo stabilisce la comunicazione formale di Barilli del 15 settembre 2025 (DOC-EML-008).
+      Contesto (non richiesto dalla domanda): nella risposta del 18 settembre (DOC-EML-009) OmniDen
+      conferma lo stesso canone descrivendo i servizi come presidio L3, monitoraggio SLA e supporto
+      sistemistico; prima del 1° ottobre la media storica era di circa 28.000 € al mese.
+    fonti_attese:
+      - "DOC-EML-008"
+    query_sql: >
+      SELECT DISTINCT imponibile AS canone_da_ottobre
+      FROM fatture
+      WHERE controparte_id = 'CLI-001' AND data >= '2025-10-01';
+
+  - id: 9
+    domanda: "Barilli Logistica ha rispettato il preavviso contrattuale quando ha ridotto la commessa?"
+    storia_id: "ST-03"
+    tipo: "verifica: risposta negativa"
+    risposta_attesa: >
+      No. L'art. 4.3 dell'accordo quadro CTR-008 richiede un preavviso scritto via PEC di almeno
+      30 giorni per internalizzare lo sviluppo o ridurre i volumi oltre il 50%. La comunicazione
+      formale di Barilli è del 15 settembre 2025 (DOC-EML-008) con effetto dal 1° ottobre 2025: solo
+      16 giorni, anche se l'email dichiara di rispettare il preavviso di 30 giorni. L'anticipazione del
+      14 luglio (DOC-EML-007) era informale e non fissava una decorrenza.
+    fonti_attese:
+      - "CTR-008"
+      - "DOC-EML-008"
+    query_sql: >
+      SELECT
+        preavviso_giorni AS preavviso_richiesto,
+        CAST(julianday('2025-10-01') - julianday('2025-09-15') AS INTEGER) AS preavviso_effettivo
+      FROM contratti
+      WHERE id = 'CTR-008';
+
+  # --- ST-04 Trasferte ------------------------------------------------------------------------
+  - id: 10
+    domanda: "Quanto ha speso OmniDen in trasferte, tra alberghi, treni e pasti, nell'intero 2025, al netto dell'IVA?"
+    storia_id: "ST-04"
+    tipo: "solo numerico"
+    risposta_attesa: >
+      26.850,00 € di imponibile nel 2025 sui conti 64.01 (alberghi, 12.450 €), 64.02 (treni, 7.800 €)
+      e 64.03 (ristorazione, 6.600 €). Di questi, 6.500 € sono di novembre, contro i 1.850 € di ciascuno
+      degli altri mesi.
+    fonti_attese: []
+    query_sql: >
+      SELECT ROUND(SUM(r.imponibile), 2) AS spesa_trasferte_2025
+      FROM fatture_righe r
+      JOIN fatture f ON f.id = r.fattura_id
+      WHERE r.categoria IN ('64.01', '64.02', '64.03');
+
+  - id: 11
+    domanda: "Per quale cliente o progetto il team tecnico è andato a Roma a novembre?"
+    storia_id: "ST-04"
+    tipo: "risposta onesta: causa non documentata"
+    risposta_attesa: >
+      Non è documentato. Le fatture di novembre riportano trasferte del team tecnico sulla tratta
+      Milano Centrale - Roma Termini (4 fatture di Ferrovie Nazionali per 1.750 €, da FATT-P-2025-0197 a
+      FATT-P-2025-0200), con pernottamenti (5 fatture per 3.100 €) e pasti (3 fatture per 1.650 €), ma
+      nessun documento (email, verbale, ordine o preventivo) indica il cliente o il progetto. La causa
+      non è documentata nelle fonti: attribuire le trasferte a un cliente con sede a Roma (per esempio
+      MediHealth Care) sarebbe una congettura.
+    fonti_attese:
+      - "FATT-P-2025-0197"
+    query_sql: ""
+
+  # --- ST-05 Locazione ------------------------------------------------------------------------
+  - id: 12
+    domanda: "A quanto ammonta il deposito cauzionale versato per gli uffici di Via Tortona?"
+    storia_id: "ST-05"
+    tipo: "recupero semplice: contratto"
+    risposta_attesa: >
+      11.400,00 €, pari a tre mensilità del canone originario di 3.800 €, versati alla stipula come
+      deposito infruttifero; verranno restituiti al termine della locazione, previa verifica dello
+      stato dei locali (art. 7 del contratto CTR-002).
+    fonti_attese:
+      - "CTR-002"
+    query_sql: ""
+
+  - id: 13
+    domanda: "Quanto è costato l'affitto degli uffici nel 2025, al netto dell'IVA, e quanto ha inciso l'adeguamento ISTAT?"
+    storia_id: "ST-05"
+    tipo: "recupero + numero"
+    risposta_attesa: >
+      La locazione di Via Tortona 32 (Locazioni Navigli, FOR-003) è costata nel 2025 46.050,00 € di
+      imponibile: 9 mensilità da 3.800 € (gennaio-settembre) e 3 da 3.950 € (ottobre-dicembre).
+      L'adeguamento ISTAT (+150 € al mese dal 1° ottobre 2025) ha inciso per 450,00 € sul 2025.
+      Contesto (non richiesto dalla domanda): l'adeguamento è stato comunicato con la lettera del
+      locatore DOC-LET-002.
+    fonti_attese: []
+    query_sql: >
+      SELECT
+        SUM(imponibile) AS costo_affitto_2025,
+        SUM(imponibile) - 12 * 3800 AS effetto_istat_2025
+      FROM fatture
+      WHERE controparte_id = 'FOR-003';
+
+  - id: 14
+    domanda: "L'importo dell'aumento ISTAT applicato al canone d'affitto è calcolato correttamente?"
+    storia_id: "ST-05"
+    tipo: "controllo di calcolo"
+    risposta_attesa: >
+      Sì, a meno dell'arrotondamento. Come prevede l'art. 5.2 del contratto CTR-002 (100% della
+      variazione FOI), la lettera del 10 settembre 2025 (DOC-LET-002) applica il 100% della variazione
+      ISTAT FOI del +3,94%: 3.800,00 € × 3,94% = 149,72 €, arrotondati a 150,00 €, per
+      un nuovo canone di 3.950,00 € + IVA dal 1° ottobre 2025, che è l'importo effettivamente fatturato
+      (FATT-P-2025-0034). L'arrotondamento vale 0,28 € al mese.
+    fonti_attese:
+      - "DOC-LET-002"
+    query_sql: >
+      SELECT
+        ROUND(3800 * 0.0394, 2) AS aumento_calcolato,
+        (SELECT imponibile FROM fatture WHERE id = 'FATT-P-2025-0034')
+          - (SELECT imponibile FROM fatture WHERE id = 'FATT-P-2025-0033') AS aumento_fatturato;
+
+  - id: 15
+    domanda: "Perché nel 2025 gli affitti degli uffici sono stati pagati dopo la scadenza indicata in fattura?"
+    storia_id: "pagamenti"
+    tipo: "risposta onesta: causa non documentata"
+    risposta_attesa: >
+      Tutte le 12 rate del 2025 a Locazioni Navigli sono state pagate dopo la scadenza indicata in
+      fattura (il giorno 10 del mese), con ritardi da 1 giorno (dicembre) a 13 giorni (ottobre e
+      novembre); il contratto CTR-002 prevede anzi il pagamento entro il giorno 5. Nessun documento
+      (solleciti, accordi con il locatore, comunicazioni interne) spiega i ritardi: la causa non è
+      documentata nelle fonti.
+    fonti_attese: []
+    query_sql: >
+      SELECT
+        COUNT(*) AS rate_pagate_in_ritardo,
+        MAX(julianday(m.data) - julianday(f.scadenza)) AS ritardo_massimo_giorni
+      FROM fatture f
+      JOIN movimenti_bancari m ON m.fattura_id = f.id
+      WHERE f.controparte_id = 'FOR-003' AND m.data > f.scadenza;
+
+  # --- ST-06 TechHardware ---------------------------------------------------------------------
+  - id: 16
+    domanda: "Quanto è costata a OmniDen nel 2025 la fornitura di TechHardware Solutions, al netto dell'IVA?"
+    storia_id: "ST-06"
+    tipo: "controllo contabile + numero"
+    risposta_attesa: >
+      7.120,00 € di imponibile, su 8 fatture. In contabilità risultano 8.970,00 € perché la fattura del
+      notebook Dell XPS (n. FT-2025-1089, 1.850 € + IVA) è stata registrata due volte: FATT-P-2025-0166
+      è il duplicato contabile di FATT-P-2025-0165 e va escluso. Contesto (non richiesto dalla
+      domanda): il duplicato è stato anche pagato due volte (MOV-000240 e MOV-000248, 2.257,00 € ciascuno);
+      il pagamento in più è un credito verso il fornitore, non un costo.
+    fonti_attese:
+      - "FATT-P-2025-0166"
+    query_sql: >
+      SELECT SUM(imponibile) AS spesa_netta
+      FROM fatture
+      WHERE controparte_id = 'FOR-010' AND id <> 'FATT-P-2025-0166';
+
+  - id: 17
+    domanda: "Il notebook Dell XPS acquistato a ottobre è stato fatturato al prezzo offerto?"
+    storia_id: "ST-06"
+    tipo: "verifica prezzo: offerta e fattura"
+    risposta_attesa: >
+      Sì. L'offerta OFF-2025-912 dell'8 settembre 2025 (DOC-PRV-003) indica 1.850,00 € + IVA, per un
+      totale di 2.257,00 €, e la fattura FATT-P-2025-0165 (n. FT-2025-1089 del 14/10/2025) riporta gli
+      stessi importi. Il problema di quella fornitura non è il prezzo ma la doppia registrazione della
+      fattura (FATT-P-2025-0166).
+    fonti_attese:
+      - "DOC-PRV-003"
+      - "FATT-P-2025-0165"
+    query_sql: >
+      SELECT imponibile
+      FROM fatture
+      WHERE id = 'FATT-P-2025-0165';
+
+  - id: 18
+    domanda: "Il credito verso TechHardware è stato compensato con la fornitura di dicembre?"
+    storia_id: "ST-06"
+    tipo: "verifica: risposta negativa"
+    risposta_attesa: >
+      No. Il 3 novembre 2025 OmniDen ha concordato di tenere i 2.257,00 € pagati due volte come credito
+      da scalare sulle forniture successive (DOC-EML-013), ma la fattura di dicembre FATT-P-2025-0164
+      (n. FT-2025-1280, 634,40 € IVA inclusa) è stata pagata per intero con il bonifico MOV-000310 del
+      31/12/2025. A fine anno il credito di 2.257,00 € risulta ancora aperto.
+    fonti_attese:
+      - "DOC-EML-013"
+      - "FATT-P-2025-0164"
+      - "MOV-000310"
+    query_sql: >
+      SELECT ABS(importo) AS importo
+      FROM movimenti_bancari
+      WHERE id IN ('MOV-000310', 'MOV-000248');
+
+  # --- Contratti ------------------------------------------------------------------------------
+  - id: 19
+    domanda: "Quali contratti con i fornitori scadono a fine 2025 con rinnovo tacito, e con quale preavviso si possono disdire?"
+    storia_id: "contratti"
+    tipo: "contratti: più documenti"
+    risposta_attesa: >
+      Quattro contratti passivi scadono il 31/12/2025 e si rinnovano tacitamente di anno in anno: Nimbus
+      Software (CTR-001) e Studio Brambilla (CTR-004) con preavviso di 60 giorni; SicurAssicura (CTR-005)
+      e Punto Pulito (CTR-007) con preavviso di 30 giorni. Contesto (non richiesto dalla domanda):
+      anche il contratto con il cliente Barilli (CTR-008) scade il 31/12/2025, ma è un contratto attivo
+      e non prevede il rinnovo tacito.
+    fonti_attese:
+      - "CTR-001"
+      - "CTR-004"
+      - "CTR-005"
+      - "CTR-007"
+    query_sql: >
+      SELECT DISTINCT preavviso_giorni
+      FROM contratti
+      WHERE tipo = 'passivo' AND data_fine = '2025-12-31' AND rinnovo = 'True';
+
+  - id: 20
+    domanda: "Entro quando va inviata la disdetta del contratto con FinTech Solutions per evitarne il rinnovo?"
+    storia_id: "contratti"
+    tipo: "contratti: scadenza e preavviso"
+    risposta_attesa: >
+      Entro il 30 dicembre 2025 (60 giorni prima della scadenza del 28/02/2026). Il contratto CTR-009
+      con FinTech Solutions Italia scade il 28/02/2026 e si rinnova tacitamente di anno in anno,
+      salvo disdetta via PEC con 60 giorni di preavviso.
+    fonti_attese:
+      - "CTR-009"
+    query_sql: >
+      SELECT preavviso_giorni
+      FROM contratti
+      WHERE id = 'CTR-009';
+
+  - id: 21
+    domanda: "Quanto costa all'anno il noleggio delle auto aziendali e fino a quando è vincolato il contratto?"
+    storia_id: "contratti"
+    tipo: "contratti: durata e canone"
+    risposta_attesa: >
+      9.000,00 € l'anno: 750,00 € + IVA al mese per le due auto (Volkswagen Golf e Peugeot 308),
+      comprensivi di bollo, assicurazione Kasko, manutenzione e soccorso stradale. Il contratto
+      FleetLeasing CTR-006 dura 36 mesi, dal 01/06/2024 al 31/05/2027, e non si rinnova tacitamente:
+      alla fine le auto si restituiscono o si riscattano, con preavviso di 60 giorni.
+    fonti_attese:
+      - "CTR-006"
+    query_sql: >
+      SELECT importo AS canone_annuo
+      FROM contratti
+      WHERE id = 'CTR-006';
+
+  - id: 22
+    domanda: "Quanto costa la polizza assicurativa aziendale e quali massimali prevede?"
+    storia_id: "contratti"
+    tipo: "recupero + numero: contratto"
+    risposta_attesa: >
+      La polizza SicurAssicura (CTR-005, n. POL-SIC-2025-9981) costa 4.800,00 € l'anno, in rate mensili
+      da 400,00 €. Massimali: 2.500.000 € per sinistro di RC professionale, 1.000.000 € per Cyber
+      Security e Data Breach, 150.000 € per incendio, furto ed elettronica degli uffici. Copre il 2025 e
+      si rinnova tacitamente salvo disdetta con 30 giorni di preavviso.
+    fonti_attese:
+      - "CTR-005"
+    query_sql: >
+      SELECT importo AS premio_annuo
+      FROM contratti
+      WHERE id = 'CTR-005';
+
+  - id: 23
+    domanda: "La spesa per il cloud Altocumulo nel 2025 è coerente con il contratto?"
+    storia_id: "contratti"
+    tipo: "esito: regolare"
+    risposta_attesa: >
+      Sì, è regolare. Il contratto CTR-003 prevede una tariffazione a consumo con un valore medio
+      stimato di circa 2.150-2.250 € + IVA al mese; nel 2025 le fatture Altocumulo hanno una media di
+      2.164,17 € al mese, dentro la forchetta, e nessun mese supera 2.250 € (massimo a giugno). La
+      forchetta del contratto è una stima del valore medio: quattro mesi (gennaio, febbraio, aprile e
+      agosto, con il minimo di 2.050 €) stanno sotto 2.150 €, ma gli scostamenti sono solo al ribasso,
+      coerenti con la tariffazione a consumo. Contesto (non richiesto dalla domanda): contratti.csv
+      riporta per CTR-003 un importo annuo di 36.000 €, che non cambia l'esito.
+    fonti_attese:
+      - "CTR-003"
+    query_sql: >
+      SELECT ROUND(AVG(imponibile), 2) AS media_mensile
+      FROM fatture
+      WHERE controparte_id = 'FOR-002';
+
+  - id: 24
+    domanda: "Di quanto il fatturato 2025 verso RetailNext differisce dal valore annuo stimato nel contratto?"
+    storia_id: "contratti"
+    tipo: "confronto contratto e fatture"
+    risposta_attesa: >
+      È superiore di 4.100,00 € (+2,5%): nel 2025 sono stati fatturati a RetailNext 166.100,00 € contro
+      un valore annuo stimato di 162.000,00 € (13.500 € medi al mese) nel contratto CTR-010.
+    fonti_attese:
+      - "CTR-010"
+    query_sql: >
+      SELECT
+        SUM(f.imponibile) AS fatturato_2025,
+        c.importo AS valore_contratto,
+        SUM(f.imponibile) - c.importo AS differenza
+      FROM fatture f
+      JOIN contratti c ON c.id = 'CTR-010'
+      WHERE f.controparte_id = 'CLI-003';
+
+  # --- Ricavi ---------------------------------------------------------------------------------
+  - id: 25
+    domanda: "Quanto pesano i primi tre clienti sul fatturato 2025?"
+    storia_id: "ricavi"
+    tipo: "solo numerico: quota"
+    risposta_attesa: >
+      Il 59,03% del fatturato: Barilli Logistica (284.000 €), FinTech Solutions (175.300 €) e RetailNext
+      (166.100 €) fatturano insieme 625.400,00 € su 1.059.400,00 € di ricavi 2025.
+    fonti_attese: []
+    query_sql: >
+      WITH per_cliente AS (
+        SELECT controparte_id, SUM(imponibile) AS ricavi
+        FROM fatture WHERE tipo = 'attiva' GROUP BY controparte_id
+      ),
+      top3 AS (
+        SELECT SUM(ricavi) AS ricavi_top3
+        FROM (SELECT ricavi FROM per_cliente ORDER BY ricavi DESC LIMIT 3)
+      ),
+      totale AS (SELECT SUM(ricavi) AS ricavi_totali FROM per_cliente)
+      SELECT ROUND(ricavi_top3 * 100.0 / ricavi_totali, 2) AS quota_top3
+      FROM top3, totale;
+
+  - id: 26
+    domanda: "Di quanto è variato il fatturato del secondo semestre 2025 rispetto al primo?"
+    storia_id: "ricavi"
+    tipo: "confronto tra semestri"
+    risposta_attesa: >
+      È sceso di 65.800,00 € (-11,7%): da 562.600,00 € nel primo semestre a 496.800,00 € nel secondo.
+    fonti_attese: []
+    query_sql: >
+      SELECT
+        SUM(CASE WHEN strftime('%m', data) <= '06' THEN imponibile ELSE 0 END) AS primo_semestre,
+        SUM(CASE WHEN strftime('%m', data) > '06' THEN imponibile ELSE 0 END) AS secondo_semestre
+      FROM fatture
+      WHERE tipo = 'attiva';
+
+  - id: 27
+    domanda: "Perché i ricavi di dicembre sono aumentati rispetto a novembre?"
+    storia_id: "ricavi"
+    tipo: "risposta onesta: causa non documentata"
+    risposta_attesa: >
+      I ricavi passano da 74.000,00 € di novembre a 77.200,00 € di dicembre (+3.200,00 €), con aumenti
+      distribuiti su sei clienti (FinTech +800, MediHealth +800, RetailNext +600, AgroTech +400,
+      Manifattura Lombarda +300, EdilSmart +300; Barilli invariata a 12.000 €). Nessun documento spiega
+      questi aumenti, e gli uffici sono anzi chiusi dal 24 dicembre (DOC-EML-036). L'email di RetailNext
+      del 2 ottobre (DOC-EML-021, Black Friday e Cyber Monday) riguarda il dimensionamento temporaneo
+      delle istanze cloud, non extra fatturati, e non spiega l'aumento distribuito sugli altri clienti.
+      La causa non è documentata nelle fonti.
+    fonti_attese: []
+    query_sql: >
+      SELECT
+        SUM(CASE WHEN strftime('%m', data) = '11' THEN imponibile ELSE 0 END) AS ricavi_novembre,
+        SUM(CASE WHEN strftime('%m', data) = '12' THEN imponibile ELSE 0 END) AS ricavi_dicembre
+      FROM fatture
+      WHERE tipo = 'attiva';
+
+  - id: 28
+    domanda: "Il calo dei ricavi di agosto 2025 rispetto a luglio è anomalo?"
+    storia_id: "ricavi"
+    tipo: "esito: regolare"
+    risposta_attesa: >
+      No, è regolare. I ricavi passano da 97.800,00 € di luglio a 80.000,00 € di agosto (-17.800 €,
+      -18,2%), in linea con la contrazione fisiologica del 15-20% prevista dalla circolare interna del
+      15 luglio 2025 (DOC-NOT-002) per la chiusura collettiva dall'11 al 22 agosto, con fatturazione
+      delle sole ore lavorate.
+    fonti_attese:
+      - "DOC-NOT-002"
+    query_sql: >
+      SELECT
+        SUM(CASE WHEN strftime('%m', data) = '07' THEN imponibile ELSE 0 END) AS ricavi_luglio,
+        SUM(CASE WHEN strftime('%m', data) = '08' THEN imponibile ELSE 0 END) AS ricavi_agosto
+      FROM fatture
+      WHERE tipo = 'attiva';
+
+  - id: 29
+    domanda: "Perché a luglio il fatturato verso FinTech Solutions ha raggiunto il massimo dell'anno?"
+    storia_id: "ricavi"
+    tipo: "risposta onesta: causa non documentata"
+    risposta_attesa: >
+      A luglio 2025 FinTech Solutions è stata fatturata per 15.500,00 €, il valore mensile più alto
+      dell'anno (il contratto CTR-009 indica un corrispettivo medio di 14.500 € al mese). Nessun
+      documento spiega il picco di luglio: le email con FinTech riguardano il rilascio in staging di
+      aprile e la release autunnale. Anche gli altri clienti hanno a luglio il loro massimo annuo (alcuni
+      a pari merito con altri mesi), e la circolare DOC-NOT-002 riguarda solo agosto. La causa non è
+      documentata nelle fonti.
+    fonti_attese: []
+    query_sql: >
+      SELECT MAX(imponibile) AS massimo_mensile
+      FROM fatture
+      WHERE controparte_id = 'CLI-002';
+
+  # --- Incassi e pagamenti --------------------------------------------------------------------
+  - id: 30
+    domanda: "Quali fatture emesse a novembre non risultano ancora incassate a fine anno?"
+    storia_id: "incassi e pagamenti"
+    tipo: "controllo contabile: incassi"
+    risposta_attesa: >
+      Quattro fatture di novembre, tutte con scadenza 31/12/2025, per 54.656,00 € IVA inclusa:
+      FATT-A-2025-0071 Barilli Logistica (14.640 €), FATT-A-2025-0072 FinTech Solutions (17.080 €),
+      FATT-A-2025-0074 MediHealth Care (13.664 €) e FATT-A-2025-0076 AgroTech Bio (9.272 €). Le altre tre
+      fatture di novembre (RetailNext, Manifattura Lombarda, EdilSmart) sono state incassate tra il 26 e
+      il 30 dicembre.
+    fonti_attese:
+      - "FATT-A-2025-0071"
+      - "FATT-A-2025-0072"
+      - "FATT-A-2025-0074"
+      - "FATT-A-2025-0076"
+    query_sql: ""
+
+  - id: 31
+    domanda: "Ci sono fatture di fornitori scadute e non pagate al 31 dicembre 2025?"
+    storia_id: "incassi e pagamenti"
+    tipo: "controllo contabile: pagamenti"
+    risposta_attesa: >
+      Sì, cinque, per 4.123,60 € IVA inclusa, scadute tra il 25 e il 30 dicembre e senza bonifico:
+      FATT-P-2025-0209 Ferrovie Nazionali (671,00 €, scadenza 25/12), FATT-P-2025-0210 Milano & Roma
+      Business Hotels (1.037,00 €, 26/12), FATT-P-2025-0211 Ristoranti & Catering Milano (549,00 €,
+      27/12), FATT-P-2025-0073 EcoLombarda Energia (768,60 €, 28/12) e FATT-P-2025-0049 Studio Brambilla
+      (1.098,00 €, 30/12). Nessuna compare nello scadenzario.
+    fonti_attese:
+      - "FATT-P-2025-0209"
+      - "FATT-P-2025-0210"
+      - "FATT-P-2025-0211"
+      - "FATT-P-2025-0073"
+      - "FATT-P-2025-0049"
+    query_sql: ""
+
+  - id: 32
+    domanda: "Nel 2025 ci sono fatture passive con una scadenza anteriore alla data di emissione?"
+    storia_id: "incassi e pagamenti"
+    tipo: "controllo contabile: date"
+    risposta_attesa: >
+      Sì, due: FATT-P-2025-0200 (n. TRN-2025-1104 di Ferrovie Nazionali, emessa il 25/11/2025 con
+      scadenza 24/11/2025) e FATT-P-2025-0205 (n. HTL-2025-1105 di Milano & Roma Business Hotels, emessa
+      il 26/11/2025 con scadenza 25/11/2025). Sono entrambe fatture di trasferta di novembre.
+    fonti_attese:
+      - "FATT-P-2025-0200"
+      - "FATT-P-2025-0205"
+    query_sql: ""
+
+  - id: 33
+    domanda: "Quali pagamenti a fornitori scadono a gennaio 2026 e per quale importo complessivo?"
+    storia_id: "incassi e pagamenti"
+    tipo: "scadenze: pagamenti"
+    risposta_attesa: >
+      Quattro fatture, tutte in scadenza il 15/01/2026, per 12.810,00 € IVA inclusa: Punto Pulito (610 €,
+      pulizie di dicembre) e le parcelle di dicembre dei tre freelance, Rinaldi (4.270 €), De Luca
+      (4.270 €) e Riva (3.660 €).
+    fonti_attese: []
+    query_sql: >
+      SELECT ROUND(SUM(totale), 2) AS da_pagare_gennaio
+      FROM fatture
+      WHERE tipo = 'passiva' AND scadenza BETWEEN '2026-01-01' AND '2026-01-31';
+
+  - id: 34
+    domanda: "Quanto ha versato in totale OmniDen con i modelli F24 nel 2025?"
+    storia_id: "incassi e pagamenti"
+    tipo: "solo numerico"
+    risposta_attesa: >
+      443.512,00 € con 12 deleghe F24, addebitate il 16 di ogni mese, per ritenute IRPEF, contributi
+      INPS e saldo IVA del mese precedente.
+    fonti_attese: []
+    query_sql: >
+      SELECT ROUND(SUM(ABS(importo)), 2) AS totale_f24
+      FROM movimenti_bancari
+      WHERE causale LIKE 'DELEGA F24%';
+
+  - id: 35
+    domanda: "I versamenti F24 del 2025 sono stati fatti nei termini?"
+    storia_id: "incassi e pagamenti"
+    tipo: "esito: regolare"
+    risposta_attesa: >
+      Sì, è regolare. La circolare dello Studio Brambilla (DOC-LET-003) fissa il versamento di IVA,
+      ritenute e contributi con F24 entro il giorno 16 del mese successivo, e tutte le 12 deleghe F24
+      del 2025 risultano addebitate il 16 di ogni mese. Contesto (non richiesto dalla domanda): quattro
+      deleghe (16/02, 16/03, 16/08 e 16/11) risultano addebitate di sabato o di domenica; non è un
+      ritardo rispetto al termine.
+    fonti_attese:
+      - "DOC-LET-003"
+    query_sql: >
+      SELECT DISTINCT CAST(strftime('%d', data) AS INTEGER) AS giorno_versamento
+      FROM movimenti_bancari
+      WHERE causale LIKE 'DELEGA F24%';
+
+  # --- Personale ------------------------------------------------------------------------------
+  - id: 36
+    domanda: "Qual è stato il costo complessivo del personale dipendente nel 2025?"
+    storia_id: "personale"
+    tipo: "solo numerico"
+    risposta_attesa: >
+      624.000,00 €: 450.000 € di retribuzioni lorde (conto 60.01, 37.500 € al mese) e 174.000 € di oneri
+      sociali INPS a carico dell'azienda (conto 60.02, 14.500 € al mese), dalle scritture contabili.
+    fonti_attese:
+      - "scritture_contabili.csv"
+    query_sql: >
+      SELECT SUM(dare) AS costo_personale
+      FROM scritture_contabili
+      WHERE conto_codice IN ('60.01', '60.02');
+
+  - id: 37
+    domanda: "Il costo del personale è aumentato dopo l'assunzione di marzo?"
+    storia_id: "personale"
+    tipo: "verifica: risposta negativa"
+    risposta_attesa: >
+      No. Nonostante l'ingresso di un Junior Software Engineer annunciato il 3 marzo 2025 (DOC-EML-033),
+      le scritture contabili riportano per tutti i mesi del 2025 lo stesso costo: 37.500,00 € di
+      retribuzioni lorde (conto 60.01) e 14.500,00 € di oneri INPS (conto 60.02) al mese.
+    fonti_attese:
+      - "DOC-EML-033"
+      - "scritture_contabili.csv"
+    query_sql: >
+      SELECT DISTINCT dare AS costo_mensile
+      FROM scritture_contabili
+      WHERE conto_codice IN ('60.01', '60.02');
+
+  - id: 38
+    domanda: "Qual è la retribuzione lorda annua del nuovo sviluppatore junior assunto a marzo?"
+    storia_id: "personale"
+    tipo: "non rispondibile"
+    risposta_attesa: >
+      Non è possibile rispondere con i dati disponibili. L'assunzione è annunciata nell'email
+      DOC-EML-033, ma le scritture contabili registrano le retribuzioni solo in forma aggregata
+      (37.500 € lordi al mese per tutto il personale) e non esistono cedolini o dati per singolo
+      dipendente.
+    fonti_attese: []
+    query_sql: ""
+
+  # --- Costi ----------------------------------------------------------------------------------
+  - id: 39
+    domanda: "Quanto sono costati nel 2025 i consulenti freelance, al netto dell'IVA, e quanto ciascuno?"
+    storia_id: "costi"
+    tipo: "solo numerico"
+    risposta_attesa: >
+      120.000,00 € di imponibile (conto 61.01): 42.000 € Marco Rinaldi e 42.000 € Sara De Luca
+      (3.500 € al mese ciascuno), 36.000 € Matteo Riva (3.000 € al mese).
+    fonti_attese: []
+    query_sql: >
+      SELECT SUM(imponibile) AS costo
+      FROM fatture
+      WHERE controparte_id IN ('FOR-013', 'FOR-014', 'FOR-015')
+      GROUP BY controparte_id
+      UNION ALL
+      SELECT SUM(imponibile)
+      FROM fatture
+      WHERE controparte_id IN ('FOR-013', 'FOR-014', 'FOR-015');
+
+  - id: 40
+    domanda: "Le parcelle del 2025 dei tre freelance sono coerenti con i consuntivi che hanno inviato?"
+    storia_id: "costi"
+    tipo: "esito: regolare"
+    risposta_attesa: >
+      Sì, è regolare. I consuntivi indicano 3.500 € + IVA per Marco Rinaldi (aprile, DOC-EML-023),
+      3.500 € + IVA per l'Ing. Sara De Luca (giugno, DOC-EML-024) e 3.000 € + IVA per il Dott. Matteo
+      Riva (settembre, DOC-EML-025); le fatture di tutti i mesi del 2025 riportano esattamente questi
+      importi.
+    fonti_attese:
+      - "DOC-EML-023"
+      - "DOC-EML-024"
+      - "DOC-EML-025"
+    query_sql: >
+      SELECT DISTINCT imponibile AS parcella_mensile
+      FROM fatture
+      WHERE controparte_id IN ('FOR-013', 'FOR-014', 'FOR-015');
+
+  - id: 41
+    domanda: "Qual è il fornitore che è costato di più a OmniDen nel 2025, e per quale importo al netto dell'IVA?"
+    storia_id: "costi"
+    tipo: "solo numerico: classifica"
+    risposta_attesa: >
+      Nimbus Software S.r.l. (FOR-001), con 54.800,00 € di imponibile: 7 canoni da 4.000 € e 5 da
+      5.360 €. Segue Locazioni Navigli con 46.050 €.
+    fonti_attese: []
+    query_sql: >
+      SELECT SUM(imponibile) AS costo_2025
+      FROM fatture
+      WHERE tipo = 'passiva'
+      GROUP BY controparte_id
+      ORDER BY costo_2025 DESC
+      LIMIT 1;
+
+  - id: 42
+    domanda: "Perché la bolletta elettrica di luglio è la più alta dell'anno?"
+    storia_id: "costi"
+    tipo: "risposta onesta: causa non documentata"
+    risposta_attesa: >
+      La fattura EcoLombarda di luglio (FATT-P-2025-0068) è di 680,00 € + IVA, il valore più alto del
+      2025 (minimo 510 € a maggio, media annua 585 €). Nessun documento spiega l'aumento dei consumi di
+      luglio: l'unica comunicazione del fornitore riguarda la lettura del contatore di marzo
+      (DOC-EML-029). La causa non è documentata nelle fonti.
+    fonti_attese:
+      - "FATT-P-2025-0068"
+    query_sql: >
+      SELECT imponibile
+      FROM fatture
+      WHERE id = 'FATT-P-2025-0068';
+
+  - id: 43
+    domanda: "L'attivazione della linea di backup 4G ha fatto aumentare il costo della connettività?"
+    storia_id: "costi"
+    tipo: "verifica: risposta negativa"
+    risposta_attesa: >
+      No. La SIM 5G/4G di failover è stata attivata da FastConnect ad aprile 2025 (DOC-EML-028), ma il
+      canone di connettività fatturato da FastConnect Telecom (conto 62.03) resta di 350,00 € + IVA al
+      mese per tutto il 2025.
+    fonti_attese:
+      - "DOC-EML-028"
+    query_sql: >
+      SELECT DISTINCT imponibile AS canone_mensile
+      FROM fatture
+      WHERE controparte_id = 'FOR-006';
+
+  - id: 44
+    domanda: "Dopo la riunione di direzione di settembre è aumentata la spesa per il marketing digitale?"
+    storia_id: "costi"
+    tipo: "verifica: risposta negativa"
+    risposta_attesa: >
+      No. Il verbale del 22 settembre 2025 (DOC-NOT-004) prevede un budget promozionale aggiuntivo sui
+      canali digitali, ma la spesa marketing (conto 66.02, MediaBrand Studio) resta di 1.000,00 € al mese
+      anche a ottobre, novembre e dicembre, come nel resto dell'anno: non risultano costi aggiuntivi.
+    fonti_attese:
+      - "DOC-NOT-004"
+    query_sql: >
+      SELECT DISTINCT r.imponibile AS spesa_mensile
+      FROM fatture f
+      JOIN fatture_righe r ON r.fattura_id = f.id
+      WHERE r.categoria = '66.02' AND f.data >= '2025-10-01';
+
+  - id: 45
+    domanda: "Come è stata pagata la cena aziendale di fine luglio?"
+    storia_id: "costi"
+    tipo: "risposta onesta: causa non documentata"
+    risposta_attesa: >
+      Non è documentato. La cena offerta da OmniDen il 31 luglio 2025 è annunciata nell'email
+      DOC-EML-035, ma in contabilità non c'è alcuna fattura o movimento riconducibile: le spese di
+      ristorazione (conto 64.03) di luglio e agosto sono le ordinarie fatture da 450,00 € per i pasti in
+      trasferta. Che la cena sia offerta da OmniDen è documentato, ma non risulta dalle fonti come sia
+      stata pagata né dove sia registrata.
+    fonti_attese:
+      - "DOC-EML-035"
+    query_sql: >
+      SELECT DISTINCT r.imponibile AS ristorazione_mensile
+      FROM fatture f
+      JOIN fatture_righe r ON r.fattura_id = f.id
+      WHERE r.categoria = '64.03' AND strftime('%m', f.data) IN ('07', '08');
+
+  # --- Documenti ------------------------------------------------------------------------------
+  - id: 46
+    domanda: "Quale budget è previsto per la formazione tecnica del 2026?"
+    storia_id: "documenti"
+    tipo: "recupero semplice: un documento"
+    risposta_attesa: >
+      6.000 €, il budget ordinario indicato nella proposta di piano di formazione del 2 dicembre 2025
+      (DOC-EML-040): certificazioni AWS/GCP per due sviluppatori e partecipazione di tre persone alla
+      conferenza europea su Kubernetes a marzo.
+    fonti_attese:
+      - "DOC-EML-040"
+    query_sql: ""
+
+  - id: 47
+    domanda: "Quanto paga in più RetailNext per i connettori verso i marketplace aggiunti in corso d'anno?"
+    storia_id: "documenti"
+    tipo: "recupero semplice: un documento"
+    risposta_attesa: >
+      Nulla. L'addendum del 30 marzo 2025 (DOC-ADD-002) estende il contratto CTR-010 ai connettori
+      real-time verso Amazon Marketplace e Mirakl, con 6 settimane di sviluppo comprese nel perimetro di
+      giornate del team dedicato, senza oneri extra per RetailNext.
+    fonti_attese:
+      - "DOC-ADD-002"
+    query_sql: ""
+
+  # --- Non rispondibili -----------------------------------------------------------------------
+  - id: 48
+    domanda: "Di quanto è cresciuto il fatturato complessivo rispetto al 2024?"
+    storia_id: "nessuna"
+    tipo: "non rispondibile"
+    risposta_attesa: >
+      Non è possibile rispondere con i dati disponibili: fatture, movimenti e scritture coprono solo
+      l'esercizio 2025 e non c'è alcun dato sul fatturato complessivo del 2024 (il contratto CTR-008
+      cita solo i volumi storici indicativi del cliente Barilli). Una stima indiretta (circa 330.000 €
+      di Barilli diviso il 30% di quota indicato in DOC-EML-010) non dà il 2024: il 30% corrisponde
+      alla quota di Barilli nel 2025 fino a settembre e i volumi di CTR-008 sono indicativi e
+      mescolano 2024 e 2025. Si può indicare solo il fatturato 2025, pari a 1.059.400 €.
+    fonti_attese: []
+    query_sql: ""
+
+  - id: 49
+    domanda: "Quanti chilometri hanno percorso le auto aziendali nel 2025?"
+    storia_id: "nessuna"
+    tipo: "non rispondibile"
+    risposta_attesa: >
+      Non è possibile rispondere con i dati disponibili: il contratto di noleggio CTR-006 indica solo il
+      chilometraggio previsto (30.000 km annui per ciascuna auto), mentre non esistono letture dei
+      contachilometri, schede carburante o rendiconti di percorrenza.
+    fonti_attese: []
+    query_sql: ""
+
+  - id: 50
+    domanda: "Quanto fattureranno le nuove commesse attese per inizio 2026?"
+    storia_id: "nessuna"
+    tipo: "non rispondibile"
+    risposta_attesa: >
+      Non è possibile rispondere con i dati disponibili. La nota ai soci del 25 settembre 2025
+      (DOC-EML-010) dice solo che sono stati avviati contatti per nuove commesse che dovrebbero
+      concretizzarsi a inizio 2026, senza indicare clienti, importi o contratti; il verbale di direzione
+      del 22 settembre (DOC-NOT-004), sulle nuove commesse, indica solo i settori obiettivo (MedTech ed
+      E-Commerce) e un budget promozionale aggiuntivo, senza importi né clienti. Nei dati non ci sono offerte o fatture relative
+      a nuove commesse.
+    fonti_attese: []
+    query_sql: ""

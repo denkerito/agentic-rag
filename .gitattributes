@@ -1,0 +1,3 @@
+# Il test set finale resta con gli a capo LF anche su Windows: il manifesto dell'esperimento `finale`
+# registra l'hash dei suoi byte, e un CRLF lo cambierebbe (la ripresa e il confronto fallirebbero).
+eval/ground_truth_finale/** text eol=lf

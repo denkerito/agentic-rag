@@ -8,7 +8,8 @@
 
 ## Ground truth
 - Le 12 domande in `eval/ground_truth/` sono il set di sviluppo.
-- La cartella `eval/ground_truth_finale/` (test set finale) e i report privati dei suoi esperimenti (`eval/reports/private/esperimenti/` delle etichette che la usano) sono **vietati all'assistente** fino alla fine dell'esperimento finale: non si aprono, non si leggono, non se ne stampa il contenuto. L'assistente ne conosce solo la struttura (stesso formato del set di sviluppo). Il codice dell'harness li legge a runtime; all'assistente arrivano solo output di conteggi (es. `tools/controlla_ground_truth.py`) e i report pubblici.
+- Le 50 domande in `eval/ground_truth_finale/` sono il test set dell'esperimento `finale` (2026-10-26). Sono rimaste vietate all'assistente fino alla fine dell'esperimento e della validazione del giudice. Dal 2026-11-11 sono visibili e in git, quindi non misurano più nulla di nuovo: non si usano per ritoccare prompt, soglie, tool o metriche, e una modifica futura all'agente va misurata su un test set nuovo.
+- Un test set nuovo ha la stessa protezione fino alla fine del suo esperimento. La sua cartella e i report privati delle etichette che la usano (`eval/reports/private/esperimenti/`) non si aprono, non si leggono e non se ne stampa il contenuto: l'assistente ne conosce solo la struttura. Il codice dell'harness li legge a runtime, e all'assistente arrivano solo output di conteggi (es. `tools/controlla_ground_truth.py`) e i report pubblici.
 - L'agente e i moduli applicativi non accedono mai ai file di ground truth.
 
 ## Principi Guida dell'Agente
